@@ -1,0 +1,13 @@
+server:
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    hosts:
+      - argocd.homelab.aminrj.com
+    tls:
+      - secretName: argocd-tls
+        hosts:
+          - argocd.homelab.aminrj.com
+  service:
+    type: ClusterIP
+
