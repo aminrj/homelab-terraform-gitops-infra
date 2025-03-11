@@ -3,8 +3,10 @@ resource "helm_release" "metallb" {
   chart      = "metallb"
   repository = "https://metallb.github.io/metallb"
   version    = "0.14.9"
+  namespace  = "metallb-system"
 
   create_namespace = true
+  wait             = false
 }
 
 resource "terraform_data" "metallb_configs" {
