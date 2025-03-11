@@ -1,13 +1,15 @@
 server:
   ingress:
-    enabled: true
+    # enabled: true
+    enabled: false
     ingressClassName: nginx
     hosts:
-      - argocd.homelab.aminrj.com
+      - minargocd.aminrj.com
     tls:
       - secretName: argocd-tls
         hosts:
-          - argocd.homelab.aminrj.com
+          - minargocd.aminrj.com
   service:
-    type: ClusterIP
+    # type: ClusterIP
+    type: LoadBalancer
 

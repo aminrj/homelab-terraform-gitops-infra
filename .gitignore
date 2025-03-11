@@ -1,7 +1,8 @@
 .terraform/providers/registry.terraform.io/hashicorp/helm/2.17.0
 .terraform/providers/registry.terraform.io/hashicorp/kubernetes/2.36.0
 environments/dev/.terraform
-environments/dev/main.tf
 environments/dev/.terraform.lock.hcl
 terraform.tfstate
 .terraform.lock.hcl
+environments/dev/terraform.tfstate.1741669873.backup
+environments/dev/terraform.tfstate.backup
