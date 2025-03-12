@@ -17,3 +17,7 @@ module "nginx-ingress-controller" {
 module "external-dns" {
   source            = "../../modules/external-dns"
 }
+
+module "cert-manager" {
+  source            = "../../modules/cert-manager"
+}
