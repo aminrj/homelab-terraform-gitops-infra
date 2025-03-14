@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: apps
+  namespace: argocd
+spec:
+  generators:
+    - git:
+        repoURL: git@github.com:aminrj/terraform-gitops-infra.git
+        revision: main
+        directories:
+          - path: apps/*/dev
+  template:
+    metadata:
+      name: '{{path.basename}}'
+    spec:
+      project: web-apps
+      source:
+        repoURL: git@github.com:aminrj/terraform-gitops-infra.git
+        targetRevision: main
+        path: '{{path}}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: default
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
