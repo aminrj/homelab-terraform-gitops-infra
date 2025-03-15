@@ -15,6 +15,6 @@ spec:
     spec:
       containers:
         - name: myapp
-          image: secdevopsjourney/my-app-nextjs:latest
+          image: secdevopsjourney/my-app-nextjs:20250315194700
           ports:
             - containerPort: 3000
