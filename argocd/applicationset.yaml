@@ -9,19 +9,19 @@ spec:
         repoURL: git@github.com:aminrj/terraform-gitops-infra.git
         revision: main
         directories:
-          - path: apps/*/dev
+          - path: apps/*/* # auto-detect all apps & env
   template:
     metadata:
-      name: '{{path.basename}}'
+      name: '{{path[1]}}-{{path[2]}}'
     spec:
-      project: web-apps
+      project: default #Add project separation later as needed
       source:
         repoURL: git@github.com:aminrj/terraform-gitops-infra.git
         targetRevision: main
-        path: '{{path}}'
+        path: 'apps/{{path[1]}}/{{path[2]}}' #Example: apps/nextjs-app/dev
       destination:
         server: https://kubernetes.default.svc
-        namespace: default
+        namespace: '{{path[1]}}-{{path[2]}}'
       syncPolicy:
         automated:
           prune: true
