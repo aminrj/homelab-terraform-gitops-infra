@@ -1,0 +1,6 @@
+# apps/nextjs-app/dev/kustomization.yaml
+resources:
+  - deployment.yaml
+  - service.yaml
+  - ingress.yaml
+
