@@ -15,6 +15,6 @@ spec:
     spec:
       containers:
         - name: myapp
-          image: aminrj/my-nextjs-app:latest  # Image updated by CI/CD
+          image: aminrj/my-nextjs-app:
           ports:
             - containerPort: 3000
