@@ -6,7 +6,7 @@ metadata:
 spec:
   generators:
     - git:
-        repoURL: git@github.com:aminrj/homelab-terraform-gitops-infra.git
+        repoURL: https://github.com/aminrj/homelab-terraform-gitops-infra.git
         revision: main
         directories:
           - path: apps/*/* # auto-detect all apps & env
@@ -16,7 +16,7 @@ spec:
     spec:
       project: default #Add project separation later as needed
       source:
-        repoURL: git@github.com:aminrj/homelab-terraform-gitops-infra.git
+        repoURL: https://github.com/aminrj/homelab-terraform-gitops-infra.git
         targetRevision: main
         path: 'apps/{{path[1]}}/{{path[2]}}' #Example: apps/nextjs-app/dev
       destination:

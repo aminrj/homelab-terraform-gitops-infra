@@ -13,11 +13,19 @@ resource "helm_release" "argocd" {
  
   wait    = false
 }
+
 # Deploy ArgoCD Self-Managed Application (Points to GitOps Repo)
 resource "kubectl_manifest" "argocd_self_managed" {
   depends_on = [helm_release.argocd]
 
   yaml_body = file("${path.module}/argocd-config.yaml")
+}
+
+# Configmap to register the repo inside ArgoCD
+resource "kubectl_manifest" "argocd_gitops_repo_config" {
+  depends_on = [helm_release.argocd]
+
+  yaml_body = file("${path.module}/repository-cm.yaml")
 }
 
 # Deploy Applications & ApplicationSets from GitOps Repo
