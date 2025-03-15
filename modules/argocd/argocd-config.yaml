@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: git@github.com:aminrj.com/terraform-gitops-infra.git
+    repoURL: git@github.com:aminrj.com/homelab-terraform-gitops-infra.git
     targetRevision: main
     path: argocd/
   destination:
