@@ -12,6 +12,7 @@ resource "helm_release" "metallb" {
 resource "terraform_data" "metallb_configs" {
   depends_on = [helm_release.metallb]
   input      = file("${path.module}/metallb-config.yaml")
+
   provisioner "local-exec" {
     command     = "echo '${self.input}' | kubectl apply -f -"
     interpreter = ["/bin/bash", "-c"]
