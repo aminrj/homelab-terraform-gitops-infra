@@ -6,7 +6,6 @@ metadata:
 spec:
   project: default
   source:
-    # repoURL: https://github.com/aminrj/my-nextjs-app # not the source code
     repoURL: https://github.com/aminrj/homelab-terraform-gitops-infra # but the gitops repo
     targetRevision: main
     path: apps/nextjs-app/dev # Path to the app in the GitOps repo
