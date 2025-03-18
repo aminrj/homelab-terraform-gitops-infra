@@ -1,0 +1,32 @@
+prometheus:
+  retention: "10d"
+  prometheusSpec:
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: "longhorn"
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 5Gi  # Adjust size as needed
+
+grafana:
+  adminPassword: "mysecurepassword" #tmp password
+  service:
+    type: LoadBalancer
+  persistence:
+    enabled: true
+    size: 5Gi  # Adjust size for Grafana data
+    storageClassName: "longhorn"
+    accessModes: ["ReadWriteOnce"]
+
+alertmanager:
+  alertmanagerSpec:
+    storage:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: "longhorn"
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 5Gi  # Alertmanager storage

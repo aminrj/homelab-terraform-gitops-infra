@@ -21,3 +21,11 @@ module "external-dns" {
 module "cert-manager" {
   source            = "../../modules/cert-manager"
 }
+
+module "prometheus-stack" {
+  source            = "../../modules/kube-prometheus-stack"
+}
+
+module "longhorn" {
+  source            = "../../modules/longhorn"
+}
