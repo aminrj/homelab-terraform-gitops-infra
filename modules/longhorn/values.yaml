@@ -1,0 +1,10 @@
+defaultSettings:
+  defaultDataPath: "/mnt/longhorn"
+  defaultReplicaCount: 2
+
+service:
+  ui:
+    type: LoadBalancer
+csi:
+  kubeletRootDir: "/var/snap/microk8s/common/var/lib/kubelet"
+
