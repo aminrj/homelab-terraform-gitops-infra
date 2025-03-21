@@ -5,6 +5,7 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
     cert-manager.io/cluster-issuer: "letsencrypt-staging" # Use if Cert-Manager is installed
+    external-dns.alpha.kubernetes.io/target: "90.129.240.5" # Replace with your public IP
 spec:
   ingressClassName: nginx
   tls:
