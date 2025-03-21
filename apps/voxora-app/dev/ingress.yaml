@@ -4,15 +4,15 @@ metadata:
   name: voxora-ingress
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
-    cert-manager.io/cluster-issuer: "letsencrypt-prod" # Use if Cert-Manager is installed
+    cert-manager.io/cluster-issuer: "letsencrypt-staging" # Use if Cert-Manager is installed
 spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - voxora.yourdomain.com
+        - voxora.dev.aminrj.com
       secretName: voxora-tls # Stores the TLS certificate
   rules:
-    - host: voxora.yourdomain.com
+    - host: voxora.dev.aminrj.com
       http:
         paths:
           - path: /
