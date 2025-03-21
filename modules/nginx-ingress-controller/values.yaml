@@ -3,4 +3,5 @@ controller:
     external:
       enabled: true
       type: LoadBalancer
-      loadBalancerIP: 10.0.30.200      # <- Internal IP via MetalLB
+      externalIPs:
+        - 90.129.240.5
