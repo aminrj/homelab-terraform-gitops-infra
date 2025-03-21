@@ -12,3 +12,12 @@ resource "helm_release" "cert_manager" {
       value = "true"
     }
 }
+
+
+resource "kubernetes_manifest" "letsencrypt_staging" {
+  manifest = yamldecode(file("${path.module}/issuers/letsencrypt-staging.yaml"))
+}
+
+resource "kubernetes_manifest" "letsencrypt_prod" {
+  manifest = yamldecode(file("${path.module}/issuers/letsencrypt-prod.yaml"))
+}
