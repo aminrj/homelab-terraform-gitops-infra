@@ -7,44 +7,24 @@ resource "helm_release" "external-dns" {
 
   create_namespace = true
 
+  depends_on = [kubernetes_secret.cloudflare_api_token]
+
+  values = [file("${path.module}/values.yaml")]
+  
   wait       = false
 
-
-  set {
-    name  = "extraEnv[0].name"
-    value = "CF_API_TOKEN"
-  }
-
-  set {
-    name  = "extraEnv[0].valueFrom.secretKeyRef.name"
-    value = "cloudflare-api-token-secret"
-  }
-
-  set {
-    name  = "extraEnv[0].valueFrom.secretKeyRef.key"
-    value = "CF_API_TOKEN"
-  }
-
-  set {
-    name  = "provider"
-    value = "cloudflare"
-  }
-
-  set {
-    name  = "cloudflare.apiToken"
-    value = var.cloudflare_api_token
-  }
 }
 
 resource "kubernetes_secret" "cloudflare_api_token" {
   metadata {
-    name      = "cloudflare-api-token-secret"
+    name      = "cloudflare-api-key"
     namespace = "external-dns"
   }
 
   data = {
-    CF_API_TOKEN = var.cloudflare_api_token
+    apiKey = var.cloudflare_api_token
   }
 
   type = "Opaque"
 }
+
