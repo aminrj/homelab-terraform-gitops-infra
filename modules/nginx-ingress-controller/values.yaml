@@ -1,3 +1,6 @@
-# values.yaml
-ip_address: 10.0.30.200
-metrics_enabled: true
+controller:
+  service:
+    external:
+      enabled: true
+      type: LoadBalancer
+      loadBalancerIP: 10.0.30.200      # <- Internal IP via MetalLB
