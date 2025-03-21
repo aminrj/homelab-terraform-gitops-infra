@@ -1,11 +1,22 @@
+# pv-claim.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: voxora-db-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+# deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: voxora
-  labels:
-    app: voxora
 spec:
-  replicas: 2
+  replicas: 4
   selector:
     matchLabels:
       app: voxora
@@ -16,14 +27,16 @@ spec:
     spec:
       containers:
         - name: voxora
-          image: your-registry/voxora-app:latest # Change this to your container registry
+          image: secdevopsjourney/voxora-app:latest
           ports:
             - containerPort: 3000
           env:
             - name: NODE_ENV
-              value: "production"
+              value: "dev"
             - name: PORT
               value: "3000"
+            - name: SQLITE_DB_PATH
+              value: "/data/voxora_dev.db"
           resources:
             requests:
               memory: "256Mi"
@@ -43,4 +56,12 @@ spec:
               port: 3000
             initialDelaySeconds: 10
             periodSeconds: 15
+          volumeMounts:
+            - name: voxora-db
+              mountPath: /data
+      volumes:
+        - name: voxora-db
+          persistentVolumeClaim:
+            claimName: voxora-db-pvc
+
 

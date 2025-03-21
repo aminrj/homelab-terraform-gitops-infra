@@ -7,3 +7,4 @@ terraform.tfstate
 environments/dev/terraform.tfstate.1741669873.backup
 environments/dev/terraform.tfstate.backup
 .terraform/providers/registry.terraform.io/gavinbunney/kubectl/1.19.0/darwin_arm64
+modules/external-dns/terraform.tfvars
