@@ -1,25 +1,18 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: voxora-ingress
+  name: voxora-acme
   namespace: voxora-app-dev
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
     cert-manager.io/cluster-issuer: "letsencrypt-staging"
-    external-dns.alpha.kubernetes.io/target: "90.129.240.5"
 spec:
   ingressClassName: nginx
-  tls:
-    - hosts:
-        - voxora.dev.aminrj.com
-      secretName: voxora-tls
   rules:
     - host: voxora.dev.aminrj.com
       http:
         paths:
-          - path: /
-            pathType: Prefix
+          - path: /.well-known/acme-challenge/
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: voxora-service
