@@ -21,7 +21,7 @@ spec:
             claimName: voxora-data-pvc
       initContainers:
         - name: init-db
-          image: secdevopsjourney/voxora-app:latest  # same image used for app
+          image: secdevopsjourney/voxora-app:20250322225605
           command: ["node", "scripts/init_db.js"]  # transpile init_db.ts or prebuild it
           volumeMounts:
             - name: voxora-data
@@ -31,7 +31,7 @@ spec:
               value: "/data/voxora_dev.db"
       containers:
         - name: voxora
-          image: secdevopsjourney/voxora-app:latest
+          image: secdevopsjourney/voxora-app:20250322225605
           ports:
             - containerPort: 3000
           env:
@@ -79,7 +79,7 @@ spec:
 #     spec:
 #       containers:
 #         - name: voxora
-#           image: secdevopsjourney/voxora-app:latest
+#           image: secdevopsjourney/voxora-app:20250322225605
 #           ports:
 #             - containerPort: 3000
 #           env:
