@@ -5,4 +5,5 @@ resources:
   - ingress.yaml
   - namespace.yaml
   - pvc.yaml
+  - acme-ingress.yaml
 
