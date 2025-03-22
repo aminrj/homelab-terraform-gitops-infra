@@ -9,4 +9,6 @@ spec:
   resources:
     requests:
       storage: 1Gi
-  storageClassName: longhorn  # adjust as per your cluster
+  storageClassName: longhorn
+
+

@@ -21,14 +21,16 @@ spec:
             claimName: voxora-data-pvc
       initContainers:
         - name: init-db
-          image: secdevopsjourney/voxora-app:latest  # same image used for app
-          command: ["node", "scripts/init_db.js"]  # transpile init_db.ts or prebuild it
+          image: secdevopsjourney/voxora-app:latest
+          command: ["node", "scripts/init_db"]
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: SQLITE_DB_PATH
+              value: "/data/voxora_dev.db"
           volumeMounts:
             - name: voxora-data
               mountPath: /data
-          env:
-            - name: SQLITE_DB_PATH
-              value: "/data/voxora_dev.db"
       containers:
         - name: voxora
           image: secdevopsjourney/voxora-app:latest
@@ -49,92 +51,4 @@ spec:
           volumeMounts:
             - name: voxora-data
               mountPath: /data
-
-# # pv-claim.yaml
-# apiVersion: v1
-# kind: PersistentVolumeClaim
-# metadata:
-#   name: voxora-db-pvc
-# spec:
-#   accessModes:
-#     - ReadWriteOnce
-#   resources:
-#     requests:
-#       storage: 1Gi
-# ---
-# # deployment.yaml
-# apiVersion: apps/v1
-# kind: Deployment
-# metadata:
-#   name: voxora
-# spec:
-#   replicas: 2
-#   selector:
-#     matchLabels:
-#       app: voxora
-#   template:
-#     metadata:
-#       labels:
-#         app: voxora
-#     spec:
-#       containers:
-#         - name: voxora
-#           image: secdevopsjourney/voxora-app:latest
-#           ports:
-#             - containerPort: 3000
-#           env:
-#             - name: NODE_ENV
-#               value: "dev"
-#             - name: PORT
-#               value: "3000"
-#             - name: SQLITE_DB_PATH
-#               value: "/data/voxora_dev.db"
-#           resources:
-#             requests:
-#               memory: "256Mi"
-#               cpu: "250m"
-#             limits:
-#               memory: "512Mi"
-#               cpu: "500m"
-#           readinessProbe:
-#             httpGet:
-#               path: /
-#               port: 3000
-#             initialDelaySeconds: 5
-#             periodSeconds: 10
-#           livenessProbe:
-#             httpGet:
-#               path: /
-#               port: 3000
-#             initialDelaySeconds: 10
-#             periodSeconds: 15
-#           volumeMounts:
-#             - name: voxora-db
-#               mountPath: /data
-#       volumes:
-#         - name: voxora-db
-#           persistentVolumeClaim:
-#             claimName: voxora-db-pvc
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
