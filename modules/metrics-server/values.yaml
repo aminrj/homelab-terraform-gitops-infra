@@ -1,0 +1,22 @@
+hostNetwork:
+  enabled: true
+
+args:
+  - --kubelet-insecure-tls
+
+# Optional: set resource requests/limits
+resources:
+  requests:
+    cpu: 100m
+    memory: 200Mi
+  limits:
+    cpu: 200m
+    memory: 300Mi
+
+# Optional: enable metrics if you want to expose them to Prometheus
+metrics:
+  enabled: true
+
+# Optional: enable for Prometheus scraping (only if metrics.enabled: true)
+serviceMonitor:
+  enabled: true

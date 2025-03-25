@@ -12,10 +12,10 @@ spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - voxora.dev.aminrj.com
+        - voxora.dev.lab.aminrj.com
       secretName: voxora-tls
   rules:
-    - host: voxora.dev.aminrj.com
+    - host: voxora.dev.lab.aminrj.com
       http:
         paths:
           - path: /

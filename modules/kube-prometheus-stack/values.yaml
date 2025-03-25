@@ -1,5 +1,6 @@
 prometheus:
-  retention: "10d"
+  retention: "5d"
+  walCompression: true
   prometheusSpec:
     storageSpec:
       volumeClaimTemplate:
@@ -8,7 +9,7 @@ prometheus:
           accessModes: ["ReadWriteOnce"]
           resources:
             requests:
-              storage: 5Gi  # Adjust size as needed
+              storage: 10Gi  # Adjust size as needed
 
 grafana:
   adminPassword: "mysecurepassword" #tmp password
@@ -16,7 +17,7 @@ grafana:
     type: LoadBalancer
   persistence:
     enabled: true
-    size: 5Gi  # Adjust size for Grafana data
+    size: 10Gi  # Adjust size for Grafana data
     storageClassName: "longhorn"
     accessModes: ["ReadWriteOnce"]
 
@@ -29,4 +30,4 @@ alertmanager:
           accessModes: ["ReadWriteOnce"]
           resources:
             requests:
-              storage: 5Gi  # Alertmanager storage
+              storage: 10Gi  # Alertmanager storage

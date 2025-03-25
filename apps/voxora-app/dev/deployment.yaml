@@ -19,10 +19,13 @@ spec:
         - name: voxora-data
           persistentVolumeClaim:
             claimName: voxora-data-pvc
+      securityContext:
+        fsGroup: 1001  # Ensure nextjs user can write to mounted volume
       initContainers:
         - name: init-db
           image: secdevopsjourney/voxora-app:latest
-          command: ["node", "scripts/init_db"]
+          # command: ["node", "scripts/init_db.js"]
+          command: ["node", "scripts-build/init_db.js"]
           env:
             - name: NODE_ENV
               value: "production"
@@ -51,4 +54,3 @@ spec:
           volumeMounts:
             - name: voxora-data
               mountPath: /data
-
