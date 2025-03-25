@@ -8,7 +8,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: voxora.dev.lab.aminrj.com
+    - host: voxora.dev.aminrj.com
       http:
         paths:
           - path: /.well-known/acme-challenge/
