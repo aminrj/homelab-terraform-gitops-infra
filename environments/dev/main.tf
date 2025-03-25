@@ -31,3 +31,7 @@ module "prometheus-stack" {
 module "longhorn" {
   source            = "../../modules/longhorn"
 }
+
+# module "metrics_server" {
+#   source = "../../modules/metrics-server"
+# }
