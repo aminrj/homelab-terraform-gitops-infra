@@ -1,5 +1,7 @@
 controller:
   service:
+    annotations:
+      metallb.universe.tf/address-pool: "none"
     enabled: true
     type: LoadBalancer
     externalIPs:
