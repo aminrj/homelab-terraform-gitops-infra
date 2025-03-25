@@ -7,7 +7,8 @@ metadata:
     nginx.ingress.kubernetes.io/rewrite-target: /
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     cert-manager.io/cluster-issuer: "letsencrypt-staging"
-    # external-dns.alpha.kubernetes.io/target: "90.129.240.5"
+    # Overrides the IP that external-dns will publish
+    external-dns.alpha.kubernetes.io/target: "90.129.244.3"
 spec:
   ingressClassName: nginx
   tls:
