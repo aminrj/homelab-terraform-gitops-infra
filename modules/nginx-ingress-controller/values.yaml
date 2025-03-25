@@ -1,7 +1,6 @@
 controller:
   service:
-    external:
-      enabled: true
-      type: LoadBalancer
-      externalIPs:
-        - 90.129.240.5
+    enabled: true
+    type: LoadBalancer
+    externalIPs:
+      - 90.129.240.5
