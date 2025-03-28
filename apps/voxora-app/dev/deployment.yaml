@@ -23,7 +23,7 @@ spec:
         fsGroup: 1001  # Ensure nextjs user can write to mounted volume
       initContainers:
         - name: init-db
-          image: secdevopsjourney/voxora-app:latest
+          image: secdevopsjourney/voxora-app:20250328094428
           # command: ["node", "scripts/init_db.js"]
           command: ["node", "scripts-build/init_db.js"]
           env:
@@ -36,7 +36,7 @@ spec:
               mountPath: /data
       containers:
         - name: voxora
-          image: secdevopsjourney/voxora-app:latest
+          image: secdevopsjourney/voxora-app:20250328094428
           ports:
             - containerPort: 3000
           env:
