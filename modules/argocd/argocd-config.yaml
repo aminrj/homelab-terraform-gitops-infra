@@ -10,7 +10,8 @@ spec:
     targetRevision: main
     path: argocd/
   destination:
-    server: https://kubernetes.default.svc
+    # server: https://kubernetes.default.svc
+    server: "${TARGET_SERVER}"
     namespace: argocd
   syncPolicy:
     automated:
