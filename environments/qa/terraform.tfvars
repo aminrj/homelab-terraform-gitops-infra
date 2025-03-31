@@ -1,0 +1,7 @@
+argocd_namespace = "argocd"
+# kubeconfig = "~/.kube/config"
+kubeconfig = "~/.kube/microk8s-config"
+kube_context = "microk8s"
+cloudflare_api_token = ""
+target_cluster_server = "https://kubernetes.default.svc"
+metallb_address_range = "10.0.30.200-10.0.30.220"

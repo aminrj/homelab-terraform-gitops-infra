@@ -15,3 +15,8 @@ variable "values_yaml" {
   type        = string
   default     = ""
 }
+
+variable "kubeconfig" {
+  type        = string
+  description = "Path to the kubeconfig file"
+}

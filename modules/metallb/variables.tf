@@ -1,7 +1,6 @@
-variable "argocd_namespace" {
-  description = "Namespace for ArgoCD"
+variable "metallb_address_range" {
+  description = "Address range to use for MetalLB IP pool"
   type        = string
-  default     = "argocd"
 }
 
 variable "kubeconfig" {

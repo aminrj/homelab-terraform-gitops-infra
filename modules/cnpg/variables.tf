@@ -18,5 +18,7 @@ variable "chart_version" {
   description = "CloudNativePG Helm chart version"
 }
 
-
-
+variable "kubeconfig" {
+  type        = string
+  description = "Path to the kubeconfig file"
+}

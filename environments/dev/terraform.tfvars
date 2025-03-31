@@ -1,2 +1,5 @@
 argocd_namespace = "argocd"
-
+kubeconfig = "~/.kube/config"
+kube_context = "rancher-desktop"
+target_cluster_server = "https://kubernetes.default.svc"
+metallb_address_range = "192.168.5.240-192.168.5.250"

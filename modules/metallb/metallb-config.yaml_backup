@@ -1,0 +1,39 @@
+# metallb-config.yaml
+# ---
+# apiVersion: metallb.io/v1beta1
+# kind: IPAddressPool
+# metadata:
+#   name: lb-addresses
+#   namespace: metallb-system
+# spec:
+#   addresses:
+#     - 10.0.30.200-10.0.30.220
+# ---
+# apiVersion: metallb.io/v1beta1
+# kind: L2Advertisement
+# metadata:
+#   name: lb-addresses
+#   namespace: metallb-system
+# spec:
+#   ipAddressPools:
+#     - lb-addresses
+#
+
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: lb-addresses
+  namespace: metallb-system
+spec:
+  addresses:
+    # - ${metallb_address_range}
+    - var.metallb_address_range
+---
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: lb-addresses
+  namespace: metallb-system
+spec:
+  ipAddressPools:
+    - lb-addresses

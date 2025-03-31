@@ -3,3 +3,8 @@ variable "cloudflare_api_token" {
   type        = string
   sensitive   = true
 }
+
+variable "kubeconfig" {
+  type        = string
+  description = "Path to the kubeconfig file"
+}
