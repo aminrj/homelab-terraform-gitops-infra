@@ -15,12 +15,6 @@ terraform {
   }
 }
 
-provider "helm" {
-  kubernetes {
-    config_path = var.kubeconfig
-  }
-}
-
 resource "kubernetes_namespace" "cnpg" {
   metadata {
     name = var.namespace
@@ -28,31 +22,37 @@ resource "kubernetes_namespace" "cnpg" {
 }
 
 resource "kubernetes_storage_class" "cnpg_longhorn" {
+  count = var.use_longhorn_storage ? 1 : 0
+
   metadata {
-    name = "${var.namespace}-longhorn"
+    name = "cnpg-longhorn"
   }
 
-  provisioner = "driver.longhorn.io"
+  storage_provisioner = "driver.longhorn.io"
 
   parameters = {
-    numberOfReplicas = "1"
-    staleReplicaTimeout = "30"
+    numberOfReplicas      = "1"
+    staleReplicaTimeout   = "30"
   }
 
-  reclaim_policy        = "Retain"
-  volume_binding_mode   = "WaitForFirstConsumer"
-  allow_volume_expansion = true
+  reclaim_policy          = "Retain"
+  volume_binding_mode     = "WaitForFirstConsumer"
+  allow_volume_expansion  = true
 }
 
-resource "helm_release" "cloudnativepg" {
-  name             = var.release_name
+resource "helm_release" "cnpg_operator" {
+  name             = "cloudnative-pg"
   namespace        = var.namespace
   repository       = "https://cloudnative-pg.github.io/charts"
   chart            = "cloudnative-pg"
-  version          = var.chart_version
-  create_namespace = false # we already created it
+  version          = "0.23.2"
+  create_namespace = false
 
-  values = [file("${path.module}/values.yaml")]
+  values = [
+    templatefile("${path.module}/values.yaml.tpl", {
+      storage_class_name = var.use_longhorn_storage ? "cnpg-longhorn" : ""
+    })
+  ]
 }
 
 

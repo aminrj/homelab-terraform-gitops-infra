@@ -31,3 +31,55 @@ variable "kube_context" {
   type        = string
   description = "The kube context name to use"
 }
+
+
+# Cnpg Operator variables
+variable "use_longhorn_storage" {
+  description = "Use longhorn as storage for qa?"
+  type        = bool
+  default     = true
+}
+
+# CNPG cluster variables
+
+variable "pg_cluster_name" {
+  description = "Postgres cluster name"
+  type        = string
+  default     = "pg-qa"
+}
+
+variable "pg_instance_count" {
+  description = "Number of postgres instances"
+  type        = number
+  default     = 2
+}
+
+variable "pg_storage_class" {
+  description = "Storage class to use for qa cluster"
+  type        = string
+  default     = "cnpg-longhorn"
+}
+
+variable "pg_storage_size" {
+  description = "Postgres data size"
+  type        = string
+  default     = "20Gi"
+}
+
+variable "pg_superuser_secret" {
+  description = "Secret name for postgres superuser"
+  type        = string
+  default     = "pg-superuser-qa"
+}
+
+variable "pg_app_secret" {
+  description = "Secret name for postgres app user"
+  type        = string
+  default     = "pg-app-qa"
+}
+
+variable "pg_monitoring_enabled" {
+  description = "Enable monitoring (PodMonitor)"
+  type        = bool
+  default     = true
+}

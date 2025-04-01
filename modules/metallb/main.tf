@@ -8,7 +8,6 @@ resource "helm_release" "metallb" {
   create_namespace = true
 }
 
-
 resource "terraform_data" "metallb_configs" {
 
   input = templatefile("${path.module}/metallb-config.yaml.tpl", {

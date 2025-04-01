@@ -20,3 +20,8 @@ variable "kubeconfig" {
   type        = string
   description = "Path to the kubeconfig file"
 }
+
+variable "storage_class" {
+  description = "The storage class to use for Prometheus, Grafana, and Alertmanager PVCs"
+  type        = string
+}
