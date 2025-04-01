@@ -23,3 +23,5 @@ monitoring:
   prometheusRuleEnabled: true
   grafanaDashboard:
     create: true
+    labels:
+      grafana_dashboard: "1"
