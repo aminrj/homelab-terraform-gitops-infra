@@ -2,14 +2,17 @@
 # Install Kube-promethues-stack
 resource "helm_release" "kube-promethues-stack" {
   name       = "kube-promethues-stack"
-  namespace  = "monitoring"
+  namespace  = var.namespace
   chart      = "kube-prometheus-stack"
   repository = "https://prometheus-community.github.io/helm-charts"
-  version    = "70.0.2"
+  version    = var.helm_chart_version
 
   create_namespace = true
+  wait = false
 
-  values = [file("${path.module}/values.yaml")]
- 
-  wait    = false
+  values = [
+    templatefile("${path.module}/values.yaml.tpl", {
+      storage_class = var.storage_class
+    })
+  ]
 }

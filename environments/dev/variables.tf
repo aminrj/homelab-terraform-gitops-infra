@@ -26,13 +26,91 @@ variable "kubeconfig" {
   description = "Path to the kubeconfig file"
 }
 
-variable "kube_context" {
-  type        = string
-  description = "The kube context name to use"
-}
-
 variable "target_cluster_server" {
   description = "The target Kubernetes API server for ArgoCD Application destination"
   type        = string
 }
+
+variable "kube_context" {
+  description = "Kubernetes context"
+  type        = string
+}
+
+# Operator variables
+variable "use_longhorn_storage" {
+  description = "Use longhorn as storage for dev?"
+  type        = bool
+  default     = false
+}
+
+# CNPG cluster variables
+
+variable "pg_cluster_name" {
+  description = "Postgres cluster name"
+  type        = string
+  default     = "pg-dev"
+}
+
+variable "pg_instance_count" {
+  description = "Number of postgres instances"
+  type        = number
+  default     = 1
+}
+
+variable "pg_storage_class" {
+  description = "Storage class to use for dev cluster"
+  type        = string
+  default     = "local-path"
+}
+
+variable "pg_storage_size" {
+  description = "Postgres data size"
+  type        = string
+  default     = "5Gi"
+}
+
+variable "pg_superuser_secret" {
+  description = "Secret name for postgres superuser"
+  type        = string
+  default     = "pg-superuser-dev"
+}
+
+variable "pg_app_secret" {
+  description = "Secret name for postgres app user"
+  type        = string
+  default     = "pg-app-dev"
+}
+
+variable "pg_monitoring_enabled" {
+  description = "Enable monitoring (PodMonitor)"
+  type        = bool
+  default     = true
+}
+
+variable "storage_class" {
+  description = "Storage class to use for workloads"
+  type        = string
+}
+
+
+
+
+
+# variable "default_data_path" {
+#   type = string
+# }
+#
+# variable "default_replica_count" {
+#   type    = number
+#   default = 2
+# }
+#
+# variable "kubelet_root_dir" {
+#   type = string
+# }
+#
+# variable "ui_service_type" {
+#   type    = string
+#   default = "LoadBalancer"
+# }
 

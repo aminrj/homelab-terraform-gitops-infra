@@ -44,39 +44,29 @@ module "argocd" {
   }
 }
 
-
-module "metallb" {
-  source            = "../../modules/metallb"
+module "prometheus-stack" {
+  source            = "../../modules/kube-prometheus-stack"
   kubeconfig  = var.kubeconfig
-  metallb_address_range = var.metallb_address_range
+  storage_class = var.storage_class
 }
 
-# module "nginx-ingress-controller" {
-#   source            = "../../modules/nginx-ingress-controller"
-#   kubeconfig  = var.kubeconfig
-# }
-#
-# module "prometheus-stack" {
-#   source            = "../../modules/kube-prometheus-stack"
-#   kubeconfig  = var.kubeconfig
-# }
-#
-# module "longhorn" {
-#   source            = "../../modules/longhorn"
-#   kubeconfig  = var.kubeconfig
-# }
-#
+module "cnpg_operator" {
+  source = "../../modules/cnpg-operator"
+  use_longhorn_storage = false
+  namespace = "cnpg-dev"
+  kubeconfig  = var.kubeconfig
+}
 
-#
-# # module "external-dns" {
-# #   source            = "../../modules/external-dns"
-# #   kubeconfig  = var.kubeconfig
-# #
-# #   cloudflare_api_token = var.cloudflare_api_token
-# # }
-#
-# # module "cert-manager" {
-# #   source            = "../../modules/cert-manager"
-# #   kubeconfig  = var.kubeconfig
-# # }
-#
+module "cnpg_cluster" {
+  source = "../../modules/cnpg-cluster"
+
+  namespace             = "cnpg-dev"
+  pg_cluster_name       = "pg-dev"
+  pg_instance_count     = 1
+  pg_storage_class      = "local-path"
+  pg_storage_size       = "5Gi"
+  pg_superuser_secret   = "pg-superuser-dev"
+  pg_app_secret         = "pg-app-dev"
+  pg_monitoring_enabled = true
+}
+
