@@ -19,6 +19,10 @@ spec:
 
   monitoring:
     enablePodMonitor: ${pg_monitoring_enabled}
+    grafanaDashboard:
+      create: true
+      labels:
+        grafana_dashboard: "1"
 
   bootstrap:
     initdb:
