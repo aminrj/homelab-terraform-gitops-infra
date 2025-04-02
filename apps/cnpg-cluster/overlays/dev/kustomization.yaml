@@ -1,0 +1,11 @@
+resources:
+  - ../../base
+
+patches:
+  - target:
+      kind: Secret
+      name: commafeed-db-secret
+    patch: |-
+      - op: replace
+        path: /stringData/password
+        value: commafeed-dev-secret
