@@ -17,10 +17,11 @@ resource "helm_release" "longhorn" {
   name       = "longhorn"
   chart      = "longhorn"
   repository = "https://charts.longhorn.io"
-  version    = "1.5.1"
+  version    = "1.8.1"
   namespace  = "longhorn-system"
 
   create_namespace = true
+  wait             = false
 
   values = [
     templatefile("${path.module}/values.yaml.tpl", {

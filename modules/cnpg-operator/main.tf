@@ -46,11 +46,12 @@ resource "helm_release" "cnpg_operator" {
   repository       = "https://cloudnative-pg.github.io/charts"
   chart            = "cloudnative-pg"
   version          = "0.23.2"
-  create_namespace = false
+  create_namespace = true
 
   values = [
     templatefile("${path.module}/values.yaml.tpl", {
       storage_class_name = var.use_longhorn_storage ? "cnpg-longhorn" : ""
+      enable_crds        = true
     })
   ]
 }
