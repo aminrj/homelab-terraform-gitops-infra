@@ -1,0 +1,4 @@
+resources:
+  - commafeed-db-job.yaml
+  - commafeed-db-secret.yaml
+  - cnpg-superuser-secret.yaml
