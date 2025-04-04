@@ -1,0 +1,5 @@
+# kustomization.yaml
+resources:
+  - deployment.yaml
+  - service.yaml
+  - secret.yaml

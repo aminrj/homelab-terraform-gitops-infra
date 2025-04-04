@@ -1,0 +1,14 @@
+# service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: commafeed
+  namespace: cnpg-dev
+spec:
+  selector:
+    app: commafeed
+  ports:
+    - port: 80
+      targetPort: 8082
+      protocol: TCP
+  type: ClusterIP
