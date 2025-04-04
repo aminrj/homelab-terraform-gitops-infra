@@ -1,0 +1,39 @@
+# deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: commafeed
+  namespace: cnpg-dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: commafeed
+  template:
+    metadata:
+      labels:
+        app: commafeed
+    spec:
+      containers:
+        - name: commafeed
+          image: athou/commafeed:latest-postgresql
+          ports:
+            - containerPort: 8082
+          env:
+            - name: QUARKUS_DATASOURCE_JDBC_URL
+              value: jdbc:postgresql://pg-dev-rw.cnpg-dev.svc.cluster.local:5432/commafeed
+            - name: QUARKUS_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: commafeed-db-secret
+                  key: username
+            - name: QUARKUS_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: commafeed-db-secret
+                  key: password
+            - name: QUARKUS_HTTP_PORT
+              value: "8082"
+            - name: QUARKUS_HTTP_HOST
+              value: "0.0.0.0"
+
