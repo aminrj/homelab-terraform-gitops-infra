@@ -11,3 +11,11 @@ patches:
       - op: replace
         path: /stringData/password
         value: commafeed-dev-secret
+
+  - target:
+      kind: Secret
+      name: cnpg-superuser-secret
+    patch: |-
+      - op: replace
+        path: /stringData/password
+        value: pg-superuser-dev

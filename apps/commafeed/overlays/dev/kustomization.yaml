@@ -1,6 +1,7 @@
 resources:
   - ../../base
   - commafeed-db-secret.yaml
+  - bootstrap-job.yaml
 
 namespace: cnpg-dev
 

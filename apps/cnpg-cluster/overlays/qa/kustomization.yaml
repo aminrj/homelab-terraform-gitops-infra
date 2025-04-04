@@ -1,5 +1,8 @@
+namespace: cnpg-qa
+
 resources:
-  - ../../base/commafeed-db
+  - ../../base
+
 patches:
   - target:
       kind: Secret
@@ -8,3 +11,11 @@ patches:
       - op: replace
         path: /stringData/password
         value: commafeed-qa-password
+
+  - target:
+      kind: Secret
+      name: cnpg-superuser-secret
+    patch: |-
+      - op: replace
+        path: /stringData/password
+        value: pg-superuser-qa
