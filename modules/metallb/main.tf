@@ -10,6 +10,10 @@ resource "helm_release" "metallb" {
 
 resource "terraform_data" "metallb_configs" {
 
+  depends_on = [
+    helm_release.metallb
+  ]
+
   input = templatefile("${path.module}/metallb-config.yaml.tpl", {
     address_range = var.metallb_address_range
   })
@@ -18,5 +22,6 @@ resource "terraform_data" "metallb_configs" {
     command     = "echo '${self.input}' | kubectl apply -f -"
     interpreter = ["/bin/bash", "-c"]
   }
+
 }
 
