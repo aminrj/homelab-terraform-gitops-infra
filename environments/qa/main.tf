@@ -35,11 +35,11 @@ module "external-dns" {
   cloudflare_api_token = var.cloudflare_api_token
 }
 
-# module "cert-manager" {
-#   source            = "../../modules/cert-manager"
-#   kubeconfig  = var.kubeconfig
-# }
-#
+module "cert-manager" {
+  source            = "../../modules/cert-manager"
+  kubeconfig  = var.kubeconfig
+}
+
 # module "prometheus-stack" {
 #   source            = "../../modules/kube-prometheus-stack"
 #   kubeconfig  = var.kubeconfig
