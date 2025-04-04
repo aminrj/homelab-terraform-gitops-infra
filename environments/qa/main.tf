@@ -61,7 +61,7 @@ module "cnpg_cluster" {
   pg_instance_count     = 1
   pg_storage_class      = "longhorn"
   pg_storage_size       = "50Gi"
-  pg_superuser_secret   = "pg-superuser-qa"
+  pg_superuser_secret   = "cnpg-superuser-secret"
   pg_app_secret         = "pg-app-qa"
   pg_monitoring_enabled = true
 }
