@@ -46,23 +46,23 @@ module "prometheus-stack" {
   storage_class = var.storage_class
 }
 
-# module "cnpg_operator" {
-#   source = "../../modules/cnpg-operator"
-#   use_longhorn_storage = true
-#   namespace = "cnpg-qa"
-#   kubeconfig  = var.kubeconfig
-# }
-#
-# module "cnpg_cluster" {
-#   source = "../../modules/cnpg-cluster"
-#
-#   namespace             = "cnpg-qa"
-#   pg_cluster_name       = "pg-qa"
-#   pg_instance_count     = 1
-#   pg_storage_class      = "longhorn"
-#   pg_storage_size       = "50Gi"
-#   pg_superuser_secret   = "pg-superuser-qa"
-#   pg_app_secret         = "pg-app-qa"
-#   pg_monitoring_enabled = true
-# }
+module "cnpg_operator" {
+  source = "../../modules/cnpg-operator"
+  use_longhorn_storage = true
+  namespace = "cnpg-qa"
+  kubeconfig  = var.kubeconfig
+}
+
+module "cnpg_cluster" {
+  source = "../../modules/cnpg-cluster"
+
+  namespace             = "cnpg-qa"
+  pg_cluster_name       = "pg-qa"
+  pg_instance_count     = 1
+  pg_storage_class      = "longhorn"
+  pg_storage_size       = "50Gi"
+  pg_superuser_secret   = "pg-superuser-qa"
+  pg_app_secret         = "pg-app-qa"
+  pg_monitoring_enabled = true
+}
 
