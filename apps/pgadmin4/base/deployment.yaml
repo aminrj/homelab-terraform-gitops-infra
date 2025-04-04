@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pgadmin4
+  namespace: cnpg-dev
+  labels:
+    app: pgadmin4
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pgadmin4
+  template:
+    metadata:
+      labels:
+        app: pgadmin4
+    spec:
+      securityContext:
+        fsGroup: 5050
+      containers:
+        - name: pgadmin4
+          image: dpage/pgadmin4:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+          envFrom:
+            - secretRef:
+                name: pgadmin-secret
+          env:
+            - name: PGADMIN_DISABLE_POSTFIX
+              value: "true"
+            - name: PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED
+              value: "False"
+            - name: PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION
+              value: "False"
+            - name: SECRET_KEY
+              value: "my-very-secret-stable-key-123456"  # Must be 16+ characters
+          volumeMounts:
+            - name: pgadmin-data
+              mountPath: /var/lib/pgadmin
+          securityContext:
+            runAsUser: 5050
+            runAsGroup: 5050
+            allowPrivilegeEscalation: false
+      volumes:
+        - name: pgadmin-data
+          persistentVolumeClaim:
+            claimName: pgadmin4-data
+

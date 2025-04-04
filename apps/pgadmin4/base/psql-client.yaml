@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: psql-client
+  namespace: cnpg-dev
+spec:
+  containers:
+    - name: psql
+      image: postgres:15
+      command: [ "sleep", "3600" ]
+  restartPolicy: Never
