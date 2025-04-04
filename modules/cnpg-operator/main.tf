@@ -47,6 +47,7 @@ resource "helm_release" "cnpg_operator" {
   chart            = "cloudnative-pg"
   version          = "0.23.2"
   create_namespace = true
+  wait             = true
 
   values = [
     templatefile("${path.module}/values.yaml.tpl", {

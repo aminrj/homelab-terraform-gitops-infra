@@ -1,5 +1,5 @@
 crds:
-  create: false
+  create: true
 storage:
   storageClass: "${storage_class_name}"
 

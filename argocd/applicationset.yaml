@@ -9,19 +9,19 @@ spec:
         repoURL: https://github.com/aminrj/homelab-terraform-gitops-infra.git
         revision: main
         directories:
-          - path: apps/*/* # <app-name>/<env> auto-detect all apps & env
+          - path: apps/*/overlays/* # <app-name>/overlays/<env> auto-detect all apps & env
   template:
     metadata:
-      name: '{{path[1]}}-{{path[2]}}' # example: commafeed-db-dev
+      name: '{{path[1]}}-{{path[3]}}' # example: commafeed-db-dev
     spec:
       project: default #Add project separation later as needed
       source:
         repoURL: https://github.com/aminrj/homelab-terraform-gitops-infra.git
         targetRevision: main
-        path: 'apps/{{path[1]}}/{{path[2]}}' #Example: apps/nextjs-app/dev
+        path: 'apps/{{path[1]}}/overlays/{{path[2]}}' #Example: apps/nextjs-app/dev
       destination:
         server: https://kubernetes.default.svc
-        namespace: '{{path[2]}}' # dev, qa, prod as namespace (simpler - for now)
+        namespace: '{{path[3]}}' # dev, qa, prod as namespace (simpler - for now)
       syncPolicy:
         automated:
           prune: true
