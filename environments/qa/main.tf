@@ -40,11 +40,11 @@ module "cert-manager" {
   kubeconfig  = var.kubeconfig
 }
 
-# module "prometheus-stack" {
-#   source            = "../../modules/kube-prometheus-stack"
-#   kubeconfig  = var.kubeconfig
-#   storage_class = var.storage_class
-# }
+module "prometheus-stack" {
+  source            = "../../modules/kube-prometheus-stack"
+  kubeconfig  = var.kubeconfig
+  storage_class = var.storage_class
+}
 
 # module "cnpg_operator" {
 #   source = "../../modules/cnpg-operator"
