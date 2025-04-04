@@ -1,0 +1,11 @@
+resources:
+  - ../../base
+
+patches:
+  - target:
+      kind: Secret
+      name: pgadmin-secret
+    patch: |-
+      - op: replace
+        path: /stringData/PGADMIN_DEFAULT_PASSWORD
+        value: my-dev-pgadmin-password

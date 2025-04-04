@@ -2,7 +2,6 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: commafeed-db-provision
-  namespace: cnpg
 spec:
   template:
     spec:
