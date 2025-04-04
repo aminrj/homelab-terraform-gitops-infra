@@ -21,7 +21,6 @@ module "argocd" {
 
 }
 
-
 module "longhorn" {
   source            = "../../modules/longhorn"
   kubeconfig  = var.kubeconfig
@@ -29,14 +28,12 @@ module "longhorn" {
   kubelet_root_dir = var.kubelet_root_dir
 }
 
+module "external-dns" {
+  source            = "../../modules/external-dns"
+  kubeconfig  = var.kubeconfig
 
-
-# module "external-dns" {
-#   source            = "../../modules/external-dns"
-#   kubeconfig  = var.kubeconfig
-#
-#   cloudflare_api_token = var.cloudflare_api_token
-# }
+  cloudflare_api_token = var.cloudflare_api_token
+}
 
 # module "cert-manager" {
 #   source            = "../../modules/cert-manager"
