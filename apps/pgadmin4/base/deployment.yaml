@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: pgadmin4
-  namespace: cnpg-dev
   labels:
     app: pgadmin4
 spec:
