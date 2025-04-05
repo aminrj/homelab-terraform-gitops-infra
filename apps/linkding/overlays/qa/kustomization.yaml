@@ -1,0 +1,6 @@
+namespace: cnpg-qa
+
+resources:
+  - ../../base
+  - ingress.yaml
+  - db-bootstrap-job.yaml
