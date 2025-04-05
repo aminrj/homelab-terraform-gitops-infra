@@ -3,6 +3,8 @@ kind: Ingress
 metadata:
   name: linkding
   annotations:
+    #TODO: hide the ip like a secret
+    external-dns.alpha.kubernetes.io/target: "90.129.244.3"
     nginx.ingress.kubernetes.io/rewrite-target: /$2
     cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
