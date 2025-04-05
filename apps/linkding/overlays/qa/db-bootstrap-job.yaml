@@ -1,0 +1,43 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: linkding-db-provision
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: psql
+          image: postgres:15
+          env:
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: cnpg-superuser-secret
+                  key: password
+            - name: APP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: linkding-db-secret
+                  key: password
+          command:
+            - /bin/bash
+            - -c
+            - |
+              set -e
+              echo "Creating linkding user if missing..."
+              psql -h pg-qa-rw.cnpg-qa.svc.cluster.local -U postgres -v ON_ERROR_STOP=1 -c "
+              DO \$\$
+              BEGIN
+                IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'linkding') THEN
+                  CREATE ROLE linkding LOGIN PASSWORD '${APP_PASSWORD}';
+                END IF;
+              END
+              \$\$;
+              "
+
+              echo "Creating linkding database if missing..."
+              psql -h pg-qa-rw.cnpg-qa.svc.cluster.local -U postgres -v ON_ERROR_STOP=0 -c "CREATE DATABASE linkding OWNER linkding;"
+
+              echo "Granting privileges..."
+              psql -h pg-qa-rw.cnpg-qa.svc.cluster.local -U postgres -v ON_ERROR_STOP=1 -c "GRANT ALL PRIVILEGES ON DATABASE linkding TO linkding;"
