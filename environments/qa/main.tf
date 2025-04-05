@@ -49,6 +49,7 @@ module "prometheus-stack" {
 module "cnpg_operator" {
   source = "../../modules/cnpg-operator"
   use_longhorn_storage = true
+  # TODO: Move this value to the tfvars instead
   namespace = "cnpg-qa"
   kubeconfig  = var.kubeconfig
 }
@@ -56,6 +57,7 @@ module "cnpg_operator" {
 module "cnpg_cluster" {
   source = "../../modules/cnpg-cluster"
 
+  # TODO: Move these values to the tfvars file instead
   namespace             = "cnpg-qa"
   pg_cluster_name       = "pg-qa"
   pg_instance_count     = 1
