@@ -1,0 +1,5 @@
+resources:
+  - secret.yaml
+  - deployment.yaml
+  - service.yaml
+  - bootstrap-job.yaml
