@@ -4,6 +4,7 @@ metadata:
   name: listmonk
   namespace: cnpg-qa
   annotations:
+    external-dns.alpha.kubernetes.io/target: "90.129.244.3"
     nginx.ingress.kubernetes.io/rewrite-target: /
     nginx.ingress.kubernetes.io/enable-cors: "true"
     nginx.ingress.kubernetes.io/cors-allow-origin: "https://aminrj.com"
@@ -15,7 +16,7 @@ spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - listmonk.lab.aminrj.com
+        - listmonk-qa.lab.aminrj.com
       secretName: listmonk-tls
   rules:
     - host: listmonk.lab.aminrj.com
