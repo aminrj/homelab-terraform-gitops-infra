@@ -6,6 +6,7 @@ metadata:
   name: ${pg_cluster_name}
   namespace: ${pg_namespace}
 spec:
+  enableSuperuserAccess: true
   instances: ${pg_instance_count}
 
   imageName: ghcr.io/cloudnative-pg/postgresql:15
