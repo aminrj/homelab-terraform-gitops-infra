@@ -1,0 +1,8 @@
+resources:
+  - ../../base
+  - secret.yaml
+  - ingress.yaml
+  # - db-init-job.yaml
+  # - db-provision.yaml
+
+namespace: cnpg-qa
