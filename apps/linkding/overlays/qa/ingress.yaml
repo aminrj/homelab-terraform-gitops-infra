@@ -12,7 +12,7 @@ spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - linkding.lab.aminrj.com
+        - linkding-qa.lab.aminrj.com
       secretName: linkding-tls
   rules:
     - host: linkding-qa.lab.aminrj.com
@@ -22,10 +22,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-          # - path: /()(.*)
-          #   pathType: ImplementationSpecific
-          #   backend:
-          #     service:
                 name: linkding
                 port:
                   number: 80
