@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: databases
+  namespace: argocd
+spec:
+  generators:
+    - git:
+        repoURL: https://github.com/aminrj/homelab-terraform-gitops-infra.git
+        revision: main
+        directories:
+          - path: databases/*/overlays/*
+  template:
+    metadata:
+      name: '{{path[1]}}-db-{{path[3]}}'
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/aminrj/homelab-terraform-gitops-infra.git
+        targetRevision: main
+        path: 'databases/{{path[1]}}/overlays/{{path[3]}}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{path[3]}}'  # or '{{path[1]}}-{{path[3]}}' if you want unique namespaces per app+env
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true

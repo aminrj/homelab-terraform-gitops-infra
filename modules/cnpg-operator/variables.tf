@@ -4,7 +4,6 @@ variable "kubeconfig" {
 
 variable "namespace" {
   type    = string
-  default = "cnpg"
 }
 
 variable "use_longhorn_storage" {

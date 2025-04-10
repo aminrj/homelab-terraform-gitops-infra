@@ -31,3 +31,18 @@ spec:
       owner: app
       secret:
         name: ${pg_app_secret}
+  backup:
+    barmanObjectStore:
+      destinationPath: https://hldatabasedev.blob.core.windows.net/commafeed-dev
+      azureCredentials:
+        storageAccount:
+          name: azure-creds
+          key: shared-storage-account-name
+        storageSasToken:
+          name: azure-creds
+          key: shared-blob-sas
+      wal:
+        compression: gzip
+      data:
+        compression: gzip
+    retentionPolicy: 7d
