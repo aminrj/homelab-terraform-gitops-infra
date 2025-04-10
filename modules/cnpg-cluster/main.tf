@@ -16,6 +16,11 @@ terraform {
   }
 }
 
+resource "kubernetes_namespace" "cnpg" {
+  metadata {
+    name = "cnpg-dev"
+  }
+}
 
 resource "kubectl_manifest" "cnpg_cluster" {
   yaml_body = templatefile("${path.module}/cluster.yaml.tpl", {

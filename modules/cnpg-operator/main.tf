@@ -15,12 +15,6 @@ terraform {
   }
 }
 
-resource "kubernetes_namespace" "cnpg" {
-  metadata {
-    name = var.namespace
-  }
-}
-
 resource "kubernetes_storage_class" "cnpg_longhorn" {
   count = var.use_longhorn_storage ? 1 : 0
 
@@ -42,7 +36,8 @@ resource "kubernetes_storage_class" "cnpg_longhorn" {
 
 resource "helm_release" "cnpg_operator" {
   name             = "cloudnative-pg"
-  namespace        = var.namespace
+  # namespace        = var.namespace
+  namespace        = "cnpg" #TODO change this
   repository       = "https://cloudnative-pg.github.io/charts"
   chart            = "cloudnative-pg"
   version          = "0.23.2"

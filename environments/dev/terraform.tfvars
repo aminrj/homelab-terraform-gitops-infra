@@ -11,3 +11,10 @@ use_longhorn_storage = false
 # default_data_path = "/mnt/longhorn"   # or any dev path
 # kubelet_root_dir  = "/var/lib/kubelet"
 # ui_service_type   = "ClusterIP"        # or "NodePort" if you prefer
+
+
+app_name            = "eso-dev"
+key_vault_name      = "hlab-keyvault-dev"
+location            = "swedencentral"
+resource_group_name = "homelab"
+storage_account_name= "hldatabasedev"

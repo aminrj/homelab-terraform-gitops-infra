@@ -1,0 +1,12 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: full-backup-now
+  namespace: cnpg-dev
+spec:
+  immediate: true
+  schedule: "0 3 * * *"  # also creates a daily schedule
+  backupOwnerReference: cluster
+  cluster:
+    name: commafeed-db-dev-cnpg-v1 # this should match your CNPG cluster name
+

@@ -1,0 +1,79 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: commafeed-db-dev-cnpg-v1
+spec:
+  description: Postgres cluster for the commafeed application
+  imageName: quay.io/enterprisedb/postgresql:16.1
+  instances: 1
+
+  storage:
+    size: 5Gi
+
+  monitoring:
+    enablePodMonitor: true
+
+  inheritedMetadata:
+    labels:
+      app: commafeed-database
+      policy-type: "database"
+
+  bootstrap:
+    recovery:
+      source: clusterBackup
+      database: commafeed
+      owner: commafeed
+      secret:
+        name: commafeed-db-creds
+
+  resources:
+    requests:
+      memory: 600Mi
+
+  externalClusters:
+    - name: clusterBackup
+      barmanObjectStore:
+        destinationPath: https://hldatabasedev.blob.core.windows.net/commafeed-db
+        # serverName: commafeed-db-dev-cnpg-v0
+        serverName: pg-dev
+        azureCredentials:
+          storageAccount:
+            name: azure-creds
+            key: commafeed-storage-account-name
+          storageSasToken:
+            name: azure-creds
+            key: commafeed-blob-sas
+
+  backup:
+    barmanObjectStore:
+      destinationPath: https://hldatabasedev.blob.core.windows.net/commafeed-db
+      azureCredentials:
+        storageAccount:
+          name: azure-creds
+          key: commafeed-storage-account-name
+        storageSasToken:
+          name: azure-creds
+          key: commafeed-blob-sas
+      wal:
+        compression: gzip
+      data:
+        compression: gzip
+    retentionPolicy: 14d
+
+  # managed:
+  #   services:
+  #     disabledDefaultServices:
+  #       - ro
+  #       - r
+  #     additional:
+  #       - selectorType: rw
+  #         serviceTemplate:
+  #           metadata:
+  #             name: commafeed-db-lb
+  #             labels:
+  #               cilium-lb-pool: postgres-pool
+  #             annotations:
+  #               external-dns.alpha.kubernetes.io/hostname: commafeed-db.mischavandenburg.net
+  #           spec:
+  #             type: LoadBalancer
+
