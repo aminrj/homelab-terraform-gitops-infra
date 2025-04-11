@@ -1,5 +1,6 @@
+
 output "storage_connection_string" {
-  value     = data.azurerm_storage_account.backup.primary_connection_string
+  value     = azurerm_storage_account.backup.primary_connection_string
   sensitive = true
 }
 

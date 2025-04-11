@@ -47,12 +47,26 @@ provider "azurerm" {
 
 provider "azuread" {}
 
+# Bootstrap the resource group that will hold everything
+resource "azurerm_resource_group" "main" {
+  name     = var.resource_group_name
+  location = var.location
+}
+
+module "azure_keyvault" {
+  source              = "../../modules/azure-keyvault"
+  app_name            = "eso-dev"
+  key_vault_name      = var.key_vault_name
+  location            = var.location
+  resource_group_name = azurerm_resource_group.main.name
+  storage_account_name     = var.storage_account_name 
+  # storage_connection_string= var.storage_connection_string
+}
+
 # the app-storage module will: (for commafeed app)
 # Create commafeed-db blob container
 # Generate a scoped SAS token
 # Store token and container name in Key Vault
-
-
 locals {
   apps = {
     commafeed = { container_name = "commafeed-db" }
@@ -67,16 +81,6 @@ module "app_storage" {
   storage_account_name = module.azure_keyvault.storage_account_name
   connection_string    = module.azure_keyvault.storage_connection_string
   key_vault_id         = module.azure_keyvault.key_vault_id
-}
-
-module "azure_keyvault" {
-  source              = "../../modules/azure-keyvault"
-  app_name            = "eso-dev"
-  key_vault_name      = var.key_vault_name
-  location            = var.location
-  resource_group_name = var.resource_group_name 
-  storage_account_name     = var.storage_account_name 
-  # storage_connection_string= var.storage_connection_string
 }
 
 module "commafeed_secrets" {
@@ -94,16 +98,8 @@ module "commafeed_secrets" {
   ]
 }
 
-module "argocd" {
-  source = "../../modules/argocd"
-  kubeconfig = var.kubeconfig
-  target_cluster_server = var.target_cluster_server
-
-  providers = {
-    kubernetes = kubernetes
-    helm       = helm
-    kubectl    = kubectl
-  }
+module "external_secrets" {
+  source = "../../modules/external-secrets"
 }
 
 module "prometheus-stack" {
@@ -130,5 +126,17 @@ module "cnpg_cluster" {
   pg_superuser_secret   = "pg-superuser-dev"
   pg_app_secret         = "pg-app-dev"
   pg_monitoring_enabled = true
+}
+
+module "argocd" {
+  source = "../../modules/argocd"
+  kubeconfig = var.kubeconfig
+  target_cluster_server = var.target_cluster_server
+
+  providers = {
+    kubernetes = kubernetes
+    helm       = helm
+    kubectl    = kubectl
+  }
 }
 

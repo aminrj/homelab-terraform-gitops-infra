@@ -33,7 +33,7 @@ spec:
         name: ${pg_app_secret}
   backup:
     barmanObjectStore:
-      destinationPath: https://hldatabasedev.blob.core.windows.net/commafeed-dev
+      destinationPath: https://hldatabasedev.blob.core.windows.net/cluster-dev
       azureCredentials:
         storageAccount:
           name: azure-creds
