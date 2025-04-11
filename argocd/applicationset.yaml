@@ -12,7 +12,7 @@ spec:
           - path: apps/*/overlays/* # <app-name>/overlays/<env> auto-detect all apps & env
   template:
     metadata:
-      name: '{{path[1]}}-{{path[3]}}' # example: commafeed-dev, listmonk-qa...
+      name: '{{path[1]}}-db-{{path[3]}}' # example: commafeed-dev, listmonk-qa...
     spec:
       project: default #Add project separation later as needed
       source:
