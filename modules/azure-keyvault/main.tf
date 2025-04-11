@@ -21,11 +21,6 @@ resource "azurerm_key_vault" "this" {
   enable_rbac_authorization   = true
 }
 
-resource "azurerm_role_assignment" "eso_secret_reader" {
-  principal_id         = azuread_service_principal.eso.id
-  role_definition_name = "Key Vault Secrets User"
-  scope                = azurerm_key_vault.this.id
-}
 
 resource "azurerm_storage_account" "backup" {
   name                     = var.storage_account_name
@@ -35,8 +30,17 @@ resource "azurerm_storage_account" "backup" {
   account_replication_type = "LRS"
 }
 
-data "azurerm_storage_account" "backup" {
-  name                = var.storage_account_name
-  resource_group_name = var.resource_group_name
+# External Secrets Operator app
+resource "azurerm_role_assignment" "eso_secret_reader" {
+  principal_id         = azuread_service_principal.eso.id
+  role_definition_name = "Key Vault Secrets User"
+  scope                = azurerm_key_vault.this.id
 }
 
+# Add Role Assignment for the Terraform Caller
+resource "azurerm_role_assignment" "terraform_secret_writer" {
+  principal_id         = data.azurerm_client_config.current.object_id
+  role_definition_name = "Key Vault Secrets Officer"
+  scope                = azurerm_key_vault.this.id
+}
+# Now both the ESO identity and the Terraform runner can access the vault appropriately.
