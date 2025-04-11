@@ -90,6 +90,7 @@ module "commafeed_secrets" {
 
   static_secrets = {
     "db-username" = "commafeed"
+    "db-name" = "commafeed"
   }
 
   random_secrets = [

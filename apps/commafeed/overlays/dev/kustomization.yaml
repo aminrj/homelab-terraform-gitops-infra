@@ -1,8 +1,9 @@
 resources:
   - ../../base
   - secrets.yaml
+  - namespace.yaml
 
-namespace: cnpg-dev
+namespace: commafeed-dev
 
 patches:
   - target:
@@ -11,4 +12,4 @@ patches:
     patch: |-
       - op: replace
         path: /spec/template/spec/containers/0/env/0/value
-        value: jdbc:postgresql://pg-dev-rw.cnpg-dev.svc.cluster.local:5432/commafeed
+        value: jdbc:postgresql://commafeed-db-dev-cnpg-v1-rw.cnpg-dev.svc.cluster.local:5432/commafeed
