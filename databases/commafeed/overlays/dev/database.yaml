@@ -2,8 +2,9 @@ apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
   name: commafeed-db-dev-cnpg-v1
+  namespace: cnpg-dev
 spec:
-  description: Postgres cluster for the commafeed application
+  description: Postgres cluster for the CommaFeed application
   imageName: quay.io/enterprisedb/postgresql:16.1
   instances: 1
 
@@ -24,7 +25,7 @@ spec:
       database: commafeed
       owner: commafeed
       secret:
-        name: commafeed-db-creds
+        name: commafeed-db-creds  # created via ExternalSecret in commafeed-dev
 
   resources:
     requests:
@@ -34,26 +35,25 @@ spec:
     - name: clusterBackup
       barmanObjectStore:
         destinationPath: https://hldatabasedev.blob.core.windows.net/commafeed-db
-        # serverName: commafeed-db-dev-cnpg-v0
         serverName: pg-dev
         azureCredentials:
           storageAccount:
-            name: azure-creds
-            key: commafeed-storage-account-name
+            name: commafeed-db-storage
+            key: container-name
           storageSasToken:
-            name: azure-creds
-            key: commafeed-blob-sas
+            name: commafeed-db-storage
+            key: blob-sas
 
   backup:
     barmanObjectStore:
       destinationPath: https://hldatabasedev.blob.core.windows.net/commafeed-db
       azureCredentials:
         storageAccount:
-          name: azure-creds
-          key: commafeed-storage-account-name
+          name: commafeed-db-storage
+          key: container-name
         storageSasToken:
-          name: azure-creds
-          key: commafeed-blob-sas
+          name: commafeed-db-storage
+          key: blob-sas
       wal:
         compression: gzip
       data:
