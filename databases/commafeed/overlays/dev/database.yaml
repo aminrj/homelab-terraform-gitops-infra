@@ -13,6 +13,10 @@ spec:
 
   monitoring:
     enablePodMonitor: true
+    grafanaDashboard:
+      create: true
+      labels:
+        grafana_dashboard: "1"
 
   inheritedMetadata:
     labels:
