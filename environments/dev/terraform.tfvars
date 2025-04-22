@@ -17,4 +17,4 @@ app_name            = "eso-dev"
 key_vault_name      = "hlab-keyvault-dev"
 location            = "swedencentral"
 resource_group_name = "homelab-dev"              # Need to be created manually
-storage_account_name= "homelabstorageaccountdev" # DON NOT Need to be created manually
+storage_account_name= "homelabstorageaccountdev" # DO NOT Need to be created manually
