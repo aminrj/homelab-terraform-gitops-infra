@@ -26,13 +26,13 @@ spec:
                 secretKeyRef:
                   # name: commafeed-db-secret
                   name: commafeed-app-db-credentials
-                  key: commafeed-db-username
+                  key: POSTGRES_USER
             - name: QUARKUS_DATASOURCE_PASSWORD
               valueFrom:
                 secretKeyRef:
                   # name: commafeed-db-secret
                   name: commafeed-app-db-credentials
-                  key: commafeed-db-password
+                  key: POSTGRES_PASSWORD
             - name: QUARKUS_HTTP_PORT
               value: "8082"
             - name: QUARKUS_HTTP_HOST
