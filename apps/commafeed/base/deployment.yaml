@@ -24,12 +24,14 @@ spec:
             - name: QUARKUS_DATASOURCE_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: commafeed-db-secret
+                  # name: commafeed-db-secret
+                  name: commafeed-app-db-credentials
                   key: username
             - name: QUARKUS_DATASOURCE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: commafeed-db-secret
+                  # name: commafeed-db-secret
+                  name: commafeed-app-db-credentials
                   key: password
             - name: QUARKUS_HTTP_PORT
               value: "8082"
