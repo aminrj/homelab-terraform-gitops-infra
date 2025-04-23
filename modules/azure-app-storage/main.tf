@@ -45,11 +45,29 @@ resource "azurerm_key_vault_secret" "sas_token" {
   name         = "${var.container_name}-blob-sas"
   value        = data.azurerm_storage_account_sas.app_sas.sas
   key_vault_id = var.key_vault_id
+
+  lifecycle {
+    ignore_changes = [value]
+  }
 }
 
 resource "azurerm_key_vault_secret" "container_name" {
   name         = "${var.container_name}-container-name"
   value        = var.container_name
   key_vault_id = var.key_vault_id
+
+  lifecycle {
+    ignore_changes = [value]
+  }
+}
+
+resource "azurerm_key_vault_secret" "destination_path" {
+  name         = "${var.container_name}-destination-path"
+  value        = "https://${var.storage_account_name}.blob.core.windows.net/${var.container_name}"
+  key_vault_id = var.key_vault_id
+
+  lifecycle {
+    ignore_changes = [value]
+  }
 }
 
