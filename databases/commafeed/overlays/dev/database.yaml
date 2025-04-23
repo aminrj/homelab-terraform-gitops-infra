@@ -13,10 +13,10 @@ spec:
 
   monitoring:
     enablePodMonitor: true
-    grafanaDashboard:
-      create: true
-      labels:
-        grafana_dashboard: "1"
+    # grafanaDashboard:
+    #   create: true
+    #   labels:
+    #     grafana_dashboard: "1"
 
   inheritedMetadata:
     labels:
@@ -39,10 +39,6 @@ spec:
     - name: clusterBackup
       barmanObjectStore:
         destinationPath: https://homelabstorageaccountdev.blob.core.windows.net/commafeed-db
-        valueFrom:
-          secretKeyRef:
-            name: commafeed-db-storage
-            key: destination-path
         serverName: pg-dev
         azureCredentials:
           storageAccount:
@@ -54,7 +50,6 @@ spec:
 
   backup:
     barmanObjectStore:
-      # destinationPath: https://hldatabasedev.blob.core.windows.net/commafeed-db
       destinationPath: https://homelabstorageaccountdev.blob.core.windows.net/commafeed-db
       azureCredentials:
         storageAccount:
