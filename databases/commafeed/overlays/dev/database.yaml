@@ -38,12 +38,11 @@ spec:
   externalClusters:
     - name: clusterBackup
       barmanObjectStore:
-        # destinationPath: https://hldatabasedev.blob.core.windows.net/commafeed-db
-        destinationPath:
-          valueFrom:
-            secretKeyRef:
-              name: commafeed-db-storage
-              key: destination-path
+        destinationPath: https://homelabstorageaccountdev.blob.core.windows.net/commafeed-db
+        valueFrom:
+          secretKeyRef:
+            name: commafeed-db-storage
+            key: destination-path
         serverName: pg-dev
         azureCredentials:
           storageAccount:
@@ -56,11 +55,7 @@ spec:
   backup:
     barmanObjectStore:
       # destinationPath: https://hldatabasedev.blob.core.windows.net/commafeed-db
-      destinationpath:
-        valuefrom:
-          secretkeyref:
-            name: commafeed-db-storage
-            key: destination-path
+      destinationPath: https://homelabstorageaccountdev.blob.core.windows.net/commafeed-db
       azureCredentials:
         storageAccount:
           name: commafeed-db-storage
