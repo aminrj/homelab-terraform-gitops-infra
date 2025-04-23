@@ -3,6 +3,12 @@ resource "azurerm_key_vault_secret" "static" {
   name         = "${var.app_name}-${each.key}"
   value        = each.value
   key_vault_id = var.key_vault_id
+
+  lifecycle {
+    ignore_changes = [
+      value,
+    ]
+  }
 }
 
 resource "random_password" "random" {
@@ -16,4 +22,10 @@ resource "azurerm_key_vault_secret" "generated" {
   name         = "${var.app_name}-${each.key}"
   value        = each.value.result
   key_vault_id = var.key_vault_id
+
+  lifecycle {
+    ignore_changes = [
+      value,
+    ]
+  }
 }

@@ -97,6 +97,10 @@ module "commafeed_secrets" {
     "db-password",
     # "api-secret"
   ]
+
+  depends_on = [
+    module.azure_keyvault
+  ]
 }
 
 module "external_secrets" {
@@ -114,6 +118,8 @@ module "cnpg_operator" {
   use_longhorn_storage = false
   namespace = "cnpg"
   kubeconfig  = var.kubeconfig
+
+  depends_on = [module.prometheus-stack]
 }
 
 module "cnpg_cluster" {
