@@ -10,4 +10,3 @@ output "client_secret" {
 output "vault_uri" {
   value = module.azure_keyvault.vault_uri
 }
-

@@ -8,7 +8,7 @@
 kubectl create ns external-secrets
 
 kubectl create secret generic azure-creds \
-  -n cnpg-dev \
+  -n external-secrets \
   --from-literal=client-id="$(terraform output -raw client_id)" \
   --from-literal=client-secret="$(terraform output -raw client_secret)"
 ```
