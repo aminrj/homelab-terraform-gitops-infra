@@ -23,13 +23,13 @@ spec:
       app: commafeed-database
       policy-type: "database"
 
-  bootstrap:
-    recovery:
-      source: clusterBackup
-      database: commafeed
-      owner: commafeed
-      secret:
-        name: commafeed-db-creds  # created via ExternalSecret in commafeed-dev
+  # bootstrap:
+  #   recovery:
+  #     source: clusterBackup
+  #     database: commafeed
+  #     owner: commafeed
+  #     secret:
+  #       name: commafeed-db-creds  # created via ExternalSecret in commafeed-dev
 
   resources:
     requests:
@@ -77,7 +77,7 @@ spec:
   #             labels:
   #               cilium-lb-pool: postgres-pool
   #             annotations:
-  #               external-dns.alpha.kubernetes.io/hostname: commafeed-db.mischavandenburg.net
+  #               external-dns.alpha.kubernetes.io/hostname: commafeed-db.aminrj.com
   #           spec:
   #             type: LoadBalancer
 
