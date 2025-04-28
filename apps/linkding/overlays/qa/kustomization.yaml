@@ -1,6 +1,15 @@
-namespace: cnpg-qa
-
 resources:
   - ../../base
-  - ingress.yaml
-  - db-bootstrap-job.yaml
+  # - commafeed-db-secret.yaml
+  - bootstrap-job.yaml
+
+namespace: cnpg-qa
+
+patches:
+  - target:
+      kind: Deployment
+      name: commafeed
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/env/0/value
+        value: jdbc:postgresql://pg-qa-rw.cnpg-qa.svc.cluster.local:5432/commafeed

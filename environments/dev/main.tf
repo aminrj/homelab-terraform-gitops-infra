@@ -70,6 +70,7 @@ module "azure_keyvault" {
 locals {
   apps = {
     commafeed = { container_name = "commafeed-db" }
+    linkding = { container_name = "linkding-db" }
     # wallabag  = { container_name = "wallabag-db" }
   }
 }
@@ -91,6 +92,26 @@ module "commafeed_secrets" {
   static_secrets = {
     "db-username" = "commafeed"
     "db-name" = "commafeed"
+  }
+
+  random_secrets = [
+    "db-password",
+    # "api-secret"
+  ]
+
+  depends_on = [
+    module.azure_keyvault
+  ]
+}
+
+module "linkding_secrets" {
+  source       = "../../modules/azure-secrets"
+  key_vault_id = module.azure_keyvault.key_vault_id
+  app_name     = "linkding"
+
+  static_secrets = {
+    "db-username" = "linkding"
+    "db-name" = "linkding"
   }
 
   random_secrets = [

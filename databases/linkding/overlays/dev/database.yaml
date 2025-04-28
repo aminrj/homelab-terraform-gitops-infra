@@ -1,0 +1,90 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: linkding-db-dev-cnpg-v1
+  namespace: cnpg-dev
+spec:
+  description: Postgres cluster for the linkding application
+  imageName: quay.io/enterprisedb/postgresql:16.1
+  instances: 1
+
+  storage:
+    size: 5Gi
+
+  monitoring:
+    enablePodMonitor: true
+    # grafanaDashboard:
+    #   create: true
+    #   labels:
+    #     grafana_dashboard: "1"
+
+  inheritedMetadata:
+    labels:
+      app: linkding-database
+      policy-type: "database"
+
+  bootstrap:
+    initdb:
+      database: linkding
+      owner: linkding
+      secret:
+        name: linkding-db-creds   # Same ExternalSecret you already have
+
+  # bootstrap:
+  #   recovery:
+  #     source: clusterBackup
+  #     database: linkding
+  #     owner: linkding
+  #     secret:
+  #       name: linkding-db-creds  # created via ExternalSecret in linkding-dev
+
+  resources:
+    requests:
+      memory: 600Mi
+
+  # externalClusters:
+  #   - name: clusterBackup
+  #     barmanObjectStore:
+  #       destinationPath: https://homelabstorageaccountdev.blob.core.windows.net/linkding-db
+  #       serverName: pg-dev
+  #       azureCredentials:
+  #         storageAccount:
+  #           name: linkding-db-storage
+  #           key: container-name
+  #         storageSasToken:
+  #           name: linkding-db-storage
+  #           key: blob-sas
+
+  backup:
+    barmanObjectStore:
+      destinationPath: https://homelabstorageaccountdev.blob.core.windows.net/linkding-db
+      azureCredentials:
+        storageAccount:
+          name: linkding-db-storage
+          key: container-name
+        storageSasToken:
+          name: linkding-db-storage
+          key: blob-sas
+      wal:
+        compression: gzip
+      data:
+        compression: gzip
+    retentionPolicy: 14d
+
+  # managed:
+  #   services:
+  #     disabledDefaultServices:
+  #       - ro
+  #       - r
+  #     additional:
+  #       - selectorType: rw
+  #         serviceTemplate:
+  #           metadata:
+  #             name: linkding-db-lb
+  #             labels:
+  #               cilium-lb-pool: postgres-pool
+  #             annotations:
+  #               external-dns.alpha.kubernetes.io/hostname: linkding-db.aminrj.com
+  #           spec:
+  #             type: LoadBalancer
+

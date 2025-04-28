@@ -1,0 +1,15 @@
+resources:
+  - ../../base
+  - secrets.yaml
+  - namespace.yaml
+
+namespace: linkding-dev
+
+# patches:
+#   - target:
+#       kind: Deployment
+#       name: linkding
+#     patch: |-
+#       - op: replace
+#         path: /spec/template/spec/containers/0/env/0/value
+#         value: jdbc:postgresql://commafeed-db-dev-cnpg-v1-rw.cnpg-dev.svc.cluster.local:5432/commafeed
