@@ -23,6 +23,13 @@ spec:
       app: commafeed-database
       policy-type: "database"
 
+  bootstrap:
+    initdb:
+      database: commafeed
+      owner: commafeed
+      secret:
+        name: commafeed-db-creds   # Same ExternalSecret you already have
+
   # bootstrap:
   #   recovery:
   #     source: clusterBackup
