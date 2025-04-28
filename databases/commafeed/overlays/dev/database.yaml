@@ -35,18 +35,18 @@ spec:
     requests:
       memory: 600Mi
 
-  externalClusters:
-    - name: clusterBackup
-      barmanObjectStore:
-        destinationPath: https://homelabstorageaccountdev.blob.core.windows.net/commafeed-db
-        serverName: pg-dev
-        azureCredentials:
-          storageAccount:
-            name: commafeed-db-storage
-            key: container-name
-          storageSasToken:
-            name: commafeed-db-storage
-            key: blob-sas
+  # externalClusters:
+  #   - name: clusterBackup
+  #     barmanObjectStore:
+  #       destinationPath: https://homelabstorageaccountdev.blob.core.windows.net/commafeed-db
+  #       serverName: pg-dev
+  #       azureCredentials:
+  #         storageAccount:
+  #           name: commafeed-db-storage
+  #           key: container-name
+  #         storageSasToken:
+  #           name: commafeed-db-storage
+  #           key: blob-sas
 
   backup:
     barmanObjectStore:
