@@ -1,7 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: commafeed-ingress
+  name: linkding
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
@@ -12,16 +12,17 @@ spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - commafeed-qa.lab.aminrj.com
-      secretName: commafeed-tls
+        - linkding-qa.lab.aminrj.com
+      secretName: linkding-tls
   rules:
-    - host: commafeed-qa.lab.aminrj.com
+    - host: linkding-qa.lab.aminrj.com
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: commafeed
+                name: linkding
                 port:
                   number: 80
+

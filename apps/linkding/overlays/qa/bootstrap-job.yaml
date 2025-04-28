@@ -1,0 +1,43 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: commafeed-db-provision
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: psql
+          image: postgres:15
+          env:
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: cnpg-superuser-secret   # This should be created by your CNPG cluster bootstrap
+                  key: password
+            - name: APP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: commafeed-db-secret
+                  key: password
+          command:
+            - /bin/bash
+            - -c
+            - |
+              set -e
+              echo "Creating commafeed user if missing"
+              psql -h pg-qa-rw.cnpg-qa.svc.cluster.local -U postgres -v ON_ERROR_STOP=1 -c "
+              DO \$\$
+              BEGIN
+                IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'commafeed') THEN
+                  CREATE ROLE commafeed LOGIN PASSWORD '${APP_PASSWORD}';
+                END IF;
+              END
+              \$\$;
+              "
+
+              echo "Attempting to create database (may fail if exists)"
+              psql -h pg-qa-rw.cnpg-qa.svc.cluster.local -U postgres -v ON_ERROR_STOP=0 -c "CREATE DATABASE commafeed OWNER commafeed;"
+
+              echo "Grant privileges"
+              psql -h pg-qa-rw.cnpg-qa.svc.cluster.local -U postgres -v ON_ERROR_STOP=1 -c "GRANT ALL PRIVILEGES ON DATABASE commafeed TO commafeed;"
