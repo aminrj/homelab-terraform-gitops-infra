@@ -21,7 +21,7 @@ spec:
             - name: LD_DB_ENGINE
               value: django.db.backends.postgresql
             - name: LD_DB_HOST
-              value: pg-dev-rw.cnpg-dev.svc.cluster.local
+              value: linkding-db-dev-cnpg-v1-rw.cnpg-dev.svc.cluster.local #TODO change this in overlays
               # value: pg-qa-rw.cnpg-qa.svc.cluster.local
             - name: LD_DB_PORT
               value: "5432"
