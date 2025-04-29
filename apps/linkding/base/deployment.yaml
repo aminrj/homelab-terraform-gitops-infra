@@ -30,20 +30,20 @@ spec:
             - name: LD_DB_USER
               valueFrom:
                 secretKeyRef:
-                  name: linkding-db-creds
+                  name: linkding-db-secret
                   key: username
             - name: LD_DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: linkding-db-creds
+                  name: linkding-db-secret
                   key: password
             - name: LD_SUPERUSER_NAME
               value: admin
             - name: LD_SUPERUSER_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: linkding-db-creds
-                  key: superuser_password
+                  name: linkding-db-secret
+                  key: password
           volumeMounts:
             - name: linkding-data
               mountPath: /etc/linkding/data
