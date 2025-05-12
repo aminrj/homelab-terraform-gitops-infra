@@ -1,0 +1,6 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: n8n-qa
+  labels:
+    app: n8n

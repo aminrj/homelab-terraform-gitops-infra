@@ -1,7 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: commafeed-ingress
+  name: n8n-ingress
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
@@ -12,16 +12,16 @@ spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - commafeed-qa.lab.aminrj.com
-      secretName: commafeed-tls
+        - n8n-qa.lab.aminrj.com
+      secretName: n8n-tls
   rules:
-    - host: commafeed-qa.lab.aminrj.com
+    - host: n8n-qa.lab.aminrj.com
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: commafeed
+                name: n8n
                 port:
                   number: 80
