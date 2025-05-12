@@ -124,6 +124,26 @@ module "linkding_secrets" {
   ]
 }
 
+module "n8n_secrets" {
+  source       = "../../modules/azure-secrets"
+  key_vault_id = module.azure_keyvault.key_vault_id
+  app_name     = "n8n"
+
+  static_secrets = {
+    "db-username" = "n8n"
+    "db-name" = "n8n"
+  }
+
+  random_secrets = [
+    "db-password",
+    "encryption_key"
+  ]
+
+  depends_on = [
+    module.azure_keyvault
+  ]
+}
+
 module "external_secrets" {
   source = "../../modules/external-secrets"
 }
