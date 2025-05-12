@@ -40,6 +40,10 @@ module "cert-manager" {
   kubeconfig  = var.kubeconfig
 }
 
+module "external_secrets" {
+  source = "../../modules/external-secrets"
+}
+
 module "prometheus-stack" {
   source            = "../../modules/kube-prometheus-stack"
   kubeconfig  = var.kubeconfig
