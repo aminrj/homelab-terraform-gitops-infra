@@ -14,3 +14,8 @@ default_data_path = "/mnt/longhorn"
 kubelet_root_dir  = "/var/snap/microk8s/common/var/lib/kubelet"
 ui_service_type   = "LoadBalancer"
 
+app_name            = "eso-qa"
+key_vault_name      = "hlab-keyvault-qa"
+location            = "swedencentral"
+resource_group_name = "homelab-qa"              # Need to be created manually
+storage_account_name= "homelabstorageaccountqa" # DO NOT Need to be created manually

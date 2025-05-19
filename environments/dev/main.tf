@@ -136,7 +136,7 @@ module "n8n_secrets" {
 
   random_secrets = [
     "db-password",
-    "encryption_key"
+    "encryption-key"
   ]
 
   depends_on = [

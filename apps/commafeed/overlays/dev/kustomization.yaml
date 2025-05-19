@@ -12,4 +12,4 @@ patches:
     patch: |-
       - op: replace
         path: /spec/template/spec/containers/0/env/0/value
-        value: jdbc:postgresql://commafeed-db-dev-cnpg-v1-rw.cnpg-dev.svc.cluster.local:5432/commafeed
+        value: jdbc:postgresql://commafeed-db-dev-cnpg-v1-rw.commafeed-dev.svc.cluster.local:5432/commafeed

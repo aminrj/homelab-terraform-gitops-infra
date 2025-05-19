@@ -1,4 +1,4 @@
-namespace: commafeed-dev
+namespace: commafeed-qa
 resources:
   - ../../base
   - secrets.yaml
@@ -8,11 +8,11 @@ resources:
 patches:
   - target:
       kind: Cluster
-      name: commafeed-db-dev-cnpg-v1
+      name: commafeed-db-qa-cnpg-v1
     patch: |-
       - op: replace
         path: /metadata/name
-        value: commafeed-db-dev-cnpg-v1
+        value: commafeed-db-qa-cnpg-v1
       - op: replace
         path: /spec/backup/barmanObjectStore/destinationPath
-        value: https://homelabstorageaccountdev.blob.core.windows.net/commafeed-db-dev
+        value: https://homelabstorageaccountqa.blob.core.windows.net/commafeed-db-qa

@@ -20,18 +20,16 @@ spec:
             - containerPort: 8082
           env:
             - name: QUARKUS_DATASOURCE_JDBC_URL
-              value: jdbc:postgresql://pg-dev-rw.cnpg-dev.svc.cluster.local:5432/commafeed
+              value: jdbc:postgresql://pg-dev-rw.commafeed-dev.svc.cluster.local:5432/commafeed
             - name: QUARKUS_DATASOURCE_USERNAME
               valueFrom:
                 secretKeyRef:
-                  # name: commafeed-db-secret
-                  name: commafeed-app-db-credentials
+                  name: commafeed-app-db-creds
                   key: POSTGRES_USER
             - name: QUARKUS_DATASOURCE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  # name: commafeed-db-secret
-                  name: commafeed-app-db-credentials
+                  name: commafeed-app-db-creds
                   key: POSTGRES_PASSWORD
             - name: QUARKUS_HTTP_PORT
               value: "8082"

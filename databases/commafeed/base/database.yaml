@@ -1,8 +1,7 @@
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
-  name: commafeed-db-dev-cnpg-v1
-  namespace: cnpg-dev
+  name: commafeed-db-cnpg-v1
 spec:
   description: Postgres cluster for the CommaFeed application
   imageName: quay.io/enterprisedb/postgresql:16.1
@@ -13,10 +12,6 @@ spec:
 
   monitoring:
     enablePodMonitor: true
-    # grafanaDashboard:
-    #   create: true
-    #   labels:
-    #     grafana_dashboard: "1"
 
   inheritedMetadata:
     labels:
