@@ -11,3 +11,8 @@ modules/external-dns/terraform.tfvars
 environments/qa/.terraform
 .terraform/providers/registry.terraform.io/hashicorp
 environments/dev/.terraform.tfstate.lock.info
+# Terraform state
+*.tfstate
+*.tfstate.*
+.terraform/
+crash.log
