@@ -1,9 +1,10 @@
 resources:
   - ../../base
-  # - commafeed-db-secret.yaml
-  - bootstrap-job.yaml
+  - secrets.yaml
+  - ingress.yaml
+  - namespace.yaml
 
-namespace: cnpg-qa
+namespace: linkding-qa
 
 patches:
   - target:
@@ -12,4 +13,4 @@ patches:
     patch: |-
       - op: replace
         path: /spec/template/spec/containers/0/env/0/value
-        value: jdbc:postgresql://pg-qa-rw.cnpg-qa.svc.cluster.local:5432/commafeed
+        value: jdbc:postgresql://linkding-db-cnpg-v1-rw.cnpg-qa.svc.cluster.local:5432/linkding

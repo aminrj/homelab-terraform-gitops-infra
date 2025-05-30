@@ -203,30 +203,3 @@ module "cnpg_operator" {
   namespace = "cnpg-qa"
   kubeconfig  = var.kubeconfig
 }
-
-# module "cnpg_cluster" {
-#   source = "../../modules/cnpg-cluster"
-#
-#   # TODO: Move these values to the tfvars file instead
-#   namespace             = "cnpg-qa"
-#   pg_cluster_name       = "pg-qa"
-#   pg_instance_count     = 1
-#   pg_storage_class      = "longhorn"
-#   pg_storage_size       = "50Gi"
-#   pg_superuser_secret   = "cnpg-superuser-secret"
-#   pg_app_secret         = "pg-app-qa"
-#   pg_monitoring_enabled = true
-# }
-
-# module "argocd" {
-#   source = "../../modules/argocd"
-#   kubeconfig = var.kubeconfig
-#   target_cluster_server = var.target_cluster_server
-#
-#   providers = {
-#     kubernetes = kubernetes
-#     helm       = helm
-#     kubectl    = kubectl
-#   }
-# }
-#

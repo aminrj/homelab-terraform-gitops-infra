@@ -36,8 +36,8 @@ resource "kubernetes_storage_class" "cnpg_longhorn" {
 
 resource "helm_release" "cnpg_operator" {
   name             = "cloudnative-pg"
-  # namespace        = var.namespace
-  namespace        = "cnpg" #TODO change this
+  namespace        = var.namespace
+  # namespace        = "cnpg" #TODO change this
   repository       = "https://cloudnative-pg.github.io/charts"
   chart            = "cloudnative-pg"
   version          = "0.23.2"
