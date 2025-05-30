@@ -16,3 +16,5 @@ environments/dev/.terraform.tfstate.lock.info
 *.tfstate.*
 .terraform/
 crash.log
+*.tfstate*
+.terraform/
