@@ -21,8 +21,7 @@ spec:
             - name: LD_DB_ENGINE
               value: django.db.backends.postgresql
             - name: LD_DB_HOST
-              value: linkding-db-dev-cnpg-v1-rw.cnpg-dev.svc.cluster.local #TODO change this in overlays
-              # value: pg-qa-rw.cnpg-qa.svc.cluster.local
+              value: linkding-db-dev-cnpg-v1-rw.cnpg-dev.svc.cluster.local  # Replace with QA DB in overlays
             - name: LD_DB_PORT
               value: "5432"
             - name: LD_DB_NAME
@@ -42,8 +41,17 @@ spec:
             - name: LD_SUPERUSER_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: linkding-db-secret
+                  name: linkding-db-creds
                   key: password
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 9090
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 2
+            successThreshold: 1
+            failureThreshold: 3
           volumeMounts:
             - name: linkding-data
               mountPath: /etc/linkding/data

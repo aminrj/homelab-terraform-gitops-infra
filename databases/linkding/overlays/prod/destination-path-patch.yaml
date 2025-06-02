@@ -1,0 +1,20 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: linkding-db-cnpg-v1
+spec:
+  backup:
+    barmanObjectStore:
+      destinationPath: https://homelabstorageaccountprod.blob.core.windows.net/linkding-db
+  externalClusters:
+    - name: clusterBackup
+      barmanObjectStore:
+        destinationPath: https://homelabstorageaccountprod.blob.core.windows.net/linkding-db
+        serverName: linkding-db
+        azureCredentials:
+          storageAccount:
+            name: linkding-db-storage
+            key: container-name
+          storageSasToken:
+            name: linkding-db-storage
+            key: blob-sas

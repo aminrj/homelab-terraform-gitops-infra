@@ -1,21 +1,21 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: linkding
+  name: linkding-ingress
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    cert-manager.io/cluster-issuer: "letsencrypt-staging"
-    #TODO: hide the ip like a secret
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    #TODO: hide the ip like I do for secrets (or ?
     external-dns.alpha.kubernetes.io/target: "90.129.244.3"
 spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - linkding-qa.lab.aminrj.com
+        - linkding.lab.aminrj.com
       secretName: linkding-tls
   rules:
-    - host: linkding-qa.lab.aminrj.com
+    - host: linkding.lab.aminrj.com
       http:
         paths:
           - path: /
@@ -25,4 +25,3 @@ spec:
                 name: linkding
                 port:
                   number: 80
-

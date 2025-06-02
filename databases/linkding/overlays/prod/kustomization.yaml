@@ -1,0 +1,10 @@
+namespace: cnpg-prod
+
+resources:
+  - ../../base
+  - namespace.yaml
+  - scheduled-backup.yaml
+  - secrets.yaml
+
+patches:
+  - path: restore-from-qa.yaml

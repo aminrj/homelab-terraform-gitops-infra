@@ -1,0 +1,16 @@
+resources:
+  - ../../base
+  - secrets.yaml
+  - ingress.yaml
+  - namespace.yaml
+
+namespace: linkding
+
+patches:
+  - target:
+      kind: Deployment
+      name: commafeed
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/env/0/value
+        value: jdbc:postgresql://linkding-db-cnpg-v1-rw.cnpg.svc.cluster.local:5432/linkding
