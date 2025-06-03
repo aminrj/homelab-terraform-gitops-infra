@@ -32,7 +32,6 @@ variable "kube_context" {
   description = "The kube context name to use"
 }
 
-
 # Cnpg Operator variables
 variable "use_longhorn_storage" {
   description = "Use longhorn as storage for prod?"
@@ -83,42 +82,6 @@ variable "pg_app_secret" {
   type        = string
   default     = "pg-app-prod"
 }
-
-variable "pg_monitoring_enabled" {
-  description = "Enable monitoring (PodMonitor)"
-  type        = bool
-  default     = true
-}
-
-variable "metallb_address_range" {
-  type        = string
-  description = "Address range for MetalLB IP Pool"
-}
-variable "target_cluster_server" {
-  type        = string
-  description = "Cluster API endpoint"
-}
-
-
-variable "default_data_path" {
-  type = string
-}
-
-variable "default_replica_count" {
-  type    = number
-  default = 2
-}
-
-variable "kubelet_root_dir" {
-  type = string
-}
-
-variable "ui_service_type" {
-  type    = string
-  default = "LoadBalancer"
-}
-
-
 
 variable "app_name" {
   description = "Azure AD application name"
