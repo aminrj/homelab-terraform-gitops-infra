@@ -1,6 +1,7 @@
 resources:
   - ../../base
   - secrets.yaml
+  - ingress.yaml
   - namespace.yaml
 
 namespace: commafeed-qa

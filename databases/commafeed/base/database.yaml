@@ -3,7 +3,7 @@ kind: Cluster
 metadata:
   name: commafeed-db-cnpg-v1
 spec:
-  description: Postgres cluster for the CommaFeed application
+  description: Postgres cluster for the commafeed application
   imageName: quay.io/enterprisedb/postgresql:16.1
   instances: 1
 
@@ -25,30 +25,9 @@ spec:
       secret:
         name: commafeed-db-creds   # Same ExternalSecret you already have
 
-  # bootstrap:
-  #   recovery:
-  #     source: clusterBackup
-  #     database: commafeed
-  #     owner: commafeed
-  #     secret:
-  #       name: commafeed-db-creds  # created via ExternalSecret in commafeed-dev
-
   resources:
     requests:
       memory: 600Mi
-
-  # externalClusters:
-  #   - name: clusterBackup
-  #     barmanObjectStore:
-  #       destinationPath: https://homelabstorageaccountdev.blob.core.windows.net/commafeed-db
-  #       serverName: pg-dev
-  #       azureCredentials:
-  #         storageAccount:
-  #           name: commafeed-db-storage
-  #           key: container-name
-  #         storageSasToken:
-  #           name: commafeed-db-storage
-  #           key: blob-sas
 
   backup:
     barmanObjectStore:
@@ -65,21 +44,3 @@ spec:
       data:
         compression: gzip
     retentionPolicy: 14d
-
-  # managed:
-  #   services:
-  #     disabledDefaultServices:
-  #       - ro
-  #       - r
-  #     additional:
-  #       - selectorType: rw
-  #         serviceTemplate:
-  #           metadata:
-  #             name: commafeed-db-lb
-  #             labels:
-  #               cilium-lb-pool: postgres-pool
-  #             annotations:
-  #               external-dns.alpha.kubernetes.io/hostname: commafeed-db.aminrj.com
-  #           spec:
-  #             type: LoadBalancer
-

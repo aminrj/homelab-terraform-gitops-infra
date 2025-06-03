@@ -12,7 +12,6 @@ logLevel: debug
 
 sources:
   - ingress
-  - service
 
 policy: sync
 
