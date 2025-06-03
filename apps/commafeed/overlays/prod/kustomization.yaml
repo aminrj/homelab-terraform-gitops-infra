@@ -1,0 +1,16 @@
+resources:
+  - ../../base
+  - secrets.yaml
+  - ingress.yaml
+  - namespace.yaml
+
+namespace: commafeed-prod
+
+patches:
+  - target:
+      kind: Deployment
+      name: commafeed
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/env/0/value
+        value: jdbc:postgresql://commafeed-db-cnpg-v1-rw.cnpg-prod.svc.cluster.local:5432/commafeed

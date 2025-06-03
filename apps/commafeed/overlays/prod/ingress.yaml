@@ -1,0 +1,28 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: commafeed-ingress-prod
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    #TODO: hide the ip like a secret
+    # external-dns.alpha.kubernetes.io/target: "90.129.244.3"
+    external-dns.alpha.kubernetes.io/hostname: commafeed.lab.aminrj.com
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - commafeed.lab.aminrj.com
+      secretName: commafeed-tls
+  rules:
+    - host: commafeed.lab.aminrj.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: commafeed
+                port:
+                  number: 80

@@ -5,11 +5,11 @@ metadata:
 spec:
   backup:
     barmanObjectStore:
-      destinationPath: https://homelabstorageaccountprod.blob.core.windows.net/linkding-db
+      destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/linkding-db
   externalClusters:
     - name: clusterBackup
       barmanObjectStore:
-        destinationPath: https://homelabstorageaccountprod.blob.core.windows.net/linkding-db
+        destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/linkding-db
         serverName: linkding-db
         azureCredentials:
           storageAccount:
