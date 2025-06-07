@@ -9,7 +9,7 @@ namespace: n8n-qa
 patches:
   - target:
       kind: Deployment
-      name: commafeed
+      name: n8n
     patch: |-
       - op: replace
         path: /spec/template/spec/containers/0/env/0/value
