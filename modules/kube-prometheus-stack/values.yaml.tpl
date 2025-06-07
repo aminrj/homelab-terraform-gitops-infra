@@ -17,7 +17,6 @@ prometheus:
     serviceMonitorSelector: {}            # Also allow ServiceMonitors from any namespace
 
 grafana:
-  adminPassword: "mysecurepassword"
   service:
     type: LoadBalancer
   persistence:

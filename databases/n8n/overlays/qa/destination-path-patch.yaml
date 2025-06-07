@@ -1,0 +1,20 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: n8n-db-cnpg-v1
+spec:
+  backup:
+    barmanObjectStore:
+      destinationPath: https://homelabstorageaccountqa.blob.core.windows.net/n8n-db
+  externalClusters:
+    - name: clusterBackup
+      barmanObjectStore:
+        destinationPath: https://homelabstorageaccountqa.blob.core.windows.net/n8n-db
+        serverName: n8n-db
+        azureCredentials:
+          storageAccount:
+            name: n8n-db-storage
+            key: container-name
+          storageSasToken:
+            name: n8n-db-storage
+            key: blob-sas

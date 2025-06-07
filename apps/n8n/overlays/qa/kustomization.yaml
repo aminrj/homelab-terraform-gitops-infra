@@ -1,0 +1,16 @@
+resources:
+  - ../../base
+  - secrets.yaml
+  - ingress.yaml
+  - namespace.yaml
+
+namespace: n8n-qa
+
+patches:
+  - target:
+      kind: Deployment
+      name: commafeed
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/env/0/value
+        value: jdbc:postgresql://n8n-db-cnpg-v1-rw.cnpg-qa.svc.cluster.local:5432/n8n

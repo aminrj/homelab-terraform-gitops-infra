@@ -30,12 +30,12 @@ spec:
             - name: DB_POSTGRESDB_USER
               valueFrom:
                 secretKeyRef:
-                  name: n8n-db-secret
+                  name: n8n-db-creds
                   key: username
             - name: DB_POSTGRESDB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: n8n-db-secret
+                  name: n8n-db-creds
                   key: password
             - name: DB_POSTGRESDB_SCHEMA
               value: public

@@ -32,7 +32,7 @@ spec:
 
   backup:
     barmanObjectStore:
-      destinationPath: https://n8nsa1234.blob.core.windows.net/n8n-db
+      destinationPath: https://homelabstorageaccountdev.blob.core.windows.net/n8n-db
       azureCredentials:
         storageAccount:
           name: n8n-db-storage

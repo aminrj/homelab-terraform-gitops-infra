@@ -30,3 +30,6 @@ key_vault_name = "hlab-keyvault-qa"
 location = "swedencentral"
 resource_group_name = "homelab-qa"
 storage_account_name = "homelabstorageaccountqa"
+
+
+
