@@ -1,0 +1,123 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: n8n-custom-node
+  namespace: n8n
+data:
+  LLMGateway.node.js: |
+    const { NodeOperationError } = require('n8n-core');
+
+    class LLMGateway {
+      constructor() {
+        this.description = {
+          displayName: 'LLM Gateway',
+          name: 'llmGateway',
+          group: ['transform'],
+          version: 1,
+          description: 'Interact with LLM models through the gateway',
+          defaults: {
+            name: 'LLM Gateway',
+          },
+          inputs: ['main'],
+          outputs: ['main'],
+          properties: [
+            {
+              displayName: 'Task Type',
+              name: 'taskType',
+              type: 'options',
+              options: [
+                { name: 'General Chat', value: 'general' },
+                { name: 'Security Analysis', value: 'security_analysis' },
+                { name: 'Code Analysis', value: 'code_analysis' },
+              ],
+              default: 'general',
+              required: true,
+            },
+            {
+              displayName: 'Model',
+              name: 'model',
+              type: 'string',
+              default: 'llama3',
+              required: true,
+            },
+            {
+              displayName: 'Message',
+              name: 'message',
+              type: 'string',
+              default: '',
+              required: true,
+            },
+            {
+              displayName: 'Context',
+              name: 'context',
+              type: 'string',
+              default: '',
+            },
+            {
+              displayName: 'Temperature',
+              name: 'temperature',
+              type: 'number',
+              default: 0.7,
+              typeOptions: {
+                minValue: 0,
+                maxValue: 2,
+                numberStepSize: 0.1,
+              },
+            },
+          ],
+        };
+      }
+
+      async execute() {
+        const items = this.getInputData();
+        const returnData = [];
+
+        for (let i = 0; i < items.length; i++) {
+          try {
+            const gatewayUrl = process.env.LLM_GATEWAY_URL || 'http://llm-gateway-service.llm-gateway.svc.cluster.local';
+            const taskType = this.getNodeParameter('taskType', i);
+            const model = this.getNodeParameter('model', i);
+            const message = this.getNodeParameter('message', i);
+            const context = this.getNodeParameter('context', i);
+            const temperature = this.getNodeParameter('temperature', i);
+
+            const response = await this.helpers.request({
+              method: 'POST',
+              url: `${gatewayUrl}/chat`,
+              json: {
+                message,
+                model,
+                context,
+                temperature,
+                task_type: taskType,
+              },
+            });
+
+            returnData.push({
+              json: {
+                ...items[i].json,
+                llm_response: response.response,
+                llm_model: response.model,
+                llm_usage: response.usage,
+                task_type: taskType,
+              },
+            });
+          } catch (error) {
+            if (this.continueOnFail()) {
+              returnData.push({
+                json: {
+                  ...items[i].json,
+                  error: error.message,
+                },
+              });
+            } else {
+              throw new NodeOperationError(this.getNode(), error);
+            }
+          }
+        }
+
+        return [returnData];
+      }
+    }
+
+    module.exports = { LLMGateway };

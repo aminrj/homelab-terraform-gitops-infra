@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ollama-model-config
+  namespace: ollama
+data:
+  models.txt: |
+    llama3:latest
+

@@ -69,6 +69,12 @@ spec:
               value: "false"
             - name: N8N_COMMUNITY_NODES_ENABLED
               value: "false"
+
+            - name: LLM_GATEWAY_URL
+              value: "http://llm-gateway-service.llm-gateway.svc.cluster.local"
+            - name: N8N_CUSTOM_EXTENSIONS
+              value: "/opt/custom-nodes"
+
           volumeMounts:
             - name: n8n-data
               mountPath: /home/node/.n8n

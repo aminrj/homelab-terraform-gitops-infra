@@ -1,0 +1,6 @@
+
+namespace: ollama
+
+resources:
+  - ../../base
+  - namespace.yaml

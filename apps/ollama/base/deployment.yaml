@@ -1,0 +1,54 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ollama-llama3
+  namespace: ollama
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ollama
+  template:
+    metadata:
+      labels:
+        app: ollama
+    spec:
+      nodeSelector:
+        llm: "true"
+      containers:
+        - name: ollama
+          image: ollama/ollama:latest
+          args: ["serve"]
+          ports:
+            - containerPort: 11434
+          env:
+            - name: OLLAMA_MODELS
+              value: /root/.ollama/models
+            - name: OLLAMA_HOST
+              value: http://0.0.0.0:11434
+            - name: OLLAMA_CONTEXT_LENGTH
+              value: "4096"
+            - name: OLLAMA_DEBUG
+              value: "INFO"
+            - name: OLLAMA_KEEP_ALIVE
+              value: "5m0s"
+          resources:
+            requests:
+              cpu: "6"
+              memory: "24Gi"
+            limits:
+              cpu: "10"
+              memory: "28Gi"
+          volumeMounts:
+            - name: model-data
+              mountPath: /root/.ollama
+            - name: model-config
+              mountPath: /models
+      volumes:
+        - name: model-data
+          persistentVolumeClaim:
+            claimName: ollama-model-cache
+        - name: model-config
+          configMap:
+            name: ollama-model-config
