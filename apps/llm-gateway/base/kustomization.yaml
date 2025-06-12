@@ -1,11 +1,14 @@
+# apps/llm-gateway/base/kustomization.yaml
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
   - namespace.yaml
+  - configmap.yaml
   - deployment.yaml
   - service.yaml
 
-commonLabels:
-  app: llm-gateway
-  component: gateway
+labels:
+  - pairs:
+      app: llm-gateway
+      component: gateway
