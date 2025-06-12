@@ -13,19 +13,6 @@ spec:
       labels:
         app: llm-gateway
     spec:
-      initContainers:
-        - name: install-deps
-          image: python:3.11-slim
-          command: ["/bin/bash"]
-          args:
-            - -c
-            - |
-              pip install --target /deps -r /config/requirements.txt
-          volumeMounts:
-            - name: app-config
-              mountPath: /config
-            - name: deps
-              mountPath: /deps
       containers:
         - name: llm-gateway
           image: python:3.11-slim
@@ -33,8 +20,15 @@ spec:
           args:
             - -c
             - |
-              export PYTHONPATH=/deps:$PYTHONPATH
-              cd /app && python -m uvicorn main:app --host 0.0.0.0 --port 8080
+              # Install packages without version constraints
+              pip install fastapi uvicorn httpx pydantic
+              
+              # Create the app
+              mkdir -p /app
+              cp /config/main.py /app/main.py
+              
+              # Start the application
+              cd /app && uvicorn main:app --host 0.0.0.0 --port 8080
           ports:
             - containerPort: 8080
           env:
@@ -44,8 +38,6 @@ spec:
               value: "llama3"
             - name: LOG_LEVEL
               value: "INFO"
-            - name: PYTHONPATH
-              value: "/deps"
           resources:
             requests:
               cpu: "100m"
@@ -55,24 +47,20 @@ spec:
               memory: "512Mi"
           volumeMounts:
             - name: app-config
-              mountPath: /app
-            - name: deps
-              mountPath: /deps
+              mountPath: /config
           livenessProbe:
             httpGet:
               path: /health
               port: 8080
-            initialDelaySeconds: 30
+            initialDelaySeconds: 60
             periodSeconds: 10
           readinessProbe:
             httpGet:
               path: /ready
               port: 8080
-            initialDelaySeconds: 10
+            initialDelaySeconds: 30
             periodSeconds: 5
       volumes:
         - name: app-config
           configMap:
             name: llm-gateway-app
-        - name: deps
-          emptyDir: {}

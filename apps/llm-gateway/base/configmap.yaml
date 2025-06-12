@@ -129,7 +129,7 @@ data:
             raise HTTPException(status_code=503, detail="Ollama not available")
 
   requirements.txt: |
-    fastapi==0.115.12
-    uvicorn==0.36.1
-    httpx==0.28.1
-    pydantic==2.10.8
+    fastapi
+    uvicorn
+    httpx
+    pydantic
