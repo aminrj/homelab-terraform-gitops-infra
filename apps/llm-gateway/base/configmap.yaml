@@ -1,15 +1,25 @@
+# apps/llm-gateway/base/configmap.yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: llm-gateway-app
   namespace: llm-gateway
 data:
+  requirements.txt: |
+    fastapi
+    uvicorn[standard]
+    httpx
+    pydantic
+
   main.py: |
     from fastapi import FastAPI, HTTPException
+    from fastapi.responses import HTMLResponse
     from pydantic import BaseModel
     import httpx
     import os
     import logging
+    import time
+    from typing import Dict, Any
 
     # Configure logging
     logging.basicConfig(level=logging.INFO)
@@ -17,7 +27,7 @@ data:
 
     app = FastAPI(title="LLM Gateway", version="1.0.0")
 
-    OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://ollama-llama3.ollama.svc.cluster.local:11434")
+    OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://ollama-service.ollama.svc.cluster.local:11434")
     DEFAULT_MODEL = os.getenv("DEFAULT_MODEL", "llama3")
 
     class ChatRequest(BaseModel):
@@ -32,37 +42,188 @@ data:
         response: str
         model: str
         usage: dict
+        processing_time_ms: int
 
     def format_prompt_for_task(message: str, context: str, task_type: str) -> str:
+        """Enhanced prompt engineering for different task types"""
+        
         if task_type == "security_analysis":
-            return f"""You are a cybersecurity expert analyzing potential threats.
+            return f"""You are a specialized cybersecurity AI assistant integrated into a Security Operations Center (SOC) environment. Your role is to provide high-quality, actionable security analysis and insights.
+
+    ## Core Responsibilities:
+    1. **Threat Analysis**: Analyze security events, logs, and alerts with precision
+    2. **Risk Assessment**: Provide clear risk scoring (LOW/MEDIUM/HIGH) with justification  
+    3. **Actionable Recommendations**: Offer specific, implementable security measures
+    4. **Technical Accuracy**: Maintain high standards for technical details and terminology
+
+    ## Response Format Standards:
+    - **Risk Level**: Always clearly state [LOW/MEDIUM/HIGH]
+    - **Threat Type**: Identify specific attack vectors or security concerns
+    - **Analysis**: Provide detailed technical analysis with evidence
+    - **Recommendations**: List specific, prioritized actions to take
+
+    ## Risk Assessment Criteria:
+    - **HIGH**: Immediate threat to confidentiality, integrity, or availability; active exploitation likely; requires immediate response
+    - **MEDIUM**: Potential security weakness; indicators of suspicious activity; requires investigation within 24 hours
+    - **LOW**: Security hygiene issues; minor policy violations; can be addressed during normal operations
 
     Context: {context}
-    Task: Analyze the following for security threats and provide:
-    1. Risk Level: [LOW/MEDIUM/HIGH]
-    2. Threat Type: [if applicable]
-    3. Analysis: [detailed explanation]
-    4. Recommendations: [actionable steps]
 
-    Data to analyze: {message}
-
-    Analysis:"""
-        elif task_type == "code_analysis":
-            return f"""You are a security-focused code reviewer.
-
-    Context: {context}
-    Task: Review the following code for security vulnerabilities:
-
+    Security Event/Alert to Analyze:
     {message}
 
-    Review:"""
-        else:
-            return f"{context}\n\nUser: {message}\nAssistant:"
+    Analysis:"""
+
+        elif task_type == "code_analysis":
+            return f"""You are a security-focused code reviewer with expertise in identifying vulnerabilities and security anti-patterns.
+
+    ## Your Role:
+    - Identify security vulnerabilities in code
+    - Explain potential attack vectors
+    - Provide specific remediation steps
+    - Rate severity of findings
+
+    ## Analysis Framework:
+    1. **Vulnerability Assessment**: What security issues exist?
+    2. **Severity Rating**: Critical/High/Medium/Low based on exploitability
+    3. **Attack Scenarios**: How could this be exploited?
+    4. **Remediation**: Specific code changes needed
+    5. **Best Practices**: Security recommendations
+
+    Context: {context}
+
+    Code to Review:
+    {message}
+
+    Security Review:"""
+
+        elif task_type == "incident_response":
+            return f"""You are an expert incident response analyst helping to investigate and contain security incidents.
+
+    ## Your Mission:
+    - Analyze incident details and timeline
+    - Identify attack vectors and TTPs
+    - Recommend containment and eradication steps
+    - Suggest recovery procedures
+
+    ## Response Structure:
+    1. **Incident Classification**: Type and severity
+    2. **Timeline Analysis**: Attack progression
+    3. **Impact Assessment**: Systems and data affected
+    4. **Immediate Actions**: Containment steps
+    5. **Investigation Steps**: Evidence collection
+    6. **Recovery Plan**: Restoration procedures
+
+    Context: {context}
+
+    Incident Details:
+    {message}
+
+    Incident Response Analysis:"""
+
+        elif task_type == "threat_intelligence":
+            return f"""You are a threat intelligence analyst specializing in cyber threat research and analysis.
+
+    ## Your Expertise:
+    - Analyze threat indicators and patterns
+    - Identify threat actor TTPs
+    - Assess threat landscape changes
+    - Provide strategic threat insights
+
+    ## Analysis Areas:
+    1. **Threat Attribution**: Who is behind this?
+    2. **Campaign Analysis**: Part of larger operation?
+    3. **TTPs Mapping**: MITRE ATT&CK techniques
+    4. **IOCs**: Indicators of compromise
+    5. **Defensive Measures**: How to detect/prevent
+
+    Context: {context}
+
+    Threat Data:
+    {message}
+
+    Threat Intelligence Assessment:"""
+
+        else:  # general
+            return f"""You are a helpful AI assistant specializing in cybersecurity topics.
+
+    Context: {context}
+
+    User: {message}
+    
+    Assistant:"""
+
+    @app.get("/", response_class=HTMLResponse)
+    async def test_interface():
+        return '''<!DOCTYPE html>
+    <html>
+    <head>
+        <title>LLM Gateway Test Interface</title>
+        <style>
+            body { font-family: Arial, sans-serif; margin: 40px; }
+            .container { max-width: 800px; margin: 0 auto; }
+            textarea { width: 100%; height: 100px; margin: 10px 0; }
+            button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; }
+            .response { background: #f8f9fa; padding: 20px; margin: 20px 0; border-radius: 4px; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>LLM Gateway Test Interface</h1>
+            <form onsubmit="testLLM(event)">
+                <div>
+                    <label>Message:</label>
+                    <textarea id="message" placeholder="Enter your security alert or question..."></textarea>
+                </div>
+                <div>
+                    <label>Task Type:</label>
+                    <select id="task_type">
+                        <option value="security_analysis">Security Analysis</option>
+                        <option value="code_analysis">Code Review</option>
+                        <option value="incident_response">Incident Response</option>
+                        <option value="threat_intelligence">Threat Intelligence</option>
+                        <option value="general">General</option>
+                    </select>
+                </div>
+                <button type="submit">Analyze</button>
+            </form>
+            <div id="response" class="response" style="display: none;"></div>
+        </div>
+        <script>
+            async function testLLM(event) {
+                event.preventDefault();
+                const message = document.getElementById('message').value;
+                const task_type = document.getElementById('task_type').value;
+                const responseDiv = document.getElementById('response');
+                
+                responseDiv.style.display = 'block';
+                responseDiv.innerHTML = 'Processing...';
+                
+                try {
+                    const response = await fetch('/chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message, task_type })
+                    });
+                    const data = await response.json();
+                    responseDiv.innerHTML = '<pre>' + data.response + '</pre>';
+                } catch (error) {
+                    responseDiv.innerHTML = 'Error: ' + error.message;
+                }
+            }
+        </script>
+    </body>
+    </html>'''
+
+    @app.get("/test", response_class=HTMLResponse) 
+    async def test_interface_alt():
+        return await test_interface()
 
     @app.post("/chat", response_model=ChatResponse)
     async def chat(request: ChatRequest):
+        start_time = time.time()
         try:
-            logger.info(f"LLM request: model={request.model}, task_type={request.task_type}")
+            logger.info(f"LLM request: model={request.model}, task_type={request.task_type}, message_length={len(request.message)}")
             
             formatted_prompt = format_prompt_for_task(
                 request.message, 
@@ -70,8 +231,8 @@ data:
                 request.task_type
             )
             
-            # Adjust temperature based on task type
-            temp = 0.2 if request.task_type in ["security_analysis", "code_analysis"] else request.temperature
+            # Adjust temperature based on task type for optimal results
+            temp = 0.2 if request.task_type in ["security_analysis", "code_analysis", "incident_response"] else request.temperature
             
             async with httpx.AsyncClient(timeout=300.0) as client:
                 ollama_request = {
@@ -80,7 +241,9 @@ data:
                     "stream": False,
                     "options": {
                         "temperature": temp,
-                        "num_predict": request.max_tokens
+                        "num_predict": request.max_tokens,
+                        "top_p": 0.9,
+                        "repeat_penalty": 1.1
                     }
                 }
                 
@@ -91,6 +254,8 @@ data:
                 response.raise_for_status()
                 
                 result = response.json()
+                end_time = time.time()
+                processing_time_ms = int((end_time - start_time) * 1000)
                 
                 return ChatResponse(
                     response=result.get("response", ""),
@@ -98,8 +263,10 @@ data:
                     usage={
                         "prompt_tokens": result.get("prompt_eval_count", 0),
                         "completion_tokens": result.get("eval_count", 0),
-                        "total_time": result.get("total_duration", 0)
-                    }
+                        "total_time": result.get("total_duration", 0),
+                        "tokens_per_second": result.get("eval_count", 0) / (result.get("eval_duration", 1) / 1000000000) if result.get("eval_duration") else 0
+                    },
+                    processing_time_ms=processing_time_ms
                 )
                 
         except Exception as e:
@@ -117,19 +284,34 @@ data:
 
     @app.get("/health")
     async def health_check():
-        return {"status": "healthy"}
+        return {"status": "healthy", "timestamp": time.time()}
 
     @app.get("/ready")
     async def readiness_check():
         try:
             async with httpx.AsyncClient(timeout=5.0) as client:
                 await client.get(f"{OLLAMA_BASE_URL}/api/tags")
-            return {"status": "ready"}
+            return {"status": "ready", "ollama_connected": True}
         except:
             raise HTTPException(status_code=503, detail="Ollama not available")
 
-  requirements.txt: |
-    fastapi
-    uvicorn
-    httpx
-    pydantic
+    @app.get("/metrics")
+    async def get_metrics():
+        """Basic metrics endpoint for monitoring"""
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.get(f"{OLLAMA_BASE_URL}/api/tags")
+                models = response.json()
+            
+            return {
+                "status": "healthy",
+                "models_available": len(models.get("models", [])),
+                "timestamp": time.time(),
+                "gateway_version": "1.0.0"
+            }
+        except Exception as e:
+            return {
+                "status": "degraded",
+                "error": str(e),
+                "timestamp": time.time()
+            }

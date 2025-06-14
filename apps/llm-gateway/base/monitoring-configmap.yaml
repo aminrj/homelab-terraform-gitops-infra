@@ -1,0 +1,46 @@
+# apps/llm-gateway/base/monitoring-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: llm-monitoring-dashboard
+  namespace: llm-gateway
+data:
+  dashboard.html: |
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>LLM Performance Dashboard</title>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <style>
+            body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+            .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; }
+            .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+            .metric { text-align: center; padding: 10px; margin: 10px 0; border-radius: 4px; }
+            .metric.good { background: #d4edda; }
+            .metric.warning { background: #fff3cd; }
+            .metric.error { background: #f8d7da; }
+        </style>
+    </head>
+    <body>
+        <h1>🔍 LLM Performance Dashboard</h1>
+        <div class="dashboard">
+            <div class="card">
+                <h3>Response Times</h3>
+                <canvas id="responseTimeChart"></canvas>
+            </div>
+            <div class="card">
+                <h3>Token Usage</h3>
+                <canvas id="tokenChart"></canvas>
+            </div>
+            <div class="card">
+                <h3>Real-time Metrics</h3>
+                <div id="realTimeMetrics"></div>
+            </div>
+        </div>
+        
+        <script>
+            // Real-time dashboard code here
+            // Fetch metrics from /metrics endpoint
+        </script>
+    </body>
+    </html>

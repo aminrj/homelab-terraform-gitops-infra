@@ -1,3 +1,4 @@
+# apps/overlays/qa/kustomization.yaml
 resources:
   - ../../base
   - secrets.yaml

@@ -46,3 +46,15 @@ variable "storage_class" {
   type        = string
   default     = "longhorn"
 }
+
+variable "pg_storage_class" {
+  description = "Storage class for PostgreSQL/CNPG"
+  type        = string
+  default     = "cnpg-longhorn"
+}
+
+variable "use_longhorn_storage" {
+  description = "Whether to use Longhorn storage"
+  type        = bool
+  default     = true
+}

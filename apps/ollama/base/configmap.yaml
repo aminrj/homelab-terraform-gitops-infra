@@ -1,3 +1,4 @@
+# apps/ollama/base/configmap.yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:

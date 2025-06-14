@@ -1,0 +1,83 @@
+{
+  "workflows": [
+    {
+      "name": "Security Alert Analysis Pipeline",
+      "description": "Processes security alerts through multiple LLM models",
+      "nodes": [
+        {
+          "type": "webhook",
+          "name": "Security Alert Webhook",
+          "webhook_path": "/security-alert"
+        },
+        {
+          "type": "llmGateway", 
+          "name": "Quick Triage",
+          "model": "phi3:mini",
+          "task_type": "security_analysis"
+        },
+        {
+          "type": "if",
+          "name": "Check Risk Level",
+          "condition": "{{$json.llm_response}} includes 'HIGH'"
+        },
+        {
+          "type": "llmGateway",
+          "name": "Detailed Analysis", 
+          "model": "mistral:7b",
+          "task_type": "security_analysis"
+        },
+        {
+          "type": "llmTestRunner",
+          "name": "Validate Response",
+          "test_action": "single_test"
+        }
+      ]
+    },
+    {
+      "name": "Code Review Automation",
+      "description": "Automated security code review workflow",
+      "nodes": [
+        {
+          "type": "webhook",
+          "name": "Code Review Trigger"
+        },
+        {
+          "type": "llmGateway",
+          "name": "Security Code Review",
+          "model": "qwen2.5:7b", 
+          "task_type": "code_analysis"
+        },
+        {
+          "type": "llmModelManager",
+          "name": "Compare Models",
+          "action": "compare_models"
+        }
+      ]
+    },
+    {
+      "name": "LLM Performance Testing",
+      "description": "Continuous testing of LLM model performance",
+      "nodes": [
+        {
+          "type": "cron",
+          "name": "Hourly Test Schedule",
+          "schedule": "0 * * * *"
+        },
+        {
+          "type": "llmTestRunner",
+          "name": "Run All Tests",
+          "test_action": "run_all"
+        },
+        {
+          "type": "if",
+          "name": "Check Success Rate",
+          "condition": "{{$json.test_results.summary.success_rate}} < 80"
+        },
+        {
+          "type": "webhook",
+          "name": "Alert on Failure"
+        }
+      ]
+    }
+  ]
+}

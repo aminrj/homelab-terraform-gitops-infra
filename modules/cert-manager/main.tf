@@ -22,13 +22,23 @@ resource "helm_release" "cert_manager_crds" {
 }
 
 # Wait for CRDs to be registered
-resource "time_sleep" "wait_for_crds" {
-  depends_on = [helm_release.cert_manager_crds]
-  create_duration = "10s"
+# resource "time_sleep" "wait_for_crds" {
+#   depends_on = [helm_release.cert_manager_crds]
+#   create_duration = "10s"
+# }
+resource "null_resource" "wait_for_cert_manager_ready" {
+
+  provisioner "local-exec" {
+    command = <<EOT
+    kubectl -n cert-manager rollout status deployment cert-manager --timeout=120s
+    EOT
+  }
 }
 
+
 resource "helm_release" "cert_manager_app" {
-  depends_on = [time_sleep.wait_for_crds]
+  # depends_on = [time_sleep.wait_for_crds]
+  depends_on = [null_resource.wait_for_cert_manager_ready]
   name       = "cert-manager"
   repository = "https://charts.jetstack.io"
   chart      = "cert-manager"
@@ -47,10 +57,13 @@ resource "helm_release" "cert_manager_app" {
 # Now that the CRDs and the controller are definitely in place...
 resource "kubernetes_manifest" "letsencrypt_staging" {
   depends_on = [helm_release.cert_manager_app]
+  # depends_on = [null_resource.wait_for_cert_manager_ready]
+
   manifest = yamldecode(file("${path.module}/issuers/letsencrypt-staging.yaml"))
 }
 
 resource "kubernetes_manifest" "letsencrypt_prod" {
   depends_on = [helm_release.cert_manager_app]
+  # depends_on = [null_resource.wait_for_cert_manager_ready]
   manifest = yamldecode(file("${path.module}/issuers/letsencrypt-prod.yaml"))
 }
