@@ -1,0 +1,52 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: linkding-db-cnpg-v1
+  namespace: cnpg-qa
+spec:
+  description: Restored Postgres cluster for Linkding
+  imageName: quay.io/enterprisedb/postgresql:16.1
+  instances: 1
+
+  storage:
+    size: 5Gi
+
+  monitoring:
+    enablePodMonitor: true
+
+  resources:
+    requests:
+      memory: 600Mi
+
+  # 👇 Restore from backup
+  recovery:
+    source: clusterBackup  # <-- Must match name in `externalClusters`
+
+  externalClusters:
+    - name: clusterBackup
+      barmanObjectStore:
+        destinationPath: https://homelabstorageaccountqa.blob.core.windows.net/linkding-db
+        serverName: linkding-db
+        azureCredentials:
+          storageAccount:
+            name: linkding-db-storage
+            key: container-name
+          storageSasToken:
+            name: linkding-db-storage
+            key: blob-sas
+
+  backup:
+    barmanObjectStore:
+      destinationPath: https://homelabstorageaccountqa.blob.core.windows.net/linkding-db
+      azureCredentials:
+        storageAccount:
+          name: linkding-db-storage
+          key: container-name
+        storageSasToken:
+          name: linkding-db-storage
+          key: blob-sas
+      wal:
+        compression: gzip
+      data:
+        compression: gzip
+    retentionPolicy: 14d

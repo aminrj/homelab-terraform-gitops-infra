@@ -1,0 +1,1067 @@
+apiVersion: v1
+items:
+- apiVersion: postgresql.cnpg.io/v1
+  kind: Cluster
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"postgresql.cnpg.io/v1","kind":"Cluster","metadata":{"annotations":{},"labels":{"argocd.argoproj.io/instance":"commafeed-db-prod"},"name":"commafeed-db-cnpg-v1","namespace":"cnpg-prod"},"spec":{"backup":{"barmanObjectStore":{"azureCredentials":{"storageAccount":{"key":"container-name","name":"commafeed-db-storage"},"storageSasToken":{"key":"blob-sas","name":"commafeed-db-storage"}},"data":{"compression":"gzip"},"destinationPath":"https://homelabstorageaccntprod.blob.core.windows.net/commafeed-db","wal":{"compression":"gzip"}},"retentionPolicy":"14d"},"bootstrap":{"initdb":{"database":"commafeed","owner":"commafeed","secret":{"name":"commafeed-db-creds"}}},"description":"Postgres cluster for the commafeed application","externalClusters":[{"barmanObjectStore":{"azureCredentials":{"storageAccount":{"key":"container-name","name":"commafeed-db-storage"},"storageSasToken":{"key":"blob-sas","name":"commafeed-db-storage"}},"destinationPath":"https://homelabstorageaccntprod.blob.core.windows.net/commafeed-db","serverName":"commafeed-db"},"name":"clusterBackup"}],"imageName":"quay.io/enterprisedb/postgresql:16.1","inheritedMetadata":{"labels":{"app":"commafeed-database","policy-type":"database"}},"instances":1,"monitoring":{"enablePodMonitor":true},"resources":{"requests":{"memory":"600Mi"}},"storage":{"size":"5Gi"}}}
+    creationTimestamp: "2025-06-15T08:06:16Z"
+    generation: 1
+    labels:
+      argocd.argoproj.io/instance: commafeed-db-prod
+    name: commafeed-db-cnpg-v1
+    namespace: cnpg-prod
+    resourceVersion: "553156"
+    uid: 6ecbed2d-dffb-4566-8bc3-de1616c75076
+  spec:
+    affinity:
+      podAntiAffinityType: preferred
+    backup:
+      barmanObjectStore:
+        azureCredentials:
+          storageAccount:
+            key: container-name
+            name: commafeed-db-storage
+          storageSasToken:
+            key: blob-sas
+            name: commafeed-db-storage
+        data:
+          compression: gzip
+        destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/commafeed-db
+        wal:
+          compression: gzip
+      retentionPolicy: 14d
+      target: prefer-standby
+    bootstrap:
+      initdb:
+        database: commafeed
+        encoding: UTF8
+        localeCType: C
+        localeCollate: C
+        owner: commafeed
+        secret:
+          name: commafeed-db-creds
+    description: Postgres cluster for the commafeed application
+    enablePDB: true
+    enableSuperuserAccess: false
+    externalClusters:
+    - barmanObjectStore:
+        azureCredentials:
+          storageAccount:
+            key: container-name
+            name: commafeed-db-storage
+          storageSasToken:
+            key: blob-sas
+            name: commafeed-db-storage
+        destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/commafeed-db
+        serverName: commafeed-db
+      name: clusterBackup
+    failoverDelay: 0
+    imageName: quay.io/enterprisedb/postgresql:16.1
+    inheritedMetadata:
+      labels:
+        app: commafeed-database
+        policy-type: database
+    instances: 1
+    logLevel: info
+    maxSyncReplicas: 0
+    minSyncReplicas: 0
+    monitoring:
+      customQueriesConfigMap:
+      - key: queries
+        name: cnpg-default-monitoring
+      disableDefaultQueries: false
+      enablePodMonitor: true
+    postgresGID: 26
+    postgresUID: 26
+    postgresql:
+      parameters:
+        archive_mode: "on"
+        archive_timeout: 5min
+        dynamic_shared_memory_type: posix
+        full_page_writes: "on"
+        log_destination: csvlog
+        log_directory: /controller/log
+        log_filename: postgres
+        log_rotation_age: "0"
+        log_rotation_size: "0"
+        log_truncate_on_rotation: "false"
+        logging_collector: "on"
+        max_parallel_workers: "32"
+        max_replication_slots: "32"
+        max_worker_processes: "32"
+        shared_memory_type: mmap
+        shared_preload_libraries: ""
+        ssl_max_protocol_version: TLSv1.3
+        ssl_min_protocol_version: TLSv1.3
+        wal_keep_size: 512MB
+        wal_level: logical
+        wal_log_hints: "on"
+        wal_receiver_timeout: 5s
+        wal_sender_timeout: 5s
+      syncReplicaElectionConstraint:
+        enabled: false
+    primaryUpdateMethod: restart
+    primaryUpdateStrategy: unsupervised
+    replicationSlots:
+      highAvailability:
+        enabled: true
+        slotPrefix: _cnpg_
+      synchronizeReplicas:
+        enabled: true
+      updateInterval: 30
+    resources:
+      requests:
+        memory: 600Mi
+    smartShutdownTimeout: 180
+    startDelay: 3600
+    stopDelay: 1800
+    storage:
+      resizeInUseVolumes: true
+      size: 5Gi
+    switchoverDelay: 3600
+  status:
+    availableArchitectures:
+    - goArch: amd64
+      hash: 024c5162e1dee336b21121d781397b347d04939a857d9d8a47664d1796e8b7c9
+    - goArch: arm64
+      hash: 63f3a3fbe19b8fe1c26a0e516ecb965c3412e390729a02706825399f585d9298
+    certificates:
+      clientCASecret: commafeed-db-cnpg-v1-ca
+      expirations:
+        commafeed-db-cnpg-v1-ca: 2025-09-13 08:01:17 +0000 UTC
+        commafeed-db-cnpg-v1-replication: 2025-09-13 08:01:18 +0000 UTC
+        commafeed-db-cnpg-v1-server: 2025-09-13 08:01:18 +0000 UTC
+      replicationTLSSecret: commafeed-db-cnpg-v1-replication
+      serverAltDNSNames:
+      - commafeed-db-cnpg-v1-rw
+      - commafeed-db-cnpg-v1-rw.cnpg-prod
+      - commafeed-db-cnpg-v1-rw.cnpg-prod.svc
+      - commafeed-db-cnpg-v1-rw.cnpg-prod.svc.cluster.local
+      - commafeed-db-cnpg-v1-r
+      - commafeed-db-cnpg-v1-r.cnpg-prod
+      - commafeed-db-cnpg-v1-r.cnpg-prod.svc
+      - commafeed-db-cnpg-v1-r.cnpg-prod.svc.cluster.local
+      - commafeed-db-cnpg-v1-ro
+      - commafeed-db-cnpg-v1-ro.cnpg-prod
+      - commafeed-db-cnpg-v1-ro.cnpg-prod.svc
+      - commafeed-db-cnpg-v1-ro.cnpg-prod.svc.cluster.local
+      serverCASecret: commafeed-db-cnpg-v1-ca
+      serverTLSSecret: commafeed-db-cnpg-v1-server
+    cloudNativePGCommitHash: 1535f3c17
+    cloudNativePGOperatorHash: 024c5162e1dee336b21121d781397b347d04939a857d9d8a47664d1796e8b7c9
+    conditions:
+    - lastTransitionTime: "2025-06-15T17:05:37Z"
+      message: Cluster is Ready
+      reason: ClusterIsReady
+      status: "True"
+      type: Ready
+    - lastTransitionTime: "2025-06-15T08:07:39Z"
+      message: 'unexpected failure invoking barman-cloud-wal-archive: exit status
+        1'
+      reason: ContinuousArchivingFailing
+      status: "False"
+      type: ContinuousArchiving
+    configMapResourceVersion:
+      metrics:
+        cnpg-default-monitoring: "546928"
+    currentPrimary: commafeed-db-cnpg-v1-1
+    currentPrimaryTimestamp: "2025-06-15T08:07:38.733841Z"
+    healthyPVC:
+    - commafeed-db-cnpg-v1-1
+    image: quay.io/enterprisedb/postgresql:16.1
+    instanceNames:
+    - commafeed-db-cnpg-v1-1
+    instances: 1
+    instancesReportedState:
+      commafeed-db-cnpg-v1-1:
+        ip: 10.1.105.153
+        isPrimary: true
+        timeLineID: 1
+    instancesStatus:
+      healthy:
+      - commafeed-db-cnpg-v1-1
+    latestGeneratedNode: 1
+    managedRolesStatus: {}
+    pgDataImageInfo:
+      image: quay.io/enterprisedb/postgresql:16.1
+      majorVersion: 16
+    phase: Cluster in healthy state
+    poolerIntegrations:
+      pgBouncerIntegration: {}
+    pvcCount: 1
+    readService: commafeed-db-cnpg-v1-r
+    readyInstances: 1
+    secretsResourceVersion:
+      applicationSecretVersion: "490380"
+      clientCaSecretVersion: "5789"
+      replicationSecretVersion: "5855"
+      serverCaSecretVersion: "5789"
+      serverSecretVersion: "5820"
+    switchReplicaClusterStatus: {}
+    targetPrimary: commafeed-db-cnpg-v1-1
+    targetPrimaryTimestamp: "2025-06-15T08:06:22.643758Z"
+    timelineID: 1
+    topology:
+      instances:
+        commafeed-db-cnpg-v1-1: {}
+      nodesUsed: 1
+      successfullyExtracted: true
+    writeService: commafeed-db-cnpg-v1-rw
+- apiVersion: postgresql.cnpg.io/v1
+  kind: Cluster
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"postgresql.cnpg.io/v1","kind":"Cluster","metadata":{"annotations":{},"labels":{"argocd.argoproj.io/instance":"n8n-db-prod"},"name":"n8n-db-cnpg-v1","namespace":"cnpg-prod"},"spec":{"backup":{"barmanObjectStore":{"azureCredentials":{"storageAccount":{"key":"container-name","name":"n8n-db-storage"},"storageSasToken":{"key":"blob-sas","name":"n8n-db-storage"}},"data":{"compression":"gzip"},"destinationPath":"https://homelabstorageaccntprod.blob.core.windows.net/n8n-db","wal":{"compression":"gzip"}},"retentionPolicy":"14d"},"bootstrap":{"initdb":{"database":"n8n","owner":"n8n","secret":{"name":"n8n-db-creds"}}},"description":"Postgres cluster for the n8n application","externalClusters":[{"barmanObjectStore":{"azureCredentials":{"storageAccount":{"key":"container-name","name":"n8n-db-storage"},"storageSasToken":{"key":"blob-sas","name":"n8n-db-storage"}},"destinationPath":"https://homelabstorageaccntprod.blob.core.windows.net/n8n-db","serverName":"n8n-db"},"name":"clusterBackup"}],"imageName":"quay.io/enterprisedb/postgresql:16.1","inheritedMetadata":{"labels":{"app":"n8n-database","policy-type":"database"}},"instances":3,"monitoring":{"enablePodMonitor":true},"resources":{"requests":{"memory":"600Mi"}},"storage":{"size":"5Gi"}}}
+    creationTimestamp: "2025-06-15T16:18:20Z"
+    generation: 2
+    labels:
+      argocd.argoproj.io/instance: n8n-db-prod
+    name: n8n-db-cnpg-v1
+    namespace: cnpg-prod
+    resourceVersion: "550247"
+    uid: 325bb0f3-4328-4095-ac8f-e271969eb701
+  spec:
+    affinity:
+      podAntiAffinityType: preferred
+    backup:
+      barmanObjectStore:
+        azureCredentials:
+          storageAccount:
+            key: container-name
+            name: n8n-db-storage
+          storageSasToken:
+            key: blob-sas
+            name: n8n-db-storage
+        data:
+          compression: gzip
+        destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/n8n-db
+        wal:
+          compression: gzip
+      retentionPolicy: 14d
+      target: prefer-standby
+    bootstrap:
+      initdb:
+        database: n8n
+        encoding: UTF8
+        localeCType: C
+        localeCollate: C
+        owner: n8n
+        secret:
+          name: n8n-db-creds
+    description: Postgres cluster for the n8n application
+    enablePDB: true
+    enableSuperuserAccess: false
+    externalClusters:
+    - barmanObjectStore:
+        azureCredentials:
+          storageAccount:
+            key: container-name
+            name: n8n-db-storage
+          storageSasToken:
+            key: blob-sas
+            name: n8n-db-storage
+        destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/n8n-db
+        serverName: n8n-db
+      name: clusterBackup
+    failoverDelay: 0
+    imageName: quay.io/enterprisedb/postgresql:16.1
+    inheritedMetadata:
+      labels:
+        app: n8n-database
+        policy-type: database
+    instances: 3
+    logLevel: info
+    maxSyncReplicas: 0
+    minSyncReplicas: 0
+    monitoring:
+      customQueriesConfigMap:
+      - key: queries
+        name: cnpg-default-monitoring
+      disableDefaultQueries: false
+      enablePodMonitor: true
+    postgresGID: 26
+    postgresUID: 26
+    postgresql:
+      parameters:
+        archive_mode: "on"
+        archive_timeout: 5min
+        dynamic_shared_memory_type: posix
+        full_page_writes: "on"
+        log_destination: csvlog
+        log_directory: /controller/log
+        log_filename: postgres
+        log_rotation_age: "0"
+        log_rotation_size: "0"
+        log_truncate_on_rotation: "false"
+        logging_collector: "on"
+        max_parallel_workers: "32"
+        max_replication_slots: "32"
+        max_worker_processes: "32"
+        shared_memory_type: mmap
+        shared_preload_libraries: ""
+        ssl_max_protocol_version: TLSv1.3
+        ssl_min_protocol_version: TLSv1.3
+        wal_keep_size: 512MB
+        wal_level: logical
+        wal_log_hints: "on"
+        wal_receiver_timeout: 5s
+        wal_sender_timeout: 5s
+      syncReplicaElectionConstraint:
+        enabled: false
+    primaryUpdateMethod: restart
+    primaryUpdateStrategy: unsupervised
+    replicationSlots:
+      highAvailability:
+        enabled: true
+        slotPrefix: _cnpg_
+      synchronizeReplicas:
+        enabled: true
+      updateInterval: 30
+    resources:
+      requests:
+        memory: 600Mi
+    smartShutdownTimeout: 180
+    startDelay: 3600
+    stopDelay: 1800
+    storage:
+      resizeInUseVolumes: true
+      size: 5Gi
+    switchoverDelay: 3600
+  status:
+    availableArchitectures:
+    - goArch: amd64
+      hash: 024c5162e1dee336b21121d781397b347d04939a857d9d8a47664d1796e8b7c9
+    - goArch: arm64
+      hash: 63f3a3fbe19b8fe1c26a0e516ecb965c3412e390729a02706825399f585d9298
+    certificates:
+      clientCASecret: n8n-db-cnpg-v1-ca
+      expirations:
+        n8n-db-cnpg-v1-ca: 2025-09-13 16:13:21 +0000 UTC
+        n8n-db-cnpg-v1-replication: 2025-09-13 16:13:21 +0000 UTC
+        n8n-db-cnpg-v1-server: 2025-09-13 16:13:21 +0000 UTC
+      replicationTLSSecret: n8n-db-cnpg-v1-replication
+      serverAltDNSNames:
+      - n8n-db-cnpg-v1-rw
+      - n8n-db-cnpg-v1-rw.cnpg-prod
+      - n8n-db-cnpg-v1-rw.cnpg-prod.svc
+      - n8n-db-cnpg-v1-rw.cnpg-prod.svc.cluster.local
+      - n8n-db-cnpg-v1-r
+      - n8n-db-cnpg-v1-r.cnpg-prod
+      - n8n-db-cnpg-v1-r.cnpg-prod.svc
+      - n8n-db-cnpg-v1-r.cnpg-prod.svc.cluster.local
+      - n8n-db-cnpg-v1-ro
+      - n8n-db-cnpg-v1-ro.cnpg-prod
+      - n8n-db-cnpg-v1-ro.cnpg-prod.svc
+      - n8n-db-cnpg-v1-ro.cnpg-prod.svc.cluster.local
+      serverCASecret: n8n-db-cnpg-v1-ca
+      serverTLSSecret: n8n-db-cnpg-v1-server
+    cloudNativePGCommitHash: 1535f3c17
+    cloudNativePGOperatorHash: 024c5162e1dee336b21121d781397b347d04939a857d9d8a47664d1796e8b7c9
+    conditions:
+    - lastTransitionTime: "2025-06-15T17:03:33Z"
+      message: Cluster is Ready
+      reason: ClusterIsReady
+      status: "True"
+      type: Ready
+    - lastTransitionTime: "2025-06-15T16:49:23Z"
+      message: Continuous archiving is working
+      reason: ContinuousArchivingSuccess
+      status: "True"
+      type: ContinuousArchiving
+    configMapResourceVersion:
+      metrics:
+        cnpg-default-monitoring: "546928"
+    currentPrimary: n8n-db-cnpg-v1-1
+    currentPrimaryTimestamp: "2025-06-15T16:18:46.874484Z"
+    healthyPVC:
+    - n8n-db-cnpg-v1-1
+    - n8n-db-cnpg-v1-2
+    - n8n-db-cnpg-v1-3
+    image: quay.io/enterprisedb/postgresql:16.1
+    instanceNames:
+    - n8n-db-cnpg-v1-1
+    - n8n-db-cnpg-v1-2
+    - n8n-db-cnpg-v1-3
+    instances: 3
+    instancesReportedState:
+      n8n-db-cnpg-v1-1:
+        ip: 10.1.105.149
+        isPrimary: true
+        timeLineID: 1
+      n8n-db-cnpg-v1-2:
+        ip: 10.1.250.16
+        isPrimary: false
+        timeLineID: 1
+      n8n-db-cnpg-v1-3:
+        ip: 10.1.23.16
+        isPrimary: false
+        timeLineID: 1
+    instancesStatus:
+      healthy:
+      - n8n-db-cnpg-v1-1
+      - n8n-db-cnpg-v1-2
+      - n8n-db-cnpg-v1-3
+    latestGeneratedNode: 3
+    managedRolesStatus: {}
+    pgDataImageInfo:
+      image: quay.io/enterprisedb/postgresql:16.1
+      majorVersion: 16
+    phase: Cluster in healthy state
+    poolerIntegrations:
+      pgBouncerIntegration: {}
+    pvcCount: 3
+    readService: n8n-db-cnpg-v1-r
+    readyInstances: 3
+    secretsResourceVersion:
+      applicationSecretVersion: "480653"
+      clientCaSecretVersion: "479477"
+      replicationSecretVersion: "479482"
+      serverCaSecretVersion: "479477"
+      serverSecretVersion: "479480"
+    switchReplicaClusterStatus: {}
+    targetPrimary: n8n-db-cnpg-v1-1
+    targetPrimaryTimestamp: "2025-06-15T16:18:21.455119Z"
+    timelineID: 1
+    topology:
+      instances:
+        n8n-db-cnpg-v1-1: {}
+        n8n-db-cnpg-v1-2: {}
+        n8n-db-cnpg-v1-3: {}
+      nodesUsed: 3
+      successfullyExtracted: true
+    writeService: n8n-db-cnpg-v1-rw
+- apiVersion: postgresql.cnpg.io/v1
+  kind: Cluster
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"postgresql.cnpg.io/v1","kind":"Cluster","metadata":{"annotations":{},"labels":{"argocd.argoproj.io/instance":"commafeed-db-qa"},"name":"commafeed-db-cnpg-v1","namespace":"cnpg-qa"},"spec":{"backup":{"barmanObjectStore":{"azureCredentials":{"storageAccount":{"key":"container-name","name":"commafeed-db-storage"},"storageSasToken":{"key":"blob-sas","name":"commafeed-db-storage"}},"data":{"compression":"gzip"},"destinationPath":"https://homelabstorageaccountqa.blob.core.windows.net/commafeed-db","wal":{"compression":"gzip"}},"retentionPolicy":"14d"},"bootstrap":{"initdb":{"database":"commafeed","owner":"commafeed","secret":{"name":"commafeed-db-creds"}}},"description":"Postgres cluster for the commafeed application","externalClusters":[{"barmanObjectStore":{"azureCredentials":{"storageAccount":{"key":"container-name","name":"commafeed-db-storage"},"storageSasToken":{"key":"blob-sas","name":"commafeed-db-storage"}},"destinationPath":"https://homelabstorageaccountqa.blob.core.windows.net/commafeed-db","serverName":"commafeed-db"},"name":"clusterBackup"}],"imageName":"quay.io/enterprisedb/postgresql:16.1","inheritedMetadata":{"labels":{"app":"commafeed-database","policy-type":"database"}},"instances":1,"monitoring":{"enablePodMonitor":true},"resources":{"requests":{"memory":"600Mi"}},"storage":{"size":"5Gi"}}}
+    creationTimestamp: "2025-06-15T08:06:16Z"
+    generation: 1
+    labels:
+      argocd.argoproj.io/instance: commafeed-db-qa
+    name: commafeed-db-cnpg-v1
+    namespace: cnpg-qa
+    resourceVersion: "548704"
+    uid: cb392f50-c1b0-484a-8556-54775523e867
+  spec:
+    affinity:
+      podAntiAffinityType: preferred
+    backup:
+      barmanObjectStore:
+        azureCredentials:
+          storageAccount:
+            key: container-name
+            name: commafeed-db-storage
+          storageSasToken:
+            key: blob-sas
+            name: commafeed-db-storage
+        data:
+          compression: gzip
+        destinationPath: https://homelabstorageaccountqa.blob.core.windows.net/commafeed-db
+        wal:
+          compression: gzip
+      retentionPolicy: 14d
+      target: prefer-standby
+    bootstrap:
+      initdb:
+        database: commafeed
+        encoding: UTF8
+        localeCType: C
+        localeCollate: C
+        owner: commafeed
+        secret:
+          name: commafeed-db-creds
+    description: Postgres cluster for the commafeed application
+    enablePDB: true
+    enableSuperuserAccess: false
+    externalClusters:
+    - barmanObjectStore:
+        azureCredentials:
+          storageAccount:
+            key: container-name
+            name: commafeed-db-storage
+          storageSasToken:
+            key: blob-sas
+            name: commafeed-db-storage
+        destinationPath: https://homelabstorageaccountqa.blob.core.windows.net/commafeed-db
+        serverName: commafeed-db
+      name: clusterBackup
+    failoverDelay: 0
+    imageName: quay.io/enterprisedb/postgresql:16.1
+    inheritedMetadata:
+      labels:
+        app: commafeed-database
+        policy-type: database
+    instances: 1
+    logLevel: info
+    maxSyncReplicas: 0
+    minSyncReplicas: 0
+    monitoring:
+      customQueriesConfigMap:
+      - key: queries
+        name: cnpg-default-monitoring
+      disableDefaultQueries: false
+      enablePodMonitor: true
+    postgresGID: 26
+    postgresUID: 26
+    postgresql:
+      parameters:
+        archive_mode: "on"
+        archive_timeout: 5min
+        dynamic_shared_memory_type: posix
+        full_page_writes: "on"
+        log_destination: csvlog
+        log_directory: /controller/log
+        log_filename: postgres
+        log_rotation_age: "0"
+        log_rotation_size: "0"
+        log_truncate_on_rotation: "false"
+        logging_collector: "on"
+        max_parallel_workers: "32"
+        max_replication_slots: "32"
+        max_worker_processes: "32"
+        shared_memory_type: mmap
+        shared_preload_libraries: ""
+        ssl_max_protocol_version: TLSv1.3
+        ssl_min_protocol_version: TLSv1.3
+        wal_keep_size: 512MB
+        wal_level: logical
+        wal_log_hints: "on"
+        wal_receiver_timeout: 5s
+        wal_sender_timeout: 5s
+      syncReplicaElectionConstraint:
+        enabled: false
+    primaryUpdateMethod: restart
+    primaryUpdateStrategy: unsupervised
+    replicationSlots:
+      highAvailability:
+        enabled: true
+        slotPrefix: _cnpg_
+      synchronizeReplicas:
+        enabled: true
+      updateInterval: 30
+    resources:
+      requests:
+        memory: 600Mi
+    smartShutdownTimeout: 180
+    startDelay: 3600
+    stopDelay: 1800
+    storage:
+      resizeInUseVolumes: true
+      size: 5Gi
+    switchoverDelay: 3600
+  status:
+    availableArchitectures:
+    - goArch: amd64
+      hash: 024c5162e1dee336b21121d781397b347d04939a857d9d8a47664d1796e8b7c9
+    - goArch: arm64
+      hash: 63f3a3fbe19b8fe1c26a0e516ecb965c3412e390729a02706825399f585d9298
+    certificates:
+      clientCASecret: commafeed-db-cnpg-v1-ca
+      expirations:
+        commafeed-db-cnpg-v1-ca: 2025-09-13 08:01:17 +0000 UTC
+        commafeed-db-cnpg-v1-replication: 2025-09-13 08:01:18 +0000 UTC
+        commafeed-db-cnpg-v1-server: 2025-09-13 08:01:18 +0000 UTC
+      replicationTLSSecret: commafeed-db-cnpg-v1-replication
+      serverAltDNSNames:
+      - commafeed-db-cnpg-v1-rw
+      - commafeed-db-cnpg-v1-rw.cnpg-qa
+      - commafeed-db-cnpg-v1-rw.cnpg-qa.svc
+      - commafeed-db-cnpg-v1-rw.cnpg-qa.svc.cluster.local
+      - commafeed-db-cnpg-v1-r
+      - commafeed-db-cnpg-v1-r.cnpg-qa
+      - commafeed-db-cnpg-v1-r.cnpg-qa.svc
+      - commafeed-db-cnpg-v1-r.cnpg-qa.svc.cluster.local
+      - commafeed-db-cnpg-v1-ro
+      - commafeed-db-cnpg-v1-ro.cnpg-qa
+      - commafeed-db-cnpg-v1-ro.cnpg-qa.svc
+      - commafeed-db-cnpg-v1-ro.cnpg-qa.svc.cluster.local
+      serverCASecret: commafeed-db-cnpg-v1-ca
+      serverTLSSecret: commafeed-db-cnpg-v1-server
+    cloudNativePGCommitHash: 1535f3c17
+    cloudNativePGOperatorHash: 024c5162e1dee336b21121d781397b347d04939a857d9d8a47664d1796e8b7c9
+    conditions:
+    - lastTransitionTime: "2025-06-15T17:02:42Z"
+      message: Cluster is Ready
+      reason: ClusterIsReady
+      status: "True"
+      type: Ready
+    - lastTransitionTime: "2025-06-15T08:07:39Z"
+      message: 'unexpected failure invoking barman-cloud-wal-archive: exit status
+        1'
+      reason: ContinuousArchivingFailing
+      status: "False"
+      type: ContinuousArchiving
+    configMapResourceVersion:
+      metrics:
+        cnpg-default-monitoring: "546927"
+    currentPrimary: commafeed-db-cnpg-v1-1
+    currentPrimaryTimestamp: "2025-06-15T08:07:38.740969Z"
+    healthyPVC:
+    - commafeed-db-cnpg-v1-1
+    image: quay.io/enterprisedb/postgresql:16.1
+    instanceNames:
+    - commafeed-db-cnpg-v1-1
+    instances: 1
+    instancesReportedState:
+      commafeed-db-cnpg-v1-1:
+        ip: 10.1.105.176
+        isPrimary: true
+        timeLineID: 1
+    instancesStatus:
+      healthy:
+      - commafeed-db-cnpg-v1-1
+    latestGeneratedNode: 1
+    managedRolesStatus: {}
+    pgDataImageInfo:
+      image: quay.io/enterprisedb/postgresql:16.1
+      majorVersion: 16
+    phase: Cluster in healthy state
+    poolerIntegrations:
+      pgBouncerIntegration: {}
+    pvcCount: 1
+    readService: commafeed-db-cnpg-v1-r
+    readyInstances: 1
+    secretsResourceVersion:
+      applicationSecretVersion: "37380"
+      clientCaSecretVersion: "5777"
+      replicationSecretVersion: "5849"
+      serverCaSecretVersion: "5777"
+      serverSecretVersion: "5815"
+    switchReplicaClusterStatus: {}
+    targetPrimary: commafeed-db-cnpg-v1-1
+    targetPrimaryTimestamp: "2025-06-15T08:06:22.411793Z"
+    timelineID: 1
+    topology:
+      instances:
+        commafeed-db-cnpg-v1-1: {}
+      nodesUsed: 1
+      successfullyExtracted: true
+    writeService: commafeed-db-cnpg-v1-rw
+- apiVersion: postgresql.cnpg.io/v1
+  kind: Cluster
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"postgresql.cnpg.io/v1","kind":"Cluster","metadata":{"annotations":{},"labels":{"argocd.argoproj.io/instance":"linkding-db-qa"},"name":"linkding-db-cnpg-v1","namespace":"cnpg-qa"},"spec":{"backup":{"barmanObjectStore":{"azureCredentials":{"storageAccount":{"key":"container-name","name":"linkding-db-storage"},"storageSasToken":{"key":"blob-sas","name":"linkding-db-storage"}},"data":{"compression":"gzip"},"destinationPath":"https://homelabstorageaccountqa.blob.core.windows.net/linkding-db","wal":{"compression":"gzip"}},"retentionPolicy":"14d"},"bootstrap":{"initdb":{"database":"linkding","owner":"linkding","secret":{"name":"linkding-db-creds"}}},"description":"Postgres cluster for the linkding application","externalClusters":[{"barmanObjectStore":{"azureCredentials":{"storageAccount":{"key":"container-name","name":"linkding-db-storage"},"storageSasToken":{"key":"blob-sas","name":"linkding-db-storage"}},"destinationPath":"https://homelabstorageaccountqa.blob.core.windows.net/linkding-db","serverName":"linkding-db"},"name":"clusterBackup"}],"imageName":"quay.io/enterprisedb/postgresql:16.1","inheritedMetadata":{"labels":{"app":"linkding-database","policy-type":"database"}},"instances":1,"monitoring":{"enablePodMonitor":true},"resources":{"requests":{"memory":"600Mi"}},"storage":{"size":"5Gi"}}}
+    creationTimestamp: "2025-06-15T16:53:50Z"
+    generation: 1
+    labels:
+      argocd.argoproj.io/instance: linkding-db-qa
+    name: linkding-db-cnpg-v1
+    namespace: cnpg-qa
+    resourceVersion: "547553"
+    uid: c97f3e21-35be-4b00-8955-096ff24ea2bc
+  spec:
+    affinity:
+      podAntiAffinityType: preferred
+    backup:
+      barmanObjectStore:
+        azureCredentials:
+          storageAccount:
+            key: container-name
+            name: linkding-db-storage
+          storageSasToken:
+            key: blob-sas
+            name: linkding-db-storage
+        data:
+          compression: gzip
+        destinationPath: https://homelabstorageaccountqa.blob.core.windows.net/linkding-db
+        wal:
+          compression: gzip
+      retentionPolicy: 14d
+      target: prefer-standby
+    bootstrap:
+      initdb:
+        database: linkding
+        encoding: UTF8
+        localeCType: C
+        localeCollate: C
+        owner: linkding
+        secret:
+          name: linkding-db-creds
+    description: Postgres cluster for the linkding application
+    enablePDB: true
+    enableSuperuserAccess: false
+    externalClusters:
+    - barmanObjectStore:
+        azureCredentials:
+          storageAccount:
+            key: container-name
+            name: linkding-db-storage
+          storageSasToken:
+            key: blob-sas
+            name: linkding-db-storage
+        destinationPath: https://homelabstorageaccountqa.blob.core.windows.net/linkding-db
+        serverName: linkding-db
+      name: clusterBackup
+    failoverDelay: 0
+    imageName: quay.io/enterprisedb/postgresql:16.1
+    inheritedMetadata:
+      labels:
+        app: linkding-database
+        policy-type: database
+    instances: 1
+    logLevel: info
+    maxSyncReplicas: 0
+    minSyncReplicas: 0
+    monitoring:
+      customQueriesConfigMap:
+      - key: queries
+        name: cnpg-default-monitoring
+      disableDefaultQueries: false
+      enablePodMonitor: true
+    postgresGID: 26
+    postgresUID: 26
+    postgresql:
+      parameters:
+        archive_mode: "on"
+        archive_timeout: 5min
+        dynamic_shared_memory_type: posix
+        full_page_writes: "on"
+        log_destination: csvlog
+        log_directory: /controller/log
+        log_filename: postgres
+        log_rotation_age: "0"
+        log_rotation_size: "0"
+        log_truncate_on_rotation: "false"
+        logging_collector: "on"
+        max_parallel_workers: "32"
+        max_replication_slots: "32"
+        max_worker_processes: "32"
+        shared_memory_type: mmap
+        shared_preload_libraries: ""
+        ssl_max_protocol_version: TLSv1.3
+        ssl_min_protocol_version: TLSv1.3
+        wal_keep_size: 512MB
+        wal_level: logical
+        wal_log_hints: "on"
+        wal_receiver_timeout: 5s
+        wal_sender_timeout: 5s
+      syncReplicaElectionConstraint:
+        enabled: false
+    primaryUpdateMethod: restart
+    primaryUpdateStrategy: unsupervised
+    replicationSlots:
+      highAvailability:
+        enabled: true
+        slotPrefix: _cnpg_
+      synchronizeReplicas:
+        enabled: true
+      updateInterval: 30
+    resources:
+      requests:
+        memory: 600Mi
+    smartShutdownTimeout: 180
+    startDelay: 3600
+    stopDelay: 1800
+    storage:
+      resizeInUseVolumes: true
+      size: 5Gi
+    switchoverDelay: 3600
+  status:
+    availableArchitectures:
+    - goArch: amd64
+      hash: 024c5162e1dee336b21121d781397b347d04939a857d9d8a47664d1796e8b7c9
+    - goArch: arm64
+      hash: 63f3a3fbe19b8fe1c26a0e516ecb965c3412e390729a02706825399f585d9298
+    certificates:
+      clientCASecret: linkding-db-cnpg-v1-ca
+      expirations:
+        linkding-db-cnpg-v1-ca: 2025-09-13 16:48:51 +0000 UTC
+        linkding-db-cnpg-v1-replication: 2025-09-13 16:48:51 +0000 UTC
+        linkding-db-cnpg-v1-server: 2025-09-13 16:48:51 +0000 UTC
+      replicationTLSSecret: linkding-db-cnpg-v1-replication
+      serverAltDNSNames:
+      - linkding-db-cnpg-v1-rw
+      - linkding-db-cnpg-v1-rw.cnpg-qa
+      - linkding-db-cnpg-v1-rw.cnpg-qa.svc
+      - linkding-db-cnpg-v1-rw.cnpg-qa.svc.cluster.local
+      - linkding-db-cnpg-v1-r
+      - linkding-db-cnpg-v1-r.cnpg-qa
+      - linkding-db-cnpg-v1-r.cnpg-qa.svc
+      - linkding-db-cnpg-v1-r.cnpg-qa.svc.cluster.local
+      - linkding-db-cnpg-v1-ro
+      - linkding-db-cnpg-v1-ro.cnpg-qa
+      - linkding-db-cnpg-v1-ro.cnpg-qa.svc
+      - linkding-db-cnpg-v1-ro.cnpg-qa.svc.cluster.local
+      serverCASecret: linkding-db-cnpg-v1-ca
+      serverTLSSecret: linkding-db-cnpg-v1-server
+    cloudNativePGCommitHash: 1535f3c17
+    cloudNativePGOperatorHash: 024c5162e1dee336b21121d781397b347d04939a857d9d8a47664d1796e8b7c9
+    conditions:
+    - lastTransitionTime: "2025-06-15T16:53:51Z"
+      message: Cluster Is Not Ready
+      reason: ClusterIsNotReady
+      status: "False"
+      type: Ready
+    configMapResourceVersion:
+      metrics:
+        cnpg-default-monitoring: "546927"
+    image: quay.io/enterprisedb/postgresql:16.1
+    jobCount: 1
+    latestGeneratedNode: 1
+    managedRolesStatus: {}
+    pgDataImageInfo:
+      image: quay.io/enterprisedb/postgresql:16.1
+      majorVersion: 16
+    phase: Setting up primary
+    phaseReason: Creating primary instance linkding-db-cnpg-v1-1
+    poolerIntegrations:
+      pgBouncerIntegration: {}
+    readService: linkding-db-cnpg-v1-r
+    secretsResourceVersion:
+      applicationSecretVersion: "37342"
+      clientCaSecretVersion: "534839"
+      replicationSecretVersion: "534841"
+      serverCaSecretVersion: "534839"
+      serverSecretVersion: "534840"
+    switchReplicaClusterStatus: {}
+    targetPrimary: linkding-db-cnpg-v1-1
+    targetPrimaryTimestamp: "2025-06-15T16:54:24.370896Z"
+    topology:
+      successfullyExtracted: true
+    writeService: linkding-db-cnpg-v1-rw
+- apiVersion: postgresql.cnpg.io/v1
+  kind: Cluster
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"postgresql.cnpg.io/v1","kind":"Cluster","metadata":{"annotations":{},"labels":{"argocd.argoproj.io/instance":"n8n-db-qa"},"name":"n8n-db-cnpg-v1","namespace":"cnpg-qa"},"spec":{"backup":{"barmanObjectStore":{"azureCredentials":{"storageAccount":{"key":"container-name","name":"n8n-db-storage"},"storageSasToken":{"key":"blob-sas","name":"n8n-db-storage"}},"data":{"compression":"gzip"},"destinationPath":"https://homelabstorageaccountqa.blob.core.windows.net/n8n-db","wal":{"compression":"gzip"}},"retentionPolicy":"14d"},"bootstrap":{"initdb":{"database":"n8n","owner":"n8n","secret":{"name":"n8n-db-creds"}}},"description":"Postgres cluster for the n8n application","externalClusters":[{"barmanObjectStore":{"azureCredentials":{"storageAccount":{"key":"container-name","name":"n8n-db-storage"},"storageSasToken":{"key":"blob-sas","name":"n8n-db-storage"}},"destinationPath":"https://homelabstorageaccountqa.blob.core.windows.net/n8n-db","serverName":"n8n-db"},"name":"clusterBackup"}],"imageName":"quay.io/enterprisedb/postgresql:16.1","inheritedMetadata":{"labels":{"app":"n8n-database","policy-type":"database"}},"instances":3,"monitoring":{"enablePodMonitor":true},"resources":{"requests":{"memory":"600Mi"}},"storage":{"size":"5Gi"}}}
+    creationTimestamp: "2025-06-15T08:06:15Z"
+    generation: 1
+    labels:
+      argocd.argoproj.io/instance: n8n-db-qa
+    name: n8n-db-cnpg-v1
+    namespace: cnpg-qa
+    resourceVersion: "550791"
+    uid: dd997854-09f1-4a37-933f-929912b917fc
+  spec:
+    affinity:
+      podAntiAffinityType: preferred
+    backup:
+      barmanObjectStore:
+        azureCredentials:
+          storageAccount:
+            key: container-name
+            name: n8n-db-storage
+          storageSasToken:
+            key: blob-sas
+            name: n8n-db-storage
+        data:
+          compression: gzip
+        destinationPath: https://homelabstorageaccountqa.blob.core.windows.net/n8n-db
+        wal:
+          compression: gzip
+      retentionPolicy: 14d
+      target: prefer-standby
+    bootstrap:
+      initdb:
+        database: n8n
+        encoding: UTF8
+        localeCType: C
+        localeCollate: C
+        owner: n8n
+        secret:
+          name: n8n-db-creds
+    description: Postgres cluster for the n8n application
+    enablePDB: true
+    enableSuperuserAccess: false
+    externalClusters:
+    - barmanObjectStore:
+        azureCredentials:
+          storageAccount:
+            key: container-name
+            name: n8n-db-storage
+          storageSasToken:
+            key: blob-sas
+            name: n8n-db-storage
+        destinationPath: https://homelabstorageaccountqa.blob.core.windows.net/n8n-db
+        serverName: n8n-db
+      name: clusterBackup
+    failoverDelay: 0
+    imageName: quay.io/enterprisedb/postgresql:16.1
+    inheritedMetadata:
+      labels:
+        app: n8n-database
+        policy-type: database
+    instances: 3
+    logLevel: info
+    maxSyncReplicas: 0
+    minSyncReplicas: 0
+    monitoring:
+      customQueriesConfigMap:
+      - key: queries
+        name: cnpg-default-monitoring
+      disableDefaultQueries: false
+      enablePodMonitor: true
+    postgresGID: 26
+    postgresUID: 26
+    postgresql:
+      parameters:
+        archive_mode: "on"
+        archive_timeout: 5min
+        dynamic_shared_memory_type: posix
+        full_page_writes: "on"
+        log_destination: csvlog
+        log_directory: /controller/log
+        log_filename: postgres
+        log_rotation_age: "0"
+        log_rotation_size: "0"
+        log_truncate_on_rotation: "false"
+        logging_collector: "on"
+        max_parallel_workers: "32"
+        max_replication_slots: "32"
+        max_worker_processes: "32"
+        shared_memory_type: mmap
+        shared_preload_libraries: ""
+        ssl_max_protocol_version: TLSv1.3
+        ssl_min_protocol_version: TLSv1.3
+        wal_keep_size: 512MB
+        wal_level: logical
+        wal_log_hints: "on"
+        wal_receiver_timeout: 5s
+        wal_sender_timeout: 5s
+      syncReplicaElectionConstraint:
+        enabled: false
+    primaryUpdateMethod: restart
+    primaryUpdateStrategy: unsupervised
+    replicationSlots:
+      highAvailability:
+        enabled: true
+        slotPrefix: _cnpg_
+      synchronizeReplicas:
+        enabled: true
+      updateInterval: 30
+    resources:
+      requests:
+        memory: 600Mi
+    smartShutdownTimeout: 180
+    startDelay: 3600
+    stopDelay: 1800
+    storage:
+      resizeInUseVolumes: true
+      size: 5Gi
+    switchoverDelay: 3600
+  status:
+    availableArchitectures:
+    - goArch: amd64
+      hash: 024c5162e1dee336b21121d781397b347d04939a857d9d8a47664d1796e8b7c9
+    - goArch: arm64
+      hash: 63f3a3fbe19b8fe1c26a0e516ecb965c3412e390729a02706825399f585d9298
+    certificates:
+      clientCASecret: n8n-db-cnpg-v1-ca
+      expirations:
+        n8n-db-cnpg-v1-ca: 2025-09-13 08:01:16 +0000 UTC
+        n8n-db-cnpg-v1-replication: 2025-09-13 08:01:17 +0000 UTC
+        n8n-db-cnpg-v1-server: 2025-09-13 08:01:16 +0000 UTC
+      replicationTLSSecret: n8n-db-cnpg-v1-replication
+      serverAltDNSNames:
+      - n8n-db-cnpg-v1-rw
+      - n8n-db-cnpg-v1-rw.cnpg-qa
+      - n8n-db-cnpg-v1-rw.cnpg-qa.svc
+      - n8n-db-cnpg-v1-rw.cnpg-qa.svc.cluster.local
+      - n8n-db-cnpg-v1-r
+      - n8n-db-cnpg-v1-r.cnpg-qa
+      - n8n-db-cnpg-v1-r.cnpg-qa.svc
+      - n8n-db-cnpg-v1-r.cnpg-qa.svc.cluster.local
+      - n8n-db-cnpg-v1-ro
+      - n8n-db-cnpg-v1-ro.cnpg-qa
+      - n8n-db-cnpg-v1-ro.cnpg-qa.svc
+      - n8n-db-cnpg-v1-ro.cnpg-qa.svc.cluster.local
+      serverCASecret: n8n-db-cnpg-v1-ca
+      serverTLSSecret: n8n-db-cnpg-v1-server
+    cloudNativePGCommitHash: 1535f3c17
+    cloudNativePGOperatorHash: 024c5162e1dee336b21121d781397b347d04939a857d9d8a47664d1796e8b7c9
+    conditions:
+    - lastTransitionTime: "2025-06-15T17:03:53Z"
+      message: Cluster is Ready
+      reason: ClusterIsReady
+      status: "True"
+      type: Ready
+    - lastTransitionTime: "2025-06-15T17:02:14Z"
+      message: Continuous archiving is working
+      reason: ContinuousArchivingSuccess
+      status: "True"
+      type: ContinuousArchiving
+    - lastTransitionTime: "2025-06-15T17:03:18Z"
+      message: Backup was successful
+      reason: LastBackupSucceeded
+      status: "True"
+      type: LastBackupSucceeded
+    configMapResourceVersion:
+      metrics:
+        cnpg-default-monitoring: "546927"
+    currentPrimary: n8n-db-cnpg-v1-1
+    currentPrimaryTimestamp: "2025-06-15T08:07:39.893013Z"
+    firstRecoverabilityPoint: "2025-06-15T17:03:16Z"
+    firstRecoverabilityPointByMethod:
+      barmanObjectStore: "2025-06-15T17:03:16Z"
+    healthyPVC:
+    - n8n-db-cnpg-v1-1
+    - n8n-db-cnpg-v1-2
+    - n8n-db-cnpg-v1-3
+    image: quay.io/enterprisedb/postgresql:16.1
+    instanceNames:
+    - n8n-db-cnpg-v1-1
+    - n8n-db-cnpg-v1-2
+    - n8n-db-cnpg-v1-3
+    instances: 3
+    instancesReportedState:
+      n8n-db-cnpg-v1-1:
+        ip: 10.1.105.148
+        isPrimary: true
+        timeLineID: 1
+      n8n-db-cnpg-v1-2:
+        ip: 10.1.250.17
+        isPrimary: false
+        timeLineID: 1
+      n8n-db-cnpg-v1-3:
+        ip: 10.1.23.17
+        isPrimary: false
+        timeLineID: 1
+    instancesStatus:
+      healthy:
+      - n8n-db-cnpg-v1-1
+      - n8n-db-cnpg-v1-2
+      - n8n-db-cnpg-v1-3
+    lastFailedBackup: "2025-06-15T17:02:51Z"
+    lastSuccessfulBackup: "2025-06-15T17:03:16Z"
+    lastSuccessfulBackupByMethod:
+      barmanObjectStore: "2025-06-15T17:03:16Z"
+    latestGeneratedNode: 3
+    managedRolesStatus: {}
+    pgDataImageInfo:
+      image: quay.io/enterprisedb/postgresql:16.1
+      majorVersion: 16
+    phase: Cluster in healthy state
+    poolerIntegrations:
+      pgBouncerIntegration: {}
+    pvcCount: 3
+    readService: n8n-db-cnpg-v1-r
+    readyInstances: 3
+    secretsResourceVersion:
+      applicationSecretVersion: "37362"
+      clientCaSecretVersion: "5598"
+      replicationSecretVersion: "5708"
+      serverCaSecretVersion: "5598"
+      serverSecretVersion: "5654"
+    switchReplicaClusterStatus: {}
+    targetPrimary: n8n-db-cnpg-v1-1
+    targetPrimaryTimestamp: "2025-06-15T08:06:22.079127Z"
+    timelineID: 1
+    topology:
+      instances:
+        n8n-db-cnpg-v1-1: {}
+        n8n-db-cnpg-v1-2: {}
+        n8n-db-cnpg-v1-3: {}
+      nodesUsed: 3
+      successfullyExtracted: true
+    writeService: n8n-db-cnpg-v1-rw
+kind: List
+metadata:
+  resourceVersion: ""
