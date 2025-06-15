@@ -32,7 +32,8 @@ resource "azurerm_storage_account" "backup" {
 
 # External Secrets Operator app
 resource "azurerm_role_assignment" "eso_secret_reader" {
-  principal_id         = azuread_service_principal.eso.id
+  # principal_id         = azuread_service_principal.eso.id
+  principal_id         = azuread_service_principal.eso.object_id
   role_definition_name = "Key Vault Secrets User"
   scope                = azurerm_key_vault.this.id
 }

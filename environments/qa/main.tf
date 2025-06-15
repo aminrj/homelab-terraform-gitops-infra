@@ -1,5 +1,6 @@
 provider "azurerm" {
   features {}
+  subscription_id = var.subscription_id
 }
 
 provider "azuread" {}
@@ -22,6 +23,7 @@ module "azure_keyvault" {
   location            = var.location
   resource_group_name = var.resource_group_name
   storage_account_name = var.storage_account_name
+  # subscription_id      = var.subscription_id
 }
 
 locals {

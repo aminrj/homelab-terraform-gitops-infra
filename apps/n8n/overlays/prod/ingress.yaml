@@ -1,0 +1,29 @@
+# apps/overlays/prod/ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: n8n-ingress-prod
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    external-dns.alpha.kubernetes.io/target: "90.129.244.3"
+    external-dns.alpha.kubernetes.io/hostname: n8n.lab.aminrj.com
+    # external-dns.alpha.kubernetes.io/enabled: "true"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - n8n.lab.aminrj.com
+      secretName: n8n-tls
+  rules:
+    - host: n8n.lab.aminrj.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: n8n
+                port:
+                  number: 80

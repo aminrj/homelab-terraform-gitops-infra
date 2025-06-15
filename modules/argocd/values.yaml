@@ -12,4 +12,5 @@ server:
   service:
     # type: ClusterIP
     type: LoadBalancer
+    loadBalancerIP: "10.0.30.202"
 

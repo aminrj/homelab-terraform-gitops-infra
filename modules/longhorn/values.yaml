@@ -5,6 +5,7 @@ defaultSettings:
 service:
   ui:
     type: LoadBalancer
+    loadBalancerIP: "10.0.30.201"
 csi:
   kubeletRootDir: "/var/snap/microk8s/common/var/lib/kubelet"
 

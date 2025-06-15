@@ -1,0 +1,17 @@
+# apps/overlays/prod/kustomization.yaml
+resources:
+  - ../../base
+  - secrets.yaml
+  - ingress.yaml
+  - namespace.yaml
+
+namespace: n8n-prod
+
+patches:
+  - target:
+      kind: Deployment
+      name: n8n
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/env/0/value
+        value: jdbc:postgresql://n8n-db-cnpg-v1-rw.cnpg-prod.svc.cluster.local:5432/n8n

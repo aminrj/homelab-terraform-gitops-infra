@@ -19,6 +19,7 @@ prometheus:
 grafana:
   service:
     type: LoadBalancer
+    loadBalancerIP: "10.0.30.203"
   persistence:
     enabled: true
     size: 10Gi
