@@ -31,6 +31,7 @@ locals {
     commafeed = { container_name = "commafeed-db" }
     linkding  = { container_name = "linkding-db" }
     wallabag  = { container_name = "wallabag-db" }
+    n8n       = { container_name = "n8n-db" }
   }
 }
 

@@ -5,11 +5,11 @@ metadata:
 spec:
   backup:
     barmanObjectStore:
-      destinationPath: https://homelabstorageaccountprod.blob.core.windows.net/n8n-db
+      destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/n8n-db
   externalClusters:
     - name: clusterBackup
       barmanObjectStore:
-        destinationPath: https://homelabstorageaccountprod.blob.core.windows.net/n8n-db
+        destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/n8n-db
         serverName: n8n-db
         azureCredentials:
           storageAccount:
