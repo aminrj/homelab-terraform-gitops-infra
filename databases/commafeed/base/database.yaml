@@ -18,12 +18,22 @@ spec:
       app: commafeed-database
       policy-type: "database"
 
+  # bootstrap:
+  #   initdb:
+  #     database: commafeed
+  #     owner: commafeed
+  #     secret:
+  #       name: commafeed-db-creds   # Same ExternalSecret you already have
+  #
+  # Change from initdb to recovery bootstrap
   bootstrap:
-    initdb:
+    recovery:
+      backup:
+        name: commafeed-db-cnpg-v1  # This should match your cluster name
       database: commafeed
       owner: commafeed
       secret:
-        name: commafeed-db-creds   # Same ExternalSecret you already have
+        name: commafeed-db-creds
 
   resources:
     requests:
