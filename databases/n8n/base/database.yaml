@@ -6,7 +6,7 @@ metadata:
 spec:
   description: Postgres cluster for the n8n application
   imageName: quay.io/enterprisedb/postgresql:16.1
-  instances: 3 # High‑availability
+  instances: 2 # High‑availability
 
   storage:
     size: 5Gi
