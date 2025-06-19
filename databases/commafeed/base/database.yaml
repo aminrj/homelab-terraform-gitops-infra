@@ -1,3 +1,4 @@
+#databases/commafeed/base/database.yaml
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
@@ -9,7 +10,6 @@ spec:
 
   storage:
     size: 15Gi
-    # storageClass: longhorn  # Added: now that Longhorn is working
 
   monitoring:
     enablePodMonitor: true
@@ -23,8 +23,6 @@ spec:
   bootstrap:
     recovery:
       source: "clusterBackup"
-      # recoveryTarget:
-      #   targetTime: "2025-06-14 10:59:31"  # Use timestamp instead of backup name
 
   resources:
     requests:
