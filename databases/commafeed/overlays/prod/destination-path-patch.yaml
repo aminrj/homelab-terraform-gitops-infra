@@ -1,3 +1,4 @@
+# destinationPath patch
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
@@ -5,12 +6,12 @@ metadata:
 spec:
   backup:
     barmanObjectStore:
-      destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/commafeed-db
+      destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/commafeed-db-restored
   externalClusters:
     - name: clusterBackup
       barmanObjectStore:
         destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/commafeed-db
-        serverName: commafeed-db
+        serverName: commafeed-db-cnpg-v1  # Fixed: match your backup path structure
         azureCredentials:
           storageAccount:
             name: commafeed-db-storage
@@ -18,3 +19,4 @@ spec:
           storageSasToken:
             name: commafeed-db-storage
             key: blob-sas
+
