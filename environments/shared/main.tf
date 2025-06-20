@@ -91,6 +91,7 @@ module "prometheus-stack" {
   source            = "../../modules/kube-prometheus-stack"
   kubeconfig  = var.kubeconfig
   storage_class = var.storage_class
+  slack_webhook_url = var.slack_webhook_url
 }
 
 module "cnpg_operator" {
@@ -100,3 +101,9 @@ module "cnpg_operator" {
   namespace = var.namespace
   kubeconfig  = var.kubeconfig
 }
+
+# module "metrics-server" {
+#   source            = "../../modules/metrics-server"
+#   kubeconfig  = var.kubeconfig
+# }
+#

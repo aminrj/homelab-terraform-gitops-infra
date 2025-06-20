@@ -58,3 +58,13 @@ variable "use_longhorn_storage" {
   type        = bool
   default     = true
 }
+
+variable "ui_service_type" {
+  type    = string
+  default = "LoadBalancer"
+}
+
+variable "slack_webhook_url" {
+  description = "Slack Webhook url for alert manager"
+  type        = string
+}

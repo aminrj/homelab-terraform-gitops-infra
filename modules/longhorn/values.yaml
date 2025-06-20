@@ -6,6 +6,8 @@ service:
   ui:
     type: LoadBalancer
     loadBalancerIP: "10.0.30.201"
+    port: 80
+    targetPort: 8000
 csi:
   kubeletRootDir: "/var/snap/microk8s/common/var/lib/kubelet"
 

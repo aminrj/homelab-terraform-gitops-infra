@@ -9,3 +9,6 @@ namespace             = "cnpg"
 pg_storage_class = "cnpg-longhorn"
 storage_class = "longhorn"
 use_longhorn_storage = true
+ui_service_type = "LoadBalancer"
+
+slack_webhook_url = "https://hooks.slack.com/services/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"

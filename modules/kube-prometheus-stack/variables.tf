@@ -25,3 +25,7 @@ variable "storage_class" {
   description = "The storage class to use for Prometheus, Grafana, and Alertmanager PVCs"
   type        = string
 }
+variable "slack_webhook_url" {
+  description = "Slack Webhook url for alert manager"
+  type        = string
+}

@@ -13,6 +13,7 @@ resource "helm_release" "kube-promethues-stack" {
   values = [
     templatefile("${path.module}/values.yaml.tpl", {
       storage_class = var.storage_class
+      slack_webhook_url = var.slack_webhook_url
     })
   ]
 }
