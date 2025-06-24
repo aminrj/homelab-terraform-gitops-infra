@@ -31,6 +31,7 @@ locals {
     linkding  = { container_name = "linkding-db" }
     wallabag  = { container_name = "wallabag-db" }
     n8n       = { container_name = "n8n-db" }
+    listmonk  = { container_name = "listmonk-db" }
   }
 }
 
