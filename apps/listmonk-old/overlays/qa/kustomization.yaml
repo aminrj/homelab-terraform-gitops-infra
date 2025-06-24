@@ -1,6 +1,6 @@
 resources:
-  - ../../base
-  - ingress.yaml
+  # - ../../base
+  # - ingress.yaml
 
 namespace: cnpg-qa
 
