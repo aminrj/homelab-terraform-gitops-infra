@@ -1,0 +1,98 @@
+# prometheus-values.yaml
+# Add persistent storage to your kube-prometheus-stack
+
+# Prometheus Configuration
+prometheus:
+  prometheusSpec:
+    # Enable persistent storage for Prometheus
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: longhorn  # Use your storage class
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 50Gi  # Adjust based on your needs
+    
+    # Retention settings
+    retention: 30d  # Keep metrics for 30 days
+    retentionSize: 45GB  # Limit storage usage
+    
+    # Resource limits
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+      requests:
+        cpu: 500m
+        memory: 1Gi
+
+# Grafana Configuration  
+grafana:
+  # Enable persistent storage for Grafana
+  persistence:
+    type: pvc
+    enabled: true
+    storageClassName: longhorn  # Use your storage class
+    accessModes:
+      - ReadWriteOnce
+    size: 10Gi
+    
+  # Set admin password (change this!)
+  adminPassword: your-secure-password-here
+  
+  # Resource limits
+  resources:
+    limits:
+      cpu: 500m
+      memory: 1Gi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+      
+  # Enable sidecar for auto-loading dashboards
+  sidecar:
+    dashboards:
+      enabled: true
+      searchNamespace: ALL  # Look for dashboards in all namespaces
+    datasources:
+      enabled: true
+
+# AlertManager Configuration
+alertmanager:
+  alertmanagerSpec:
+    # Enable persistent storage for AlertManager
+    storage:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: longhorn  # Use your storage class
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 5Gi
+              
+    # Resource limits
+    resources:
+      limits:
+        cpu: 200m
+        memory: 256Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+
+# Enable ServiceMonitor for CNPG (your database)
+prometheus:
+  prometheusSpec:
+    serviceMonitorSelectorNilUsesHelmValues: false  # Allow all ServiceMonitors
+    ruleSelectorNilUsesHelmValues: false  # Allow all PrometheusRules
+    
+    # Additional scrape configs for custom applications
+    additionalScrapeConfigs: []
+
+# Node Exporter (already enabled by default)
+nodeExporter:
+  enabled: true
+
+# Kube State Metrics (already enabled by default)  
+kubeStateMetrics:
+  enabled: true

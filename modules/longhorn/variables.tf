@@ -21,3 +21,4 @@ variable "ui_service_type" {
   type    = string
   default = "LoadBalancer"
 }
+

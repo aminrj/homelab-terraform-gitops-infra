@@ -1,6 +1,6 @@
 
 # Install Kube-promethues-stack
-resource "helm_release" "kube-promethues-stack" {
+resource "helm_release" "kube-prometheus-stack" {
   name       = "kube-promethues-stack"
   namespace  = var.namespace
   chart      = "kube-prometheus-stack"
@@ -17,3 +17,4 @@ resource "helm_release" "kube-promethues-stack" {
     })
   ]
 }
+

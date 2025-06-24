@@ -1,5 +1,5 @@
 prometheus:
-  retention: "5d"
+  retention: "4d"
   walCompression: true
   prometheusSpec:
     storageSpec:
