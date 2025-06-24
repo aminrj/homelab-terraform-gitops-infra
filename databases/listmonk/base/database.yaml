@@ -1,0 +1,62 @@
+#databases/listmonk/base/database.yaml
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: listmonk-db-cnpg-v1
+spec:
+  description: Postgres cluster for the listmonk application
+  imageName: ghcr.io/cloudnative-pg/postgresql:16.6  # Fixed: match your backup version
+  instances: 2
+
+  storage:
+    size: 15Gi
+
+ # Enhanced monitoring configuration
+  monitoring:
+    # enabled: true
+    enablePodMonitor: true
+    podMonitorMetricRelabelings:
+      - sourceLabels: [__name__]
+        regex: 'cnpg_.*|pg_.*'
+        action: keep
+    podMonitorRelabelings:
+      - sourceLabels: [__meta_kubernetes_pod_name]
+        targetLabel: pod_name
+      - sourceLabels: [__meta_kubernetes_namespace]
+        targetLabel: namespace
+        
+  # Resource configuration
+  resources:
+    requests:
+      memory: 600Mi
+      cpu: 100m
+    limits:
+      memory: 1Gi
+      cpu: 500m
+
+  inheritedMetadata:
+    labels:
+      app: listmonk-database
+      policy-type: "database"
+
+  # Fixed bootstrap for recovery
+  bootstrap:
+    recovery:
+      source: "clusterBackup"
+
+  backup:
+    barmanObjectStore:
+      destinationPath: https://homelabstorageaccountdev.blob.core.windows.net/listmonk-db  # Base uses dev
+      azureCredentials:
+        storageAccount:
+          name: listmonk-db-storage
+          key: container-name
+        storageSasToken:
+          name: listmonk-db-storage
+          key: blob-sas
+      wal:
+        compression: gzip
+      data:
+        compression: gzip
+    retentionPolicy: 3d
+

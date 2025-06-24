@@ -1,22 +1,22 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: listmonk-ingress-qa
+  name: listmonk-ingress-prod
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    cert-manager.io/cluster-issuer: "letsencrypt-staging"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
     #TODO: hide the ip like a secret
-    external-dns.alpha.kubernetes.io/target: "90.129.244.3"
-    external-dns.alpha.kubernetes.io/hostname: listmonk-qa.lab.aminrj.com
+    # external-dns.alpha.kubernetes.io/target: "90.129.244.3"
+    external-dns.alpha.kubernetes.io/hostname: listmonk.lab.aminrj.com
 spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - listmonk-qa.lab.aminrj.com
+        - listmonk.lab.aminrj.com
       secretName: listmonk-tls
   rules:
-    - host: listmonk-qa.lab.aminrj.com
+    - host: listmonk.lab.aminrj.com
       http:
         paths:
           - path: /

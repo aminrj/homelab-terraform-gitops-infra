@@ -1,0 +1,26 @@
+# databases/listmonk/overlays/prod/destination-path-patch.yaml
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: listmonk-db-cnpg-v1
+spec:
+  backup:
+    barmanObjectStore:
+      destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/listmonk-db-restored
+      wal:
+        compression: gzip
+      data:
+        compression: gzip
+    retentionPolicy: "7d"     # one week retention
+  externalClusters:
+    - name: clusterBackup
+      barmanObjectStore:
+        destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/listmonk-db
+        serverName: listmonk-db-cnpg-v1  # Fixed: match your backup path structure
+        azureCredentials:
+          storageAccount:
+            name: listmonk-db-storage
+            key: container-name
+          storageSasToken:
+            name: listmonk-db-storage
+            key: blob-sas

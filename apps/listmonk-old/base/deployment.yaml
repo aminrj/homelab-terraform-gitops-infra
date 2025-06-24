@@ -1,4 +1,3 @@
-# base/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -22,19 +21,19 @@ spec:
             - name: LISTMONK_APP__ADDRESS
               value: "0.0.0.0:9000"
             - name: LISTMONK_DB__HOST
-              value: listmonk-db-cnpg-v1-rw.cnpg-dev.svc.cluster.local  # Replace with QA DB in overlays
+              value: "pg-qa-rw.cnpg-qa.svc.cluster.local"
             - name: LISTMONK_DB__PORT
               value: "5432"
             - name: LISTMONK_DB__USER
               valueFrom:
                 secretKeyRef:
-                  name: listmonk-db-creds
-                  key: POSTGRES_USER
+                  name: listmonk-db-secret
+                  key: username
             - name: LISTMONK_DB__PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: listmonk-db-creds
-                  key: POSTGRES_PASSWORD
+                  name: listmonk-db-secret
+                  key: password
             - name: LISTMONK_DB__DATABASE
               value: "listmonk"
             - name: LISTMONK_DB__SSL_MODE
@@ -44,8 +43,8 @@ spec:
             - name: LISTMONK_ADMIN_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: listmonk-admin-creds
-                  key: POSTGRES_PASSWORD
+                  name: listmonk-admin-secret
+                  key: password
           command: 
             - /bin/sh
             - -c
