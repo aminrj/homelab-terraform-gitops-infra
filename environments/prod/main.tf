@@ -98,3 +98,22 @@ module "n8n_secrets" {
     module.azure_keyvault
   ]
 }
+
+module "listmonk_secrets" {
+  source       = "../../modules/azure-secrets"
+  key_vault_id = module.azure_keyvault.key_vault_id
+  app_name     = "listmonk"
+
+  static_secrets = {
+    "db-username" = "listmonk"
+    "db-name" = "listmonk"
+  }
+
+  random_secrets = [
+    "db-password",
+  ]
+
+  depends_on = [
+    module.azure_keyvault
+  ]
+}
