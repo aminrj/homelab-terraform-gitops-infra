@@ -1,3 +1,2 @@
-namespace: listmonk-dev
 resources:
   - database.yaml

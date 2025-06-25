@@ -2,7 +2,6 @@ namespace: cnpg-qa
 
 resources:
   - ../../base
-  - namespace.yaml
   - scheduled-backup.yaml
   - secrets.yaml
 

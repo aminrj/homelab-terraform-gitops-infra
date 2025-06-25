@@ -9,7 +9,7 @@ spec:
   externalClusters:
     - name: clusterBackup
       barmanObjectStore:
-        destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/linkding-db
+        destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/linkding-db-restaured
         serverName: linkding-db
         azureCredentials:
           storageAccount:
