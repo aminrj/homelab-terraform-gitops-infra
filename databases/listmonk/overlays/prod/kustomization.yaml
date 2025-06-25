@@ -6,5 +6,5 @@ resources:
   - scheduled-backup.yaml
   - secrets.yaml
 
-patches:
-  - path: destination-path-patch.yaml
+# patches:
+#   - path: destination-path-patch.yaml

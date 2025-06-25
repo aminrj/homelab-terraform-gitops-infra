@@ -44,7 +44,7 @@ spec:
             - name: LISTMONK_ADMIN_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: listmonk-db-creds
+                  name: listmonk-admin-creds
                   key: POSTGRES_PASSWORD
           command: 
             - /bin/sh

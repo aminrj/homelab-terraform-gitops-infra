@@ -41,8 +41,13 @@ spec:
 
   # Fixed bootstrap for recovery
   bootstrap:
-    recovery:
-      source: "clusterBackup"
+    initdb:
+      database: listmonk
+      owner: listmonk
+      secret:
+        name: listmonk-db-creds
+    # recovery:
+    #   source: "clusterBackup"
 
   backup:
     barmanObjectStore:

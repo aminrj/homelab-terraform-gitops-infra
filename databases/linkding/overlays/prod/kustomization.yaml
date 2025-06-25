@@ -7,4 +7,5 @@ resources:
   - secrets.yaml
 
 patches:
-  - path: restore-from-qa.yaml
+  # - path: restore-from-qa.yaml
+  - path: destination-path-patch.yaml
