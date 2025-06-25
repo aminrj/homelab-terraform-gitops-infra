@@ -19,10 +19,10 @@ spec:
           ports:
             - containerPort: 9000
           env:
+            - name: LISTMONK_DB__HOST
+              value: "listmonk-db-cnpg-v1-rw.cnpg-prod.svc.cluster.local"  # Replace with QA DB in overlays
             - name: LISTMONK_APP__ADDRESS
               value: "0.0.0.0:9000"
-            - name: LISTMONK_DB__HOST
-              value: listmonk-db-cnpg-v1-rw.cnpg-dev.svc.cluster.local  # Replace with QA DB in overlays
             - name: LISTMONK_DB__PORT
               value: "5432"
             - name: LISTMONK_DB__USER

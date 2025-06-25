@@ -6,7 +6,7 @@ metadata:
 spec:
   backup:
     barmanObjectStore:
-      destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/listmonk-db-restored
+      destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/listmonk-db
       wal:
         compression: gzip
       data:
