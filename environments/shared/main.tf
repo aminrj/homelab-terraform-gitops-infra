@@ -65,9 +65,12 @@ module "argocd" {
 
 module "longhorn" {
   source            = "../../modules/longhorn"
-  kubeconfig  = var.kubeconfig
+  kubeconfig        = var.kubeconfig
   default_data_path = var.default_data_path
-  kubelet_root_dir = var.kubelet_root_dir
+  kubelet_root_dir  = var.kubelet_root_dir
+  providers = {
+    kubectl = kubectl
+  }
 }
 
 module "external-dns" {
