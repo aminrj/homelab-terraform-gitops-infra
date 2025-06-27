@@ -20,7 +20,7 @@ spec:
             - containerPort: 9000
           env:
             - name: LISTMONK_DB__HOST
-              value: "listmonk-db-cnpg-v1-rw.cnpg-prod.svc.cluster.local"  # Replace with QA DB in overlays
+              value: listmonk-db-cnpg-v1-rw.cnpg-prod.svc.cluster.local  # Replace with QA DB in overlays
             - name: LISTMONK_APP__ADDRESS
               value: "0.0.0.0:9000"
             - name: LISTMONK_DB__PORT
@@ -29,12 +29,14 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: listmonk-db-creds
-                  key: POSTGRES_USER
+                  # key: POSTGRES_USER
+                  key: username
             - name: LISTMONK_DB__PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: listmonk-db-creds
-                  key: POSTGRES_PASSWORD
+                  # key: POSTGRES_PASSWORD
+                  key: password
             - name: LISTMONK_DB__DATABASE
               value: "listmonk"
             - name: LISTMONK_DB__SSL_MODE
@@ -44,8 +46,9 @@ spec:
             - name: LISTMONK_ADMIN_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: listmonk-admin-creds
-                  key: POSTGRES_PASSWORD
+                  name: listmonk-db-creds
+                  # key: POSTGRES_PASSWORD
+                  key: password
           command: 
             - /bin/sh
             - -c

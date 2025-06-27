@@ -13,4 +13,4 @@ patches:
     patch: |-
       - op: replace
         path: /spec/template/spec/containers/0/env/0/value
-        value: listmonk-db-cnpg-v1-rw.cnpg-prod.svc.cluster.local:5432/listmonk
+        value: listmonk-db-cnpg-v1-rw.cnpg-prod.svc.cluster.local
