@@ -9,11 +9,6 @@ variable "kube_context" {
   description = "Kubernetes context to use"
 }
 
-variable "default_data_path" {
-  type        = string
-  description = "Longhorn default data path"
-}
-
 variable "kubelet_root_dir" {
   type        = string
   description = "Kubelet root dir for Longhorn"
@@ -44,7 +39,6 @@ variable "cloudflare_api_token" {
 variable "storage_class" {
   description = "Storage class to use for qa cluster"
   type        = string
-  default     = "longhorn"
 }
 
 variable "pg_storage_class" {
@@ -53,11 +47,6 @@ variable "pg_storage_class" {
   default     = "cnpg-longhorn"
 }
 
-variable "use_longhorn_storage" {
-  description = "Whether to use Longhorn storage"
-  type        = bool
-  default     = true
-}
 
 variable "ui_service_type" {
   type    = string

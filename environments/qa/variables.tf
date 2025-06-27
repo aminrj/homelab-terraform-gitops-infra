@@ -32,12 +32,6 @@ variable "kube_context" {
   description = "The kube context name to use"
 }
 
-# Cnpg Operator variables
-variable "use_longhorn_storage" {
-  description = "Use longhorn as storage for qa?"
-  type        = bool
-  default     = true
-}
 
 # CNPG cluster variables
 
@@ -56,13 +50,11 @@ variable "pg_instance_count" {
 variable "storage_class" {
   description = "Storage class to use for qa cluster"
   type        = string
-  default     = "longhorn"
 }
 
 variable "pg_storage_class" {
   description = "Storage class to use for qa cluster"
   type        = string
-  default     = "cnpg-longhorn"
 }
 
 variable "pg_storage_size" {

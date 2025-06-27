@@ -18,10 +18,10 @@ spec:
           ports:
             - containerPort: 9090
           env:
-            - name: LD_DB_ENGINE
-              value: django.db.backends.postgresql
             - name: LD_DB_HOST
               value: linkding-db-dev-cnpg-v1-rw.cnpg-dev.svc.cluster.local  # Replace with QA DB in overlays
+            - name: LD_DB_ENGINE
+              value: django.db.backends.postgresql
             - name: LD_DB_PORT
               value: "5432"
             - name: LD_DB_NAME

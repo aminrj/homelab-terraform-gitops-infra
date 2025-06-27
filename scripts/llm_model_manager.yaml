@@ -181,7 +181,6 @@ spec:
   resources:
     requests:
       storage: 10Gi
-  storageClassName: longhorn
 
 ---
 apiVersion: v1
@@ -195,7 +194,6 @@ spec:
   resources:
     requests:
       storage: 30Gi
-  storageClassName: longhorn
 
 ---
 # Enhanced LLM Gateway with Model Router

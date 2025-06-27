@@ -15,25 +15,6 @@ terraform {
   }
 }
 
-resource "kubernetes_storage_class" "cnpg_longhorn" {
-  count = var.use_longhorn_storage ? 1 : 0
-
-  metadata {
-    name = "cnpg-longhorn"
-  }
-
-  storage_provisioner = "driver.longhorn.io"
-
-  parameters = {
-    numberOfReplicas      = "1"
-    staleReplicaTimeout   = "30"
-  }
-
-  reclaim_policy          = "Retain"
-  volume_binding_mode     = "WaitForFirstConsumer"
-  allow_volume_expansion  = true
-}
-
 resource "helm_release" "cnpg_operator" {
   name             = "cloudnative-pg"
   namespace        = var.namespace
@@ -46,7 +27,6 @@ resource "helm_release" "cnpg_operator" {
 
   values = [
     templatefile("${path.module}/values.yaml.tpl", {
-      storage_class_name = var.use_longhorn_storage ? "cnpg-longhorn" : ""
       enable_crds        = true
     })
   ]

@@ -1,8 +1,5 @@
 installCRDs: ${enable_crds}
 
-storage:
-  storageClass: "${storage_class_name}"
-
 pgAdmin:
   enabled: true
   image:

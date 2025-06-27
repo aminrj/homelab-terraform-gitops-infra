@@ -156,7 +156,6 @@ module "prometheus-stack" {
 
 module "cnpg_operator" {
   source = "../../modules/cnpg-operator"
-  use_longhorn_storage = false
   namespace = "cnpg"
   kubeconfig  = var.kubeconfig
 

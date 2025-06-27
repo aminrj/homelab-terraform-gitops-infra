@@ -8,10 +8,10 @@ spec:
     storage: 20Gi
   accessModes:
     - ReadWriteOnce
-  storageClassName: longhorn
+  # storageClassName: longhorn
   persistentVolumeReclaimPolicy: Retain
   csi:
-    driver: driver.longhorn.io
+    # driver: driver.longhorn.io
     volumeHandle: ollama-model-cache
   nodeAffinity:
     required:

@@ -8,7 +8,6 @@ prometheus:
     storageSpec:
       volumeClaimTemplate:
         spec:
-          storageClassName: longhorn  # Use your storage class
           accessModes: ["ReadWriteOnce"]
           resources:
             requests:
@@ -33,7 +32,6 @@ grafana:
   persistence:
     type: pvc
     enabled: true
-    storageClassName: longhorn  # Use your storage class
     accessModes:
       - ReadWriteOnce
     size: 10Gi
@@ -65,7 +63,7 @@ alertmanager:
     storage:
       volumeClaimTemplate:
         spec:
-          storageClassName: longhorn  # Use your storage class
+          # storageClassName: longhorn  # Use your storage class
           accessModes: ["ReadWriteOnce"]
           resources:
             requests:

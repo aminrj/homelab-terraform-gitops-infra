@@ -36,13 +36,6 @@ variable "kube_context" {
   type        = string
 }
 
-# Operator variables
-variable "use_longhorn_storage" {
-  description = "Use longhorn as storage for dev?"
-  type        = bool
-  default     = false
-}
-
 # CNPG cluster variables
 
 variable "pg_cluster_name" {

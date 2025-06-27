@@ -63,15 +63,6 @@ module "argocd" {
 
 }
 
-module "longhorn" {
-  source            = "../../modules/longhorn"
-  kubeconfig        = var.kubeconfig
-  default_data_path = var.default_data_path
-  kubelet_root_dir  = var.kubelet_root_dir
-  providers = {
-    kubectl = kubectl
-  }
-}
 
 module "external-dns" {
   source            = "../../modules/external-dns"
@@ -99,14 +90,8 @@ module "prometheus-stack" {
 
 module "cnpg_operator" {
   source = "../../modules/cnpg-operator"
-  use_longhorn_storage = true
   # TODO: Move this value to the tfvars instead
   namespace = var.namespace
   kubeconfig  = var.kubeconfig
 }
 
-# module "metrics-server" {
-#   source            = "../../modules/metrics-server"
-#   kubeconfig  = var.kubeconfig
-# }
-#
