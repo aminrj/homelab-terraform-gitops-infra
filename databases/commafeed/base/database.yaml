@@ -6,7 +6,7 @@ metadata:
 spec:
   description: Postgres cluster for the commafeed application
   imageName: ghcr.io/cloudnative-pg/postgresql:16.6  # Fixed: match your backup version
-  instances: 2
+  instances: 1
 
   storage:
     size: 15Gi
@@ -40,20 +40,20 @@ spec:
       policy-type: "database"
 
   # Fixed bootstrap for recovery
-  # bootstrap:
-  #   recovery:
-  #     source: "clusterBackup"
-
   bootstrap:
-    initdb:
-      database: commafeed
-      owner: commafeed
-      secret:
-        name: commafeed-db-creds
+    recovery:
+      source: "clusterBackup"
+
+  # bootstrap:
+  #   initdb:
+  #     database: commafeed
+  #     owner: commafeed
+  #     secret:
+  #       name: commafeed-db-creds
 
   backup:
     barmanObjectStore:
-      destinationPath: https://homelabstorageaccountdev.blob.core.windows.net/commafeed-db  # Base uses dev
+
       azureCredentials:
         storageAccount:
           name: commafeed-db-storage
