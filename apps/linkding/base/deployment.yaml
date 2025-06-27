@@ -19,7 +19,8 @@ spec:
             - containerPort: 9090
           env:
             - name: LD_DB_HOST
-              value: linkding-db-dev-cnpg-v1-rw.cnpg-dev.svc.cluster.local  # Replace with QA DB in overlays
+              value: linkding-db-cnpg-v1-rw.cnpg-prod.svc.cluster.local  # Replace with QA DB in overlays
+                    # linkding-db-cnpg-v1-rw.cnpg.svc.cluster.local:5432/linkding
             - name: LD_DB_ENGINE
               value: django.db.backends.postgresql
             - name: LD_DB_PORT

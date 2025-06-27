@@ -9,7 +9,7 @@ namespace: linkding
 patches:
   - target:
       kind: Deployment
-      name: commafeed
+      name: linkding
     patch: |-
       - op: replace
         path: /spec/template/spec/containers/0/env/0/value
