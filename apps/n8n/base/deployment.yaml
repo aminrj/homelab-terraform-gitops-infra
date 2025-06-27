@@ -19,12 +19,17 @@ spec:
           ports:
             - containerPort: 5678
           env:
+            - name: DB_POSTGRESDB_HOST
+              value: n8n-db-cnpg-v1-rw.cnpg-prod.svc.cluster.local:5432/n8n # Replace this with dev afterwards
             - name: DB_TYPE
-              value: postgresdb
+              # value: postgresdb
+              value: jdbc:postgresql://n8n-db-cnpg-v1-rw.cnpg-prod.svc.cluster.local:5432/n8n
+# │       DB_TYPE:                            jdbc:postgresql://n8n-db-cnpg-v1-rw.cnpg-prod.svc.cluster.local:5432/n8n
+# │       DB_POSTGRESDB_DATABASE:             n8n
+# │       DB_POSTGRESDB_HOST:                 n8n-db-cnpg-v1-rw.cnpg-dev.svc.cluster.local
+# │       DB_POSTGRESDB_PORT:                 5432
             - name: DB_POSTGRESDB_DATABASE
               value: n8n
-            - name: DB_POSTGRESDB_HOST
-              value: n8n-db-cnpg-v1-rw.cnpg-dev.svc.cluster.local
             - name: DB_POSTGRESDB_PORT
               value: "5432"
             - name: DB_POSTGRESDB_USER
