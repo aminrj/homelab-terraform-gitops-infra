@@ -40,16 +40,18 @@ spec:
       policy-type: "database"
 
   # Fixed bootstrap for recovery
-  # bootstrap:
-  #   recovery:
-  #     source: "clusterBackup"
-
   bootstrap:
-    initdb:
-      database: commafeed
-      owner: commafeed
-      secret:
-        name: commafeed-db-creds
+    recovery:
+      source: "clusterBackup"
+      recoveryTarget:
+        backupID: "20250625T160301"  # The specific backup you want
+
+  # bootstrap:
+  #   initdb:
+  #     database: commafeed
+  #     owner: commafeed
+  #     secret:
+  #       name: commafeed-db-creds
 
   backup:
     barmanObjectStore:
