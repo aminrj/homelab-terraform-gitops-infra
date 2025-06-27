@@ -6,7 +6,14 @@ metadata:
 spec:
   backup:
     barmanObjectStore:
-      destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/commafeed-db-restored
+      destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/commafeed-db
+      azureCredentials:
+        storageAccount:
+          name: commafeed-db-storage
+          key: container-name
+        storageSasToken:
+          name: commafeed-db-storage
+          key: blob-sas
       wal:
         compression: gzip
       data:
@@ -15,8 +22,8 @@ spec:
   externalClusters:
     - name: clusterBackup
       barmanObjectStore:
-        destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/commafeed-db
-        serverName: commafeed-db-cnpg-v1  # Fixed: match your backup path structure
+        destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/commafeed-db-restored
+        # serverName: commafeed-db-cnpg-v1  # Fixed: match your backup path structure
         azureCredentials:
           storageAccount:
             name: commafeed-db-storage
