@@ -63,6 +63,16 @@ module "argocd" {
 
 }
 
+module "microceph" {
+  source = "../../modules/microceph"
+  
+  prometheus_release_name   = "kube-promethues-stack"
+  deploy_microceph_tools   = false
+  enable_status_checks     = false
+  monitoring_namespace     = "monitoring"
+  microceph_manager_ip     = "10.0.30.15"  # Current active manager
+  slack_webhook_url        = var.slack_webhook_url
+}
 
 module "external-dns" {
   source            = "../../modules/external-dns"
