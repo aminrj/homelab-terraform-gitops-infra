@@ -1,11 +1,11 @@
+# databases/linkding/overlays/prod/scheduled-backup.yaml
 apiVersion: postgresql.cnpg.io/v1
 kind: ScheduledBackup
 metadata:
-  name: full-backup-now
+  name: linkding-daily-backup
 spec:
-  # immediate: true
-  schedule: "0 3 * * *"  # also creates a daily schedule
+  schedule: "0 1 * * *"
   backupOwnerReference: cluster
   cluster:
-    name: linkding-db-cnpg-v1 # this should match your CNPG cluster name
-
+    name: linkding-db-cnpg-v1
+  suspend: false

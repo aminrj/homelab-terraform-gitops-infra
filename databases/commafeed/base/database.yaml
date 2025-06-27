@@ -43,8 +43,8 @@ spec:
   bootstrap:
     recovery:
       source: "clusterBackup"
-      recoveryTarget:
-        backupID: "20250625T160301"  # The specific backup you want
+      # recoveryTarget:
+      #   backupID: "20250625T160301"  # The specific backup you want
 
   # bootstrap:
   #   initdb:

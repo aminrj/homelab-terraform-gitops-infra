@@ -19,13 +19,13 @@ spec:
       policy-type: "database"
 
   bootstrap:
-    recovery:
-      source: "clusterBackup"
-    # initdb:
-      # database: linkding
-      # owner: linkding
-      # secret:
-      #   name: linkding-db-creds   # Same ExternalSecret you already have
+    # recovery:
+    #   source: "clusterBackup"
+    initdb:
+      database: linkding
+      owner: linkding
+      secret:
+        name: linkding-db-creds   # Same ExternalSecret you already have
 
   resources:
     requests:
