@@ -23,7 +23,7 @@ spec:
     - name: clusterBackup
       barmanObjectStore:
         destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/commafeed-db-restored
-        # serverName: commafeed-db-cnpg-v1  # Fixed: match your backup path structure
+        serverName: commafeed-db-cnpg-v1  # Fixed: match your backup path structure
         azureCredentials:
           storageAccount:
             name: commafeed-db-storage
