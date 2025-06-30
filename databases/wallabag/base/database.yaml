@@ -40,18 +40,18 @@ spec:
       policy-type: "database"
 
   # Fixed bootstrap for recovery
-  bootstrap:
-    recovery:
-      source: "clusterBackup"
+  # bootstrap:
+    # recovery:
+    #   source: "clusterBackup"
       # recoveryTarget:
       #   backupID: "20250625T160301"  # The specific backup you want
 
-  # bootstrap:
-  #   initdb:
-  #     database: wallabag
-  #     owner: wallabag
-  #     secret:
-  #       name: wallabag-db-creds
+  bootstrap:
+    initdb:
+      database: wallabag
+      owner: wallabag
+      secret:
+        name: wallabag-db-creds
 
   backup:
     barmanObjectStore:
