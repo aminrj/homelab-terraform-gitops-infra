@@ -1,0 +1,20 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: wallabag-db-cnpg-v1
+spec:
+  backup:
+    barmanObjectStore:
+      destinationPath: https://homelabstorageaccountqa.blob.core.windows.net/wallabag-db
+  externalClusters:
+    - name: clusterBackup
+      barmanObjectStore:
+        destinationPath: https://homelabstorageaccountqa.blob.core.windows.net/wallabag-db
+        serverName: wallabag-db
+        azureCredentials:
+          storageAccount:
+            name: wallabag-db-storage
+            key: container-name
+          storageSasToken:
+            name: wallabag-db-storage
+            key: blob-sas

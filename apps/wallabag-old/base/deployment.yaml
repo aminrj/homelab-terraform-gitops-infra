@@ -1,4 +1,3 @@
-# base/deployment.yaml
 kind: Deployment
 apiVersion: apps/v1
 metadata:
@@ -20,11 +19,10 @@ spec:
           ports:
             - containerPort: 80
           env:
-            - name: SYMFONY__ENV__DATABASE_HOST
-              value: wallabag-db-cnpg-v1-rw.cnpg-dev.svc.cluster.local  # Replace with QA DB in overlays
-              # value: "pg-qa-rw.cnpg-qa.svc.cluster.local"
             - name: SYMFONY__ENV__DATABASE_DRIVER
               value: "pdo_pgsql"
+            - name: SYMFONY__ENV__DATABASE_HOST
+              value: "pg-qa-rw.cnpg-qa.svc.cluster.local"
             - name: SYMFONY__ENV__DATABASE_PORT
               value: "5432"
             - name: SYMFONY__ENV__DATABASE_NAME
@@ -32,12 +30,12 @@ spec:
             - name: SYMFONY__ENV__DATABASE_USER
               valueFrom:
                 secretKeyRef:
-                  name: wallabag-db-creds
+                  name: wallabag-db-secret
                   key: username
             - name: SYMFONY__ENV__DATABASE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: wallabag-db-creds
+                  name: wallabag-db-secret
                   key: password
             - name: SYMFONY__ENV__DOMAIN_NAME
               value: "https://wallabag.lab.aminrj.com"

@@ -1,22 +1,18 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: wallabag-ingress-qa
+  name: wallabag-ingress
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
     cert-manager.io/cluster-issuer: "letsencrypt-staging"
-    #TODO: hide the ip like a secret
     external-dns.alpha.kubernetes.io/target: "90.129.244.3"
-    external-dns.alpha.kubernetes.io/hostname: wallabag-qa.lab.aminrj.com
 spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - wallabag-qa.lab.aminrj.com
+        - wallabag.lab.aminrj.com
       secretName: wallabag-tls
   rules:
-    - host: wallabag-qa.lab.aminrj.com
+    - host: wallabag.lab.aminrj.com
       http:
         paths:
           - path: /

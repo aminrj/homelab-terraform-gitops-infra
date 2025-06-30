@@ -118,3 +118,23 @@ module "listmonk_secrets" {
     module.azure_keyvault
   ]
 }
+
+module "wallabag_secrets" {
+  source       = "../../modules/azure-secrets"
+  key_vault_id = module.azure_keyvault.key_vault_id
+  app_name     = "wallabag"
+
+  static_secrets = {
+    "db-username" = "wallabag"
+    "db-name" = "wallabag"
+  }
+
+  random_secrets = [
+    "db-password",
+    # "api-secret"
+  ]
+
+  depends_on = [
+    module.azure_keyvault
+  ]
+}
