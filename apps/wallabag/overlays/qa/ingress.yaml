@@ -23,6 +23,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: wallabag
+                name: wallabag-qa
                 port:
                   number: 80

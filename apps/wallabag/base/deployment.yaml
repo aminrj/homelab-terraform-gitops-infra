@@ -15,14 +15,12 @@ spec:
     spec:
       containers:
         - name: wallabag
-          # image: wallabag/wallabag:latest
           image: ghcr.io/wallabag/docker:2.6.10
           ports:
             - containerPort: 80
           env:
             - name: SYMFONY__ENV__DATABASE_HOST
-              value: wallabag-db-cnpg-v1-rw.cnpg-dev.svc.cluster.local  # Replace with QA DB in overlays
-              # value: "pg-qa-rw.cnpg-qa.svc.cluster.local"
+              value: wallabag-db-cnpg-v1-rw.cnpg-dev.svc.cluster.local
             - name: SYMFONY__ENV__DATABASE_DRIVER
               value: "pdo_pgsql"
             - name: SYMFONY__ENV__DATABASE_PORT
@@ -43,3 +41,48 @@ spec:
               value: "https://wallabag.lab.aminrj.com"
             - name: POPULATE_DATABASE
               value: "True"
+            # Additional helpful env vars
+            - name: SYMFONY__ENV__MAILER_HOST
+              value: "127.0.0.1"
+            - name: SYMFONY__ENV__MAILER_USER
+              value: "~"
+            - name: SYMFONY__ENV__MAILER_PASSWORD
+              value: "~"
+            - name: SYMFONY__ENV__FROM_EMAIL
+              value: "wallabag@lab.aminrj.com"
+            # Add these missing variables that the entrypoint script expects:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: wallabag-db-creds
+                  key: password
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: wallabag-db-creds
+                  key: username
+            # Optional but recommended:
+            - name: SYMFONY__ENV__DATABASE_CHARSET
+              value: "utf8"
+            - name: SYMFONY__ENV__SECRET
+              value: "r+jIiVH61D5kXY58lp2YR750BTpzLEGwDgsdnjZUZ7w="  # Generate a random 32+ character string
+          # Add resource limits and health checks
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 60
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 30
+            periodSeconds: 10

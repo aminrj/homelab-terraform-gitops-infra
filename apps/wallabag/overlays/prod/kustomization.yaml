@@ -6,11 +6,29 @@ resources:
 
 namespace: wallabag-prod
 
+# patches:
+#   - target:
+#       kind: Deployment
+#       name: wallabag
+#     patch: |-
+#       - op: replace
+#         path: /spec/template/spec/containers/0/env/0/value
+#         value: wallabag-db-cnpg-v1-rw.cnpg-prod.svc.cluster.local
+# In your kustomization.yaml
 patches:
   - target:
       kind: Deployment
       name: wallabag
     patch: |-
-      - op: replace
-        path: /spec/template/spec/containers/0/env/0/value
-        value: wallabag-db-cnpg-v1-rw.cnpg-prod.svc.cluster.local
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: wallabag
+      spec:
+        template:
+          spec:
+            containers:
+            - name: wallabag
+              env:
+              - name: SYMFONY__ENV__DATABASE_HOST
+                value: wallabag-db-cnpg-v1-rw.cnpg-prod.svc.cluster.local
