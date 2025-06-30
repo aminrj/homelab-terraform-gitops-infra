@@ -1,7 +1,7 @@
 resources:
   - ../../base
   - secrets.yaml
-  - ingress.yaml
+  # - ingress.yaml
   - namespace.yaml
 
 namespace: wallabag-qa
