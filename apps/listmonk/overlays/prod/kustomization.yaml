@@ -11,6 +11,15 @@ patches:
       kind: Deployment
       name: listmonk
     patch: |-
-      - op: replace
-        path: /spec/template/spec/containers/0/env/0/value
-        value: listmonk-db-cnpg-v1-rw.cnpg-prod.svc.cluster.local
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: listmonk
+      spec:
+        template:
+          spec:
+            containers:
+            - name: listmonk
+              env:
+              - name: LISTMONK_DB__HOST
+                value: listmonk-db-cnpg-v1-rw.cnpg-prod.svc.cluster.local

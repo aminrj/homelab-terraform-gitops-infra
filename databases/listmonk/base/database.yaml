@@ -65,3 +65,4 @@ spec:
         compression: gzip
     retentionPolicy: 3d
 
+
