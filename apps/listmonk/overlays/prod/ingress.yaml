@@ -25,4 +25,4 @@ spec:
               service:
                 name: listmonk
                 port:
-                  number: 8000
+                  number: 9000
