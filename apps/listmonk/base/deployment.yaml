@@ -47,8 +47,8 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: listmonk-db-creds
-                  # key: POSTGRES_PASSWORD
-                  key: password
+                  key: POSTGRES_PASSWORD
+                  # key: password
           command: 
             - /bin/sh
             - -c
