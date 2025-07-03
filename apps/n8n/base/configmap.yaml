@@ -122,3 +122,26 @@ data:
     }
 
     module.exports = { LLMGateway };
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: n8n-db-config
+data:
+  DB_POSTGRESDB_POOL_SIZE: "10"
+  DB_POSTGRESDB_MAX_IDLE_TIME: "30000"
+  DB_POSTGRESDB_IDLE_TIMEOUT: "30000"
+  DB_POSTGRESDB_CONNECTION_TIMEOUT: "30000"
+---
+# Add these environment variables to your deployment:
+# - name: DB_POSTGRESDB_POOL_SIZE
+#   valueFrom:
+#     configMapKeyRef:
+#       name: n8n-db-config
+#       key: DB_POSTGRESDB_POOL_SIZE
+# - name: DB_POSTGRESDB_MAX_IDLE_TIME
+#   valueFrom:
+#     configMapKeyRef:
+#       name: n8n-db-config
+#       key: DB_POSTGRESDB_MAX_IDLE_TIME
+
