@@ -94,13 +94,16 @@
 #         - name: n8n-data
 #           persistentVolumeClaim:
 #             claimName: n8n-data
+#
+
+
 
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: n8n
 spec:
-  replicas: 1  # FIXED: n8n Community doesn't support clustering
+  replicas: 1
   selector:
     matchLabels:
       app: n8n
@@ -117,11 +120,11 @@ spec:
           env:
             # FIXED: Correct database configuration
             - name: DB_TYPE
-              value: postgresdb  # FIXED: Was incorrect JDBC URL
+              value: "postgresdb"
             - name: DB_POSTGRESDB_HOST
-              value: n8n-db-cnpg-v1-rw.cnpg-prod.svc.cluster.local
+              value: "n8n-db-cnpg-v1-rw.cnpg-prod.svc.cluster.local"
             - name: DB_POSTGRESDB_DATABASE
-              value: n8n
+              value: "n8n"
             - name: DB_POSTGRESDB_PORT
               value: "5432"
             - name: DB_POSTGRESDB_USER
@@ -135,12 +138,12 @@ spec:
                   name: n8n-db-creds
                   key: password
             - name: DB_POSTGRESDB_SCHEMA
-              value: public
-            # Performance and timezone settings
+              value: "public"
+            # Basic configuration
             - name: GENERIC_TIMEZONE
-              value: Europe/Stockholm
+              value: "Europe/Stockholm"
             - name: TZ
-              value: Europe/Stockholm
+              value: "Europe/Stockholm"
             - name: N8N_ENCRYPTION_KEY
               valueFrom:
                 secretKeyRef:
@@ -148,36 +151,37 @@ spec:
                   key: key
             - name: N8N_PORT
               value: "5678"
-            - name: N8N_DEFAULT_EDITION
-              value: "community"
-            # ADDED: Performance optimizations
-            - name: EXECUTIONS_PROCESS
-              value: "main"  # Run in main process for better performance
-            - name: EXECUTIONS_MODE
-              value: "regular"  # Regular execution mode
+            # FIXED: Enable task runners (required for newer versions)
+            - name: N8N_RUNNERS_ENABLED
+              value: "true"
             - name: N8N_RUNNERS_MODE
               value: "internal"
+            # REMOVED: EXECUTIONS_PROCESS (deprecated)
+            # Performance settings
+            - name: EXECUTIONS_MODE
+              value: "regular"
             - name: EXECUTIONS_DATA_SAVE_ON_ERROR
               value: "all"
             - name: EXECUTIONS_DATA_SAVE_ON_SUCCESS
               value: "all"
             - name: EXECUTIONS_DATA_SAVE_ON_PROGRESS
-              value: "false"  # Disable to improve performance
+              value: "false"
             - name: EXECUTIONS_DATA_MAX_AGE
-              value: "168"  # Keep executions for 7 days
+              value: "168"
             - name: EXECUTIONS_DATA_PRUNE
-              value: "true"  # Auto-cleanup old executions
-            # HTTP request timeouts
+              value: "true"
+            # Timeout settings
             - name: N8N_DEFAULT_TIMEOUT
-              value: "300000"  # 5 minutes timeout
-            - name: N8N_HTTP_REQUEST_TIMEOUT
-              value: "300000"  # 5 minutes for HTTP requests
+              value: "300000"
+            # FIXED: File permissions
+            - name: N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS
+              value: "true"
             # Logging
             - name: N8N_LOG_LEVEL
-              value: info  # CHANGED: Less verbose logging
+              value: "info"
             - name: N8N_DIAGNOSTICS_ENABLED
               value: "false"
-            # UI optimizations
+            # UI settings
             - name: N8N_DISABLE_PRODUCTION_MAIN_MENU
               value: "true"
             - name: N8N_VERSION_NOTIFICATIONS_ENABLED
@@ -190,22 +194,11 @@ spec:
               value: "false"
             - name: N8N_COMMUNITY_NODES_ENABLED
               value: "false"
-            # Custom LLM Gateway
+            # Custom settings
             - name: LLM_GATEWAY_URL
               value: "http://llm-gateway-service.llm-gateway.svc.cluster.local"
             - name: N8N_CUSTOM_EXTENSIONS
               value: "/opt/custom-nodes"
-            - name: DB_POSTGRESDB_POOL_SIZE
-              valueFrom:
-                configMapKeyRef:
-                  name: n8n-db-config
-                  key: DB_POSTGRESDB_POOL_SIZE
-            - name: DB_POSTGRESDB_MAX_IDLE_TIME
-              valueFrom:
-                configMapKeyRef:
-                  name: n8n-db-config
-                  key: DB_POSTGRESDB_MAX_IDLE_TIME
-          # ADDED: Resource limits and requests
           resources:
             requests:
               memory: "512Mi"
@@ -213,53 +206,64 @@ spec:
             limits:
               memory: "2Gi"
               cpu: "1000m"
-          # ADDED: Health checks
+          # FIXED: Health checks with correct path
           livenessProbe:
             httpGet:
-              path: /healthz
+              path: /
               port: 5678
-            initialDelaySeconds: 30
+            initialDelaySeconds: 60
             periodSeconds: 30
             timeoutSeconds: 10
             failureThreshold: 3
           readinessProbe:
             httpGet:
-              path: /healthz
+              path: /
               port: 5678
-            initialDelaySeconds: 10
+            initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
             failureThreshold: 3
           volumeMounts:
             - name: n8n-data
               mountPath: /home/node/.n8n
-            # ADDED: Temp directory for better I/O
+            # FIXED: Add cache directory
+            - name: cache-volume
+              mountPath: /home/node/.cache
             - name: tmp-volume
               mountPath: /tmp
           securityContext:
             runAsUser: 1000
             runAsGroup: 1000
             allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: true  # ADDED: Security improvement
+            # REMOVED: readOnlyRootFilesystem (causes cache directory issues)
       securityContext:
         fsGroup: 1000
+      # FIXED: Add init container to set proper permissions
+      initContainers:
+        - name: fix-permissions
+          image: busybox:1.35
+          command: ['sh', '-c']
+          args:
+            - |
+              mkdir -p /data/.n8n /data/.cache /data/tmp
+              chown -R 1000:1000 /data/.n8n /data/.cache /data/tmp
+              chmod -R 755 /data/.n8n /data/.cache /data/tmp
+          volumeMounts:
+            - name: n8n-data
+              mountPath: /data/.n8n
+            - name: cache-volume
+              mountPath: /data/.cache
+            - name: tmp-volume
+              mountPath: /data/tmp
+          securityContext:
+            runAsUser: 0
       volumes:
         - name: n8n-data
           persistentVolumeClaim:
             claimName: n8n-data
-        # ADDED: Temporary volume for better performance
+        # FIXED: Add cache and tmp volumes
+        - name: cache-volume
+          emptyDir: {}
         - name: tmp-volume
           emptyDir: {}
-      # ADDED: Node affinity for consistent placement
-      affinity:
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 100
-            podAffinityTerm:
-              labelSelector:
-                matchExpressions:
-                - key: app
-                  operator: In
-                  values:
-                  - n8n
-              topologyKey: kubernetes.io/hostname
+
