@@ -1,103 +1,4 @@
 # apps/base/deployment.yaml
-# apiVersion: apps/v1
-# kind: Deployment
-# metadata:
-#   name: n8n
-# spec:
-#   replicas: 2
-#   selector:
-#     matchLabels:
-#       app: n8n
-#   template:
-#     metadata:
-#       labels:
-#         app: n8n
-#     spec:
-#       containers:
-#         - name: n8n
-#           image: docker.n8n.io/n8nio/n8n:latest
-#           ports:
-#             - containerPort: 5678
-#           env:
-#             - name: DB_POSTGRESDB_HOST
-#               value: n8n-db-cnpg-v1-rw.cnpg-prod.svc.cluster.local:5432/n8n # Replace this with dev afterwards
-#             - name: DB_TYPE
-#               # value: postgresdb
-#               value: jdbc:postgresql://n8n-db-cnpg-v1-rw.cnpg-prod.svc.cluster.local:5432/n8n
-# # │       DB_TYPE:                            jdbc:postgresql://n8n-db-cnpg-v1-rw.cnpg-prod.svc.cluster.local:5432/n8n
-# # │       DB_POSTGRESDB_DATABASE:             n8n
-# # │       DB_POSTGRESDB_HOST:                 n8n-db-cnpg-v1-rw.cnpg-dev.svc.cluster.local
-# # │       DB_POSTGRESDB_PORT:                 5432
-#             - name: DB_POSTGRESDB_DATABASE
-#               value: n8n
-#             - name: DB_POSTGRESDB_PORT
-#               value: "5432"
-#             - name: DB_POSTGRESDB_USER
-#               valueFrom:
-#                 secretKeyRef:
-#                   name: n8n-db-creds
-#                   key: username
-#             - name: DB_POSTGRESDB_PASSWORD
-#               valueFrom:
-#                 secretKeyRef:
-#                   name: n8n-db-creds
-#                   key: password
-#             - name: DB_POSTGRESDB_SCHEMA
-#               value: public
-#             - name: GENERIC_TIMEZONE
-#               value: Europe/Stockholm
-#             - name: TZ
-#               value: Europe/Stockholm
-#             - name: N8N_ENCRYPTION_KEY
-#               valueFrom:
-#                 secretKeyRef:
-#                   name: n8n-encryption
-#                   key: key
-#             - name: N8N_PORT
-#               value: "5678"
-#             - name: N8N_DEFAULT_EDITION
-#               value: "community"
-#             - name: N8N_RUNNERS_MODE
-#               value: internal
-#             - name: N8N_LOG_LEVEL
-#               value: debug
-#             - name: N8N_DIAGNOSTICS_ENABLED
-#               value: "false"
-#             - name: N8N_DISABLE_PRODUCTION_MAIN_MENU
-#               value: "true"
-#             - name: N8N_VERSION_NOTIFICATIONS_ENABLED
-#               value: "false"
-#             - name: N8N_HIRING_BANNER_ENABLED
-#               value: "false"
-#             - name: N8N_TEMPLATES_ENABLED
-#               value: "false"
-#             - name: N8N_PERSONALIZATION_ENABLED
-#               value: "false"
-#             - name: N8N_COMMUNITY_NODES_ENABLED
-#               value: "false"
-#
-#             - name: LLM_GATEWAY_URL
-#               value: "http://llm-gateway-service.llm-gateway.svc.cluster.local"
-#             - name: N8N_CUSTOM_EXTENSIONS
-#               value: "/opt/custom-nodes"
-#
-#           volumeMounts:
-#             - name: n8n-data
-#               mountPath: /home/node/.n8n
-#           securityContext:
-#             runAsUser: 1000
-#             runAsGroup: 1000
-#             allowPrivilegeEscalation: false
-#       securityContext:
-#         fsGroup: 1000
-#       volumes:
-#         - name: n8n-data
-#           persistentVolumeClaim:
-#             claimName: n8n-data
-#
-
-
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -118,13 +19,17 @@ spec:
           ports:
             - containerPort: 5678
           env:
-            # FIXED: Correct database configuration
-            - name: DB_TYPE
-              value: "postgresdb"
             - name: DB_POSTGRESDB_HOST
-              value: "n8n-db-cnpg-v1-rw.cnpg-prod.svc.cluster.local"
+              value: n8n-db-cnpg-v1-rw.cnpg-prod.svc.cluster.local:5432/n8n # Replace this with dev afterwards
+            - name: DB_TYPE
+              # value: postgresdb
+              value: jdbc:postgresql://n8n-db-cnpg-v1-rw.cnpg-prod.svc.cluster.local:5432/n8n
+# │       DB_TYPE:                            jdbc:postgresql://n8n-db-cnpg-v1-rw.cnpg-prod.svc.cluster.local:5432/n8n
+# │       DB_POSTGRESDB_DATABASE:             n8n
+# │       DB_POSTGRESDB_HOST:                 n8n-db-cnpg-v1-rw.cnpg-dev.svc.cluster.local
+# │       DB_POSTGRESDB_PORT:                 5432
             - name: DB_POSTGRESDB_DATABASE
-              value: "n8n"
+              value: n8n
             - name: DB_POSTGRESDB_PORT
               value: "5432"
             - name: DB_POSTGRESDB_USER
@@ -138,12 +43,11 @@ spec:
                   name: n8n-db-creds
                   key: password
             - name: DB_POSTGRESDB_SCHEMA
-              value: "public"
-            # Basic configuration
+              value: public
             - name: GENERIC_TIMEZONE
-              value: "Europe/Stockholm"
+              value: Europe/Stockholm
             - name: TZ
-              value: "Europe/Stockholm"
+              value: Europe/Stockholm
             - name: N8N_ENCRYPTION_KEY
               valueFrom:
                 secretKeyRef:
@@ -151,37 +55,14 @@ spec:
                   key: key
             - name: N8N_PORT
               value: "5678"
-            # FIXED: Enable task runners (required for newer versions)
-            - name: N8N_RUNNERS_ENABLED
-              value: "true"
+            - name: N8N_DEFAULT_EDITION
+              value: "community"
             - name: N8N_RUNNERS_MODE
-              value: "internal"
-            # REMOVED: EXECUTIONS_PROCESS (deprecated)
-            # Performance settings
-            - name: EXECUTIONS_MODE
-              value: "regular"
-            - name: EXECUTIONS_DATA_SAVE_ON_ERROR
-              value: "all"
-            - name: EXECUTIONS_DATA_SAVE_ON_SUCCESS
-              value: "all"
-            - name: EXECUTIONS_DATA_SAVE_ON_PROGRESS
-              value: "false"
-            - name: EXECUTIONS_DATA_MAX_AGE
-              value: "168"
-            - name: EXECUTIONS_DATA_PRUNE
-              value: "true"
-            # Timeout settings
-            - name: N8N_DEFAULT_TIMEOUT
-              value: "300000"
-            # FIXED: File permissions
-            - name: N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS
-              value: "true"
-            # Logging
+              value: internal
             - name: N8N_LOG_LEVEL
-              value: "info"
+              value: debug
             - name: N8N_DIAGNOSTICS_ENABLED
               value: "false"
-            # UI settings
             - name: N8N_DISABLE_PRODUCTION_MAIN_MENU
               value: "true"
             - name: N8N_VERSION_NOTIFICATIONS_ENABLED
@@ -194,76 +75,195 @@ spec:
               value: "false"
             - name: N8N_COMMUNITY_NODES_ENABLED
               value: "false"
-            # Custom settings
+
             - name: LLM_GATEWAY_URL
               value: "http://llm-gateway-service.llm-gateway.svc.cluster.local"
             - name: N8N_CUSTOM_EXTENSIONS
               value: "/opt/custom-nodes"
-          resources:
-            requests:
-              memory: "512Mi"
-              cpu: "250m"
-            limits:
-              memory: "2Gi"
-              cpu: "1000m"
-          # FIXED: Health checks with correct path
-          livenessProbe:
-            httpGet:
-              path: /
-              port: 5678
-            initialDelaySeconds: 60
-            periodSeconds: 30
-            timeoutSeconds: 10
-            failureThreshold: 3
-          readinessProbe:
-            httpGet:
-              path: /
-              port: 5678
-            initialDelaySeconds: 30
-            periodSeconds: 10
-            timeoutSeconds: 5
-            failureThreshold: 3
+
           volumeMounts:
             - name: n8n-data
               mountPath: /home/node/.n8n
-            # FIXED: Add cache directory
-            - name: cache-volume
-              mountPath: /home/node/.cache
-            - name: tmp-volume
-              mountPath: /tmp
           securityContext:
             runAsUser: 1000
             runAsGroup: 1000
             allowPrivilegeEscalation: false
-            # REMOVED: readOnlyRootFilesystem (causes cache directory issues)
       securityContext:
         fsGroup: 1000
-      # FIXED: Add init container to set proper permissions
-      initContainers:
-        - name: fix-permissions
-          image: busybox:1.35
-          command: ['sh', '-c']
-          args:
-            - |
-              mkdir -p /data/.n8n /data/.cache /data/tmp
-              chown -R 1000:1000 /data/.n8n /data/.cache /data/tmp
-              chmod -R 755 /data/.n8n /data/.cache /data/tmp
-          volumeMounts:
-            - name: n8n-data
-              mountPath: /data/.n8n
-            - name: cache-volume
-              mountPath: /data/.cache
-            - name: tmp-volume
-              mountPath: /data/tmp
-          securityContext:
-            runAsUser: 0
       volumes:
         - name: n8n-data
           persistentVolumeClaim:
             claimName: n8n-data
-        # FIXED: Add cache and tmp volumes
-        - name: cache-volume
-          emptyDir: {}
-        - name: tmp-volume
-          emptyDir: {}
 
+
+
+
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: n8n
+# spec:
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app: n8n
+#   template:
+#     metadata:
+#       labels:
+#         app: n8n
+#     spec:
+#       containers:
+#         - name: n8n
+#           image: docker.n8n.io/n8nio/n8n:latest
+#           ports:
+#             - containerPort: 5678
+#           env:
+#             # FIXED: Correct database configuration
+#             - name: DB_TYPE
+#               value: "postgresdb"
+#             - name: DB_POSTGRESDB_HOST
+#               value: "n8n-db-cnpg-v1-rw.cnpg-prod.svc.cluster.local"
+#             - name: DB_POSTGRESDB_DATABASE
+#               value: "n8n"
+#             - name: DB_POSTGRESDB_PORT
+#               value: "5432"
+#             - name: DB_POSTGRESDB_USER
+#               valueFrom:
+#                 secretKeyRef:
+#                   name: n8n-db-creds
+#                   key: username
+#             - name: DB_POSTGRESDB_PASSWORD
+#               valueFrom:
+#                 secretKeyRef:
+#                   name: n8n-db-creds
+#                   key: password
+#             - name: DB_POSTGRESDB_SCHEMA
+#               value: "public"
+#             # Basic configuration
+#             - name: GENERIC_TIMEZONE
+#               value: "Europe/Stockholm"
+#             - name: TZ
+#               value: "Europe/Stockholm"
+#             - name: N8N_ENCRYPTION_KEY
+#               valueFrom:
+#                 secretKeyRef:
+#                   name: n8n-encryption
+#                   key: key
+#             - name: N8N_PORT
+#               value: "5678"
+#             # FIXED: Enable task runners (required for newer versions)
+#             - name: N8N_RUNNERS_ENABLED
+#               value: "true"
+#             - name: N8N_RUNNERS_MODE
+#               value: "internal"
+#             # REMOVED: EXECUTIONS_PROCESS (deprecated)
+#             # Performance settings
+#             - name: EXECUTIONS_MODE
+#               value: "regular"
+#             - name: EXECUTIONS_DATA_SAVE_ON_ERROR
+#               value: "all"
+#             - name: EXECUTIONS_DATA_SAVE_ON_SUCCESS
+#               value: "all"
+#             - name: EXECUTIONS_DATA_SAVE_ON_PROGRESS
+#               value: "false"
+#             - name: EXECUTIONS_DATA_MAX_AGE
+#               value: "168"
+#             - name: EXECUTIONS_DATA_PRUNE
+#               value: "true"
+#             # Timeout settings
+#             - name: N8N_DEFAULT_TIMEOUT
+#               value: "300000"
+#             # FIXED: File permissions
+#             - name: N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS
+#               value: "true"
+#             # Logging
+#             - name: N8N_LOG_LEVEL
+#               value: "info"
+#             - name: N8N_DIAGNOSTICS_ENABLED
+#               value: "false"
+#             # UI settings
+#             - name: N8N_DISABLE_PRODUCTION_MAIN_MENU
+#               value: "true"
+#             - name: N8N_VERSION_NOTIFICATIONS_ENABLED
+#               value: "false"
+#             - name: N8N_HIRING_BANNER_ENABLED
+#               value: "false"
+#             - name: N8N_TEMPLATES_ENABLED
+#               value: "false"
+#             - name: N8N_PERSONALIZATION_ENABLED
+#               value: "false"
+#             - name: N8N_COMMUNITY_NODES_ENABLED
+#               value: "false"
+#             # Custom settings
+#             - name: LLM_GATEWAY_URL
+#               value: "http://llm-gateway-service.llm-gateway.svc.cluster.local"
+#             - name: N8N_CUSTOM_EXTENSIONS
+#               value: "/opt/custom-nodes"
+#           resources:
+#             requests:
+#               memory: "512Mi"
+#               cpu: "250m"
+#             limits:
+#               memory: "2Gi"
+#               cpu: "1000m"
+#           # FIXED: Health checks with correct path
+#           livenessProbe:
+#             httpGet:
+#               path: /
+#               port: 5678
+#             initialDelaySeconds: 60
+#             periodSeconds: 30
+#             timeoutSeconds: 10
+#             failureThreshold: 3
+#           readinessProbe:
+#             httpGet:
+#               path: /
+#               port: 5678
+#             initialDelaySeconds: 30
+#             periodSeconds: 10
+#             timeoutSeconds: 5
+#             failureThreshold: 3
+#           volumeMounts:
+#             - name: n8n-data
+#               mountPath: /home/node/.n8n
+#             # FIXED: Add cache directory
+#             - name: cache-volume
+#               mountPath: /home/node/.cache
+#             - name: tmp-volume
+#               mountPath: /tmp
+#           securityContext:
+#             runAsUser: 1000
+#             runAsGroup: 1000
+#             allowPrivilegeEscalation: false
+#             # REMOVED: readOnlyRootFilesystem (causes cache directory issues)
+#       securityContext:
+#         fsGroup: 1000
+#       # FIXED: Add init container to set proper permissions
+#       initContainers:
+#         - name: fix-permissions
+#           image: busybox:1.35
+#           command: ['sh', '-c']
+#           args:
+#             - |
+#               mkdir -p /data/.n8n /data/.cache /data/tmp
+#               chown -R 1000:1000 /data/.n8n /data/.cache /data/tmp
+#               chmod -R 755 /data/.n8n /data/.cache /data/tmp
+#           volumeMounts:
+#             - name: n8n-data
+#               mountPath: /data/.n8n
+#             - name: cache-volume
+#               mountPath: /data/.cache
+#             - name: tmp-volume
+#               mountPath: /data/tmp
+#           securityContext:
+#             runAsUser: 0
+#       volumes:
+#         - name: n8n-data
+#           persistentVolumeClaim:
+#             claimName: n8n-data
+#         # FIXED: Add cache and tmp volumes
+#         - name: cache-volume
+#           emptyDir: {}
+#         - name: tmp-volume
+#           emptyDir: {}
+#
