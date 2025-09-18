@@ -1,10 +1,15 @@
-# databases/linkding/overlays/prod/restore/cluster-restore.yaml
+# databases/linkding/overlays/prod/cluster-restore.yaml
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
   name: linkding-db-cnpg-v1-restore
 spec:
   instances: 1
+  
+  # Add storage configuration
+  storage:
+    size: "15Gi"  # Match your original cluster size
+    storageClass: "microk8s-hostpath"  # Use your available storage class
   
   bootstrap:
     recovery:
@@ -22,3 +27,15 @@ spec:
           storageSasToken:
             name: linkding-db-storage
             key: blob-sas
+
+  # Optional: Add backup configuration for the restored cluster
+  backup:
+    barmanObjectStore:
+      destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/linkding-db-restored
+      azureCredentials:
+        storageAccount:
+          name: linkding-db-storage
+          key: container-name
+        storageSasToken:
+          name: linkding-db-storage
+          key: blob-sas
