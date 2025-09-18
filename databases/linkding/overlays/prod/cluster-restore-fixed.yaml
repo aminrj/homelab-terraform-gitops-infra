@@ -1,0 +1,30 @@
+# databases/linkding/overlays/prod/cluster-restore-fixed.yaml
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: linkding-db-restore-august
+spec:
+  instances: 1
+  imageName: "quay.io/enterprisedb/postgresql:16.1"
+  
+  storage:
+    size: "15Gi"
+    storageClass: "microk8s-hostpath"
+  
+  bootstrap:
+    recovery:
+      source: oldBackup
+      # Try to recover from the last available backup
+      
+  externalClusters:
+    - name: oldBackup
+      barmanObjectStore:
+        destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/linkding-db
+        serverName: linkding-db-cnpg-v1  # This matches what we see in Azure
+        azureCredentials:
+          storageAccount:
+            name: linkding-db-storage
+            key: container-name
+          storageSasToken:
+            name: linkding-db-storage
+            key: blob-sas
