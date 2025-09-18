@@ -1,8 +1,8 @@
-# databases/linkding/overlays/prod/cluster-restore-fixed.yaml
+# databases/linkding/overlays/prod/cluster-restore-august-v2.yaml
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
-  name: linkding-db-restore-august
+  name: linkding-db-restore-august-v2
 spec:
   instances: 1
   imageName: "quay.io/enterprisedb/postgresql:16.1"
@@ -14,13 +14,15 @@ spec:
   bootstrap:
     recovery:
       source: oldBackup
-      # Try to recover from the last available backup
+      # Specify the exact backup to restore
+      recoveryTarget:
+        targetTime: "2025-08-31 21:01:02+00:00"  # Exact backup timestamp
       
   externalClusters:
     - name: oldBackup
       barmanObjectStore:
         destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/linkding-db
-        serverName: linkding-db-cnpg-v1  # This matches what we see in Azure
+        serverName: linkding-db-cnpg-v1
         azureCredentials:
           storageAccount:
             name: linkding-db-storage
