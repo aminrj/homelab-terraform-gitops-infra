@@ -1,0 +1,24 @@
+# databases/linkding/overlays/prod/restore/cluster-restore.yaml
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: linkding-db-cnpg-v1-restore
+spec:
+  instances: 1
+  
+  bootstrap:
+    recovery:
+      source: clusterBackup
+      
+  externalClusters:
+    - name: clusterBackup
+      barmanObjectStore:
+        destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/linkding-db
+        serverName: linkding-db-cnpg-v1
+        azureCredentials:
+          storageAccount:
+            name: linkding-db-storage
+            key: container-name
+          storageSasToken:
+            name: linkding-db-storage
+            key: blob-sas

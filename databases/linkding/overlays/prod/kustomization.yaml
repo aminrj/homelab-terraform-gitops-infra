@@ -1,7 +1,8 @@
 namespace: cnpg-prod
 
 resources:
-  - ../../base
+  # - ../../base
+  - restore/kustomization.yaml
   - scheduled-backup.yaml
   - secrets.yaml
 
