@@ -6,10 +6,12 @@ metadata:
 spec:
   instances: 1
   
-  # Add storage configuration
+  # Use the same PostgreSQL version as the original backup
+  imageName: "quay.io/enterprisedb/postgresql:16.1"
+  
   storage:
-    size: "15Gi"  # Match your original cluster size
-    storageClass: "microk8s-hostpath"  # Use your available storage class
+    size: "15Gi"  # Increased from 5Gi to match your current usage
+    storageClass: "microk8s-hostpath"
   
   bootstrap:
     recovery:
@@ -28,7 +30,6 @@ spec:
             name: linkding-db-storage
             key: blob-sas
 
-  # Optional: Add backup configuration for the restored cluster
   backup:
     barmanObjectStore:
       destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/linkding-db-restored
