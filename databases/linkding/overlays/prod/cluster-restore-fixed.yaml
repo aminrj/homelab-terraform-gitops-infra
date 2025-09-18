@@ -3,6 +3,7 @@ apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
   name: linkding-db-restore-august
+  namespace: cnpg-prod
 spec:
   instances: 1
   imageName: "quay.io/enterprisedb/postgresql:16.1"
@@ -12,20 +13,19 @@ spec:
   bootstrap:
     recovery:
       source: oldBackup
-      # recoveryTarget:
-        # backupID: "20250831T210102"  # Use the exact backup ID from the folder name
-        # Remove targetTime and exclusive when using backupID
+      recoveryTarget:
+        backupID: "20250831T210102"  # Ensure this matches
   externalClusters:
-    - name: oldBackup
-      barmanObjectStore:
-        destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/linkding-db
-        serverName: linkding-db-cnpg-v1
-        azureCredentials:
-          storageAccount:
-            name: linkding-db-storage
-            key: container-name  # Secret key holding the account name
-          storageSasToken:
-            name: linkding-db-storage
-            key: blob-sas  # Secret key for the SAS token
-        wal:
-          maxParallel: 4
+  - name: oldBackup
+    barmanObjectStore:
+      destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/linkding-db
+      serverName: linkding-db-cnpg-v1
+      azureCredentials:
+        storageAccount:
+          name: linkding-db-storage
+          key: container-name
+        storageSasToken:
+          name: linkding-db-storage
+          key: blob-sas
+      wal:
+        maxParallel: 5  # Change from 4 to 5 to force update
