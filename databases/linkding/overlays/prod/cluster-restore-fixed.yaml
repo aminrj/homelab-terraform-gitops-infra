@@ -6,19 +6,21 @@ metadata:
 spec:
   instances: 1
   imageName: "quay.io/enterprisedb/postgresql:16.1"
-  
+ 
   storage:
     size: "15Gi"
     storageClass: "microk8s-hostpath"
-  
+ 
   bootstrap:
     recovery:
       source: oldBackup
-      # Specify the exact backup to restore
+      # Time-based PITR: Automatically selects the latest base backup before this time
+      # and replays WALs up to it. Matches your original target timestamp.
       recoveryTarget:
-          backupID: "20250831T210000"
-      #   targetTime: "2025-08-31 21:01:02+00:00"  # Exact backup timestamp
-      
+        targetTime: "2025-08-31T21:01:02Z"  # UTC; adjust timezone if needed (e.g., +00:00)
+        # Optional: Set to true to stop *before* the exact time (exclusive)
+        exclusive: true
+     
   externalClusters:
     - name: oldBackup
       barmanObjectStore:
@@ -27,7 +29,10 @@ spec:
         azureCredentials:
           storageAccount:
             name: linkding-db-storage
-            key: container-name
+            key: container-name  # This should be the secret key holding the account name
           storageSasToken:
             name: linkding-db-storage
-            key: blob-sas
+            key: blob-sas  # Secret key for the SAS token
+        # Optional: Speed up WAL replay (default is 1; increase based on your bandwidth)
+        wal:
+          maxParallel: 4
