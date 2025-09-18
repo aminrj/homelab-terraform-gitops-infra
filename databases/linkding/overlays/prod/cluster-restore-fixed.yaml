@@ -15,7 +15,8 @@ spec:
     recovery:
       source: oldBackup
       # Specify the exact backup to restore
-      # recoveryTarget:
+      recoveryTarget:
+          backupID: "20250831T210000"
       #   targetTime: "2025-08-31 21:01:02+00:00"  # Exact backup timestamp
       
   externalClusters:
