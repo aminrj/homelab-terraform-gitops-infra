@@ -14,7 +14,8 @@ spec:
     recovery:
       source: oldBackup
       recoveryTarget:
-        backupID: "20250831T210102"  # Ensure this matches
+        backupID: "20250831T210102"
+        targetTime: "2025-08-31T21:01:02Z"  # Explicitly set to match your intent
   externalClusters:
   - name: oldBackup
     barmanObjectStore:
@@ -28,4 +29,4 @@ spec:
           name: linkding-db-storage
           key: blob-sas
       wal:
-        maxParallel: 5  # Change from 4 to 5 to force update
+        maxParallel: 4
