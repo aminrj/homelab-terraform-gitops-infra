@@ -1,8 +1,8 @@
-# databases/linkding/overlays/prod/cluster-restore-august-v2.yaml
+# databases/linkding/overlays/prod/cluster-restore-fixed.yaml
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
-  name: linkding-db-restore-august-v2
+  name: linkding-db-restore-august
 spec:
   instances: 1
   imageName: "quay.io/enterprisedb/postgresql:16.1"
