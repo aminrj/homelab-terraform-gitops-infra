@@ -2,15 +2,14 @@
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
-  name: linkding-db-cnpg-v1-restore
+  name: linkding-db-restore-v16  # New name to avoid version history
 spec:
   instances: 1
   
-  # Use the same PostgreSQL version as the original backup
   imageName: "quay.io/enterprisedb/postgresql:16.1"
   
   storage:
-    size: "15Gi"  # Increased from 5Gi to match your current usage
+    size: "15Gi"
     storageClass: "microk8s-hostpath"
   
   bootstrap:
