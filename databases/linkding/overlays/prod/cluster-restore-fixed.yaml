@@ -13,9 +13,9 @@ spec:
   bootstrap:
     recovery:
       source: oldBackup
-      recoveryTarget:
-        backupID: "20250831T210102"
-        targetTime: "2025-08-31T21:01:02Z"  # Explicitly set to match your intent
+      # recoveryTarget:
+      #   backupID: "20250831T210102"
+      #   targetTime: "2025-08-31T21:01:02Z"  # Explicitly set to match your intent
   externalClusters:
   - name: oldBackup
     barmanObjectStore:
