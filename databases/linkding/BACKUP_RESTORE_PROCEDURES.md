@@ -7,6 +7,7 @@ This document describes the working backup and restore procedures for the linkdi
 ## Current Status ✅
 
 **Successfully Implemented and Tested:**
+
 - ✅ WAL archiving to Azure Blob Storage (`linkding-db-clean` container)
 - ✅ GitOps-compatible configuration with base + overlay pattern
 - ✅ Scheduled daily backups at 01:00 UTC
@@ -17,11 +18,13 @@ This document describes the working backup and restore procedures for the linkdi
 ## Configuration Architecture
 
 ### Storage Location
+
 - **Primary Backup Location**: `https://homelabstorageaccntprod.blob.core.windows.net/linkding-db-clean`
 - **WAL Archive Location**: Same container, `wals/` subdirectory
 - **Compression**: gzip enabled for both WAL and data
 
 ### File Structure
+
 ```
 databases/linkding/
 ├── base/
@@ -36,16 +39,19 @@ databases/linkding/
 ### Key Configuration Elements
 
 #### Base Configuration (`base/database.yaml`)
+
 - Clean storage path: `linkding-db-clean` container
 - Azure credentials from External Secrets
 - 14-day retention policy
 - gzip compression for WAL and data
 
 #### Production Overrides (`overlays/prod/destination-path-patch.yaml`)
+
 - Storage size: 15Gi
 - Storage class: microk8s-hostpath
 
 #### Scheduled Backup (`scheduled-backup.yaml`)
+
 - Daily at 01:00 UTC
 - Uses barmanObjectStore method
 - Cluster reference: `linkding-db-cnpg-v1`
@@ -53,12 +59,15 @@ databases/linkding/
 ## Backup Procedures
 
 ### Automated Daily Backups
+
 Scheduled backups run automatically at 01:00 UTC daily via:
+
 ```bash
 kubectl get scheduledbackup linkding-daily-backup -n cnpg-prod
 ```
 
 ### Manual Backup Creation
+
 ```bash
 kubectl create -f - <<EOF
 apiVersion: postgresql.cnpg.io/v1
@@ -73,6 +82,7 @@ EOF
 ```
 
 ### Backup Status Monitoring
+
 ```bash
 # Check backup status
 kubectl get backups -n cnpg-prod | grep linkding
@@ -87,6 +97,7 @@ kubectl logs linkding-db-cnpg-v1-1 -n cnpg-prod | grep -E "(Archived WAL|archive
 ## Restore Procedures
 
 ### Point-in-Time Recovery
+
 Create a new cluster with recovery configuration:
 
 ```yaml
@@ -111,27 +122,28 @@ spec:
       #   targetTime: "2025-09-19 08:00:00.00000+00"
 
   externalClusters:
-  - name: "linkding-clean-backup"
-    barmanObjectStore:
-      destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/linkding-db-clean
-      serverName: linkding-db-cnpg-v1
-      azureCredentials:
-        storageAccount:
-          name: linkding-db-storage
-          key: container-name
-        storageSasToken:
-          name: linkding-db-storage
-          key: blob-sas
-      wal:
-        maxParallel: 5
-        compression: gzip
-      data:
-        compression: gzip
+    - name: "linkding-clean-backup"
+      barmanObjectStore:
+        destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/linkding-db-clean
+        serverName: linkding-db-cnpg-v1
+        azureCredentials:
+          storageAccount:
+            name: linkding-db-storage
+            key: container-name
+          storageSasToken:
+            name: linkding-db-storage
+            key: blob-sas
+        wal:
+          maxParallel: 5
+          compression: gzip
+        data:
+          compression: gzip
 ```
 
 ### Validation Steps
 
 After restore, verify data integrity:
+
 ```bash
 # Connect to restored cluster
 kubectl exec -it linkding-restored-1 -n cnpg-prod -- env PGPASSWORD='<password>' psql -h localhost -U linkding -d linkding
@@ -152,19 +164,24 @@ SELECT * FROM backup_test;
 ### Common Issues and Solutions
 
 #### "Expected empty archive" Error
+
 **Problem**: WAL archiving fails with "Expected empty archive" error
 **Solution**: Use clean storage container (`linkding-db-clean`) instead of previously used paths
 
 #### Backup Stuck in Progress
+
 **Problem**: Manual backups show no phase or remain in progress
 **Solution**: Wait for completion; WAL archiving must be healthy first. Check logs:
+
 ```bash
 kubectl logs linkding-db-cnpg-v1-1 -n cnpg-prod | grep -E "(Archived WAL|backup)"
 ```
 
 #### Restore "No Target Backup Found"
+
 **Problem**: Restore fails with "no target backup found"
 **Solution**: Ensure at least one successful base backup exists. Check:
+
 ```bash
 kubectl get backups -n cnpg-prod | grep linkding
 ```
@@ -172,18 +189,21 @@ kubectl get backups -n cnpg-prod | grep linkding
 ### Health Monitoring
 
 #### Check WAL Archiving Health
+
 ```bash
 # Should show successful WAL archiving
 kubectl logs linkding-db-cnpg-v1-1 -n cnpg-prod | grep "Archived WAL file"
 ```
 
 #### Check Backup Health
+
 ```bash
 # Should show completed backups
 kubectl get backups -n cnpg-prod -o wide | grep linkding
 ```
 
 #### Check Cluster Health
+
 ```bash
 # Should show "Cluster in healthy state"
 kubectl get cluster linkding-db-cnpg-v1 -n cnpg-prod
@@ -192,7 +212,9 @@ kubectl get cluster linkding-db-cnpg-v1 -n cnpg-prod
 ## Recovery Testing
 
 ### Test Data Validation
+
 The system includes test data for backup/restore validation:
+
 ```sql
 -- Test table structure
 CREATE TABLE backup_test (
@@ -227,12 +249,14 @@ INSERT INTO backup_test (name) VALUES
 ## Maintenance
 
 ### Regular Checks (Weekly)
+
 1. Verify WAL archiving is healthy
 2. Check backup completion status
 3. Validate storage usage in Azure
 4. Test restore capability (monthly)
 
 ### Cleanup (As Needed)
+
 ```bash
 # Remove old failed backups
 kubectl delete backup <backup-name> -n cnpg-prod
@@ -240,3 +264,4 @@ kubectl delete backup <backup-name> -n cnpg-prod
 # Clean test restore clusters
 kubectl delete cluster linkding-restore-test -n cnpg-prod
 ```
+

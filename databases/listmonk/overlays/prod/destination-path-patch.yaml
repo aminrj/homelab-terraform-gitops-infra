@@ -5,19 +5,6 @@ metadata:
   name: listmonk-db-cnpg-v1
 spec:
   backup:
-    barmanObjectStore:
-      destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/listmonk-db # Destination (must be empty)
-      azureCredentials:
-        storageAccount:
-          name: listmonk-db-storage
-          key: container-name
-        storageSasToken:
-          name: listmonk-db-storage
-          key: blob-sas
-      wal:
-        compression: gzip
-      data:
-        compression: gzip
     retentionPolicy: "7d"     # one week retention
   externalClusters:
     - name: clusterBackup

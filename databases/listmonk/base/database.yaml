@@ -51,7 +51,7 @@ spec:
 
   backup:
     barmanObjectStore:
-      destinationPath: https://homelabstorageaccountdev.blob.core.windows.net/listmonk-db  # Base uses dev
+      destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/listmonk-db-clean
       azureCredentials:
         storageAccount:
           name: listmonk-db-storage

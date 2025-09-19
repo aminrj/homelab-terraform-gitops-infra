@@ -55,7 +55,7 @@ spec:
 
   backup:
     barmanObjectStore:
-      destinationPath: https://homelabstorageaccountdev.blob.core.windows.net/wallabag-db  # Base uses dev
+      destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/wallabag-db-clean
       azureCredentials:
         storageAccount:
           name: wallabag-db-storage

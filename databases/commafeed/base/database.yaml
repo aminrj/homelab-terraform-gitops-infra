@@ -39,23 +39,16 @@ spec:
       app: commafeed-database
       policy-type: "database"
 
-  # Fixed bootstrap for recovery
   bootstrap:
-    recovery:
-      source: "clusterBackup"
-      # recoveryTarget:
-      #   backupID: "20250625T160301"  # The specific backup you want
-
-  # bootstrap:
-  #   initdb:
-  #     database: commafeed
-  #     owner: commafeed
-  #     secret:
-  #       name: commafeed-db-creds
+    initdb:
+      database: commafeed
+      owner: commafeed
+      secret:
+        name: commafeed-db-creds
 
   backup:
     barmanObjectStore:
-      destinationPath: https://homelabstorageaccountdev.blob.core.windows.net/commafeed-db  # Base uses dev
+      destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/commafeed-db-clean
       azureCredentials:
         storageAccount:
           name: commafeed-db-storage
