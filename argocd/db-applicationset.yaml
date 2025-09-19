@@ -12,7 +12,7 @@ spec:
           - path: databases/*/overlays/*
   template:
     metadata:
-      name: '{{path[1]}}-db-{{path[3]}}'
+      name: 'db-{{path[1]}}-{{path[3]}}'
     spec:
       project: default
       source:

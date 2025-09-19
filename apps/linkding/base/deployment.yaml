@@ -36,6 +36,15 @@ spec:
               port: 9090
             initialDelaySeconds: 5
             periodSeconds: 5
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
           env:
             - name: LD_DB_HOST
               value: linkding-db-cnpg-v1-rw.cnpg-prod.svc.cluster.local  # Replace with QA DB in overlays

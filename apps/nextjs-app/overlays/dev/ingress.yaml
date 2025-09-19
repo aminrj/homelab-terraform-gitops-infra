@@ -5,6 +5,7 @@ metadata:
   namespace: myapp
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
     cert-manager.io/cluster-issuer: letsencrypt-staging
     external-dns.alpha.kubernetes.io/hostname: myapp.staging.molntek.com
     # Overrides the IP that external-dns will publish

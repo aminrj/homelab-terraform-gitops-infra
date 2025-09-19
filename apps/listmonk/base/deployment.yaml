@@ -37,6 +37,15 @@ spec:
               port: 9000
             initialDelaySeconds: 5
             periodSeconds: 5
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
           env:
             - name: LISTMONK_DB__HOST
               value: listmonk-db-cnpg-v1-rw.cnpg-prod.svc.cluster.local  # Replace with QA DB in overlays

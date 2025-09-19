@@ -4,6 +4,7 @@ metadata:
   name: linkding-db-cnpg-v1
 spec:
   backup:
+    retentionPolicy: "7d"     # one week retention (standardized)
     barmanObjectStore:
       destinationPath: https://homelabstorageaccountqa.blob.core.windows.net/linkding-db
   externalClusters:

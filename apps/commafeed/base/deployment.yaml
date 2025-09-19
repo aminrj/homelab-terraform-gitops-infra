@@ -37,6 +37,15 @@ spec:
               port: 8082
             initialDelaySeconds: 5
             periodSeconds: 5
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
           env:
             - name: QUARKUS_DATASOURCE_JDBC_URL
               value: jdbc:postgresql://commafeed-db-cnpg-v1-rw.cnpg-dev.svc.cluster.local  # Replace with QA DB in overlays
