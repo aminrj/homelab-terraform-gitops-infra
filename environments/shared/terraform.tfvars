@@ -8,7 +8,7 @@ namespace             = "cnpg"
 
 ui_service_type = "LoadBalancer"
 
-pg_storage_class = "ceph-rbd"
-storage_class = "ceph-rbd"
+pg_storage_class = "microk8s-hostpath"
+storage_class = "microk8s-hostpath"
 
 slack_webhook_url = "https://hooks.slack.com/services/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"

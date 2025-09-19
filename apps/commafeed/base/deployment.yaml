@@ -18,6 +18,25 @@ spec:
           image: athou/commafeed:latest-postgresql
           ports:
             - containerPort: 8082
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "200m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /q/health/live
+              port: 8082
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /q/health/ready
+              port: 8082
+            initialDelaySeconds: 5
+            periodSeconds: 5
           env:
             - name: QUARKUS_DATASOURCE_JDBC_URL
               value: jdbc:postgresql://commafeed-db-cnpg-v1-rw.cnpg-dev.svc.cluster.local  # Replace with QA DB in overlays

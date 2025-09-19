@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(kubectl get:*)",
+      "Bash(kubectl scale:*)",
+      "Bash(KUBECONFIG=/Users/ARAJI/.kube/microk8s-config kubectl get deployments --all-namespaces)",
+      "Read(//Users/ARAJI/.kube/**)",
+      "Bash(kubectl --kubeconfig ~/.kube/microk8s-config scale deployment linkding --replicas=0 -n linkding)",
+      "Bash(kubectl --kubeconfig ~/.kube/microk8s-config delete cluster linkding-db-cnpg-v1 -n cnpg-prod)",
+      "Bash(kubectl --kubeconfig ~/.kube/microk8s-config delete cluster linkding-db-restore-august -n cnpg-prod)",
+      "Bash(kubectl:*)",
+      "Bash(curl:*)",
+      "Bash(find:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

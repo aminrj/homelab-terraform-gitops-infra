@@ -9,7 +9,7 @@ resource_group_name = "homelab-prod"
 storage_account_name = "homelabstorageaccntprod"
 
 
-pg_storage_class = "ceph-rbd"
-storage_class = "ceph-rbd"
+pg_storage_class = "microk8s-hostpath"
+storage_class = "microk8s-hostpath"
 
 subscription_id      = "7d2eaf41-3498-496e-a28d-a286fe5c508f"

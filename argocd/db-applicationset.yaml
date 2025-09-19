@@ -21,7 +21,7 @@ spec:
         path: 'databases/{{path[1]}}/overlays/{{path[3]}}'
       destination:
         server: https://kubernetes.default.svc
-        namespace: '{{path[3]}}'  # or '{{path[1]}}-{{path[3]}}' if you want unique namespaces per app+env
+        namespace: 'cnpg-{{path[3]}}'  # cnpg-dev, cnpg-qa, cnpg-prod
       syncPolicy:
         automated:
           prune: true

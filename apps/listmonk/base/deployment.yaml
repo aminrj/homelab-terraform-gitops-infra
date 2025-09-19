@@ -18,6 +18,25 @@ spec:
           image: listmonk/listmonk:latest
           ports:
             - containerPort: 9000
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 9000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 9000
+            initialDelaySeconds: 5
+            periodSeconds: 5
           env:
             - name: LISTMONK_DB__HOST
               value: listmonk-db-cnpg-v1-rw.cnpg-prod.svc.cluster.local  # Replace with QA DB in overlays

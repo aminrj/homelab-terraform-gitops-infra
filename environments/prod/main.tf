@@ -27,11 +27,11 @@ module "azure_keyvault" {
 
 locals {
   apps = {
-    commafeed = { container_name = "commafeed-db" }
-    linkding  = { container_name = "linkding-db" }
-    wallabag  = { container_name = "wallabag-db" }
-    n8n       = { container_name = "n8n-db" }
-    listmonk  = { container_name = "listmonk-db" }
+    commafeed = { container_name = "commafeed-db-clean" }
+    linkding  = { container_name = "linkding-db-clean" }
+    wallabag  = { container_name = "wallabag-db-clean" }
+    n8n       = { container_name = "n8n-db-clean" }
+    listmonk  = { container_name = "listmonk-db-clean" }
   }
 }
 

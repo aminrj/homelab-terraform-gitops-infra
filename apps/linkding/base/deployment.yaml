@@ -17,6 +17,25 @@ spec:
           image: sissbruecker/linkding:latest
           ports:
             - containerPort: 9090
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "50m"
+            limits:
+              memory: "256Mi"
+              cpu: "250m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 9090
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 9090
+            initialDelaySeconds: 5
+            periodSeconds: 5
           env:
             - name: LD_DB_HOST
               value: linkding-db-cnpg-v1-rw.cnpg-prod.svc.cluster.local  # Replace with QA DB in overlays
