@@ -27,10 +27,9 @@ spec:
               cpu: "2000m"
           env:
             - name: DB_POSTGRESDB_HOST
-              value: n8n-db-cnpg-v1-rw.cnpg-prod.svc.cluster.local:5432/n8n # Replace this with dev afterwards
+              value: n8n-db-cnpg-v1-rw.cnpg-prod.svc.cluster.local
             - name: DB_TYPE
-              # value: postgresdb
-              value: jdbc:postgresql://n8n-db-cnpg-v1-rw.cnpg-prod.svc.cluster.local:5432/n8n
+              value: postgresdb
             - name: DB_POSTGRESDB_DATABASE
               value: n8n
             - name: DB_POSTGRESDB_PORT
