@@ -35,20 +35,10 @@ spec:
       secret:
         name: n8n-db-creds
 
-  # # Fixed bootstrap for recovery
-  # bootstrap:
-  #   recovery:
-  #     source: "clusterBackup"
-  #     # recoveryTarget:
-  #     #   backupID: "20250625T160301"  # The specific backup you want
-
-  resources:
-    requests:
-      memory: 600Mi
 
   backup:
     barmanObjectStore:
-      destinationPath: https://homelabstorageaccountdev.blob.core.windows.net/n8n-db
+      destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/n8n-db-clean
       azureCredentials:
         storageAccount:
           name: n8n-db-storage

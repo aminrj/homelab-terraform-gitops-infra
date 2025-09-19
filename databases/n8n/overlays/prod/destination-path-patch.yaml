@@ -5,19 +5,6 @@ metadata:
   name: n8n-db-cnpg-v1
 spec:
   backup:
-    barmanObjectStore:
-      destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/n8n-db # Destination (must be empty)
-      azureCredentials:
-        storageAccount:
-          name: n8n-db-storage
-          key: container-name
-        storageSasToken:
-          name: n8n-db-storage
-          key: blob-sas
-      wal:
-        compression: gzip
-      data:
-        compression: gzip
     retentionPolicy: "7d"     # one week retention
   externalClusters:
     - name: clusterBackup
