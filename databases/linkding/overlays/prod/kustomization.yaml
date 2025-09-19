@@ -1,12 +1,15 @@
 namespace: cnpg-prod
 
 resources:
-  # - ../../base
-  # - restore
+  - ../../base
   - scheduled-backup.yaml
   - secrets.yaml
-  - cluster-restore-fixed.yaml
 
 patches:
-  # - path: restore-from-qa.yaml
-  - path: destination-path-patch.yaml
+  - target:
+      version: v1
+      group: postgresql.cnpg.io
+      kind: Cluster
+      name: linkding-db-cnpg-v1
+      namespace: cnpg-prod
+    path: destination-path-patch.yaml

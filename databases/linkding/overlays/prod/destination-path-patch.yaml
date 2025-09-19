@@ -1,33 +1,8 @@
 # databases/linkding/overlays/prod/destination-path-patch.yaml
-apiVersion: postgresql.cnpg.io/v1
-kind: Cluster
-metadata:
-  name: linkding-db-cnpg-v1
-spec:
-  backup:
-    barmanObjectStore:
-      destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/linkding-db # Destination (must be empty)
-      azureCredentials:
-        storageAccount:
-          name: linkding-db-storage
-          key: container-name
-        storageSasToken:
-          name: linkding-db-storage
-          key: blob-sas
-      wal:
-        compression: gzip
-      data:
-        compression: gzip
-    retentionPolicy: "7d"     # one week retention
-  externalClusters:
-    - name: clusterBackup
-      barmanObjectStore:
-        destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/linkding-db-restored # Source
-        serverName: linkding-db-cnpg-v1  # Fixed: match your backup path structure
-        azureCredentials:
-          storageAccount:
-            name: linkding-db-storage
-            key: container-name
-          storageSasToken:
-            name: linkding-db-storage
-            key: blob-sas
+# Production-specific overrides for linkding PostgreSQL cluster
+- op: replace
+  path: /spec/storage/size
+  value: "15Gi"
+- op: add
+  path: /spec/storage/storageClass
+  value: "microk8s-hostpath"

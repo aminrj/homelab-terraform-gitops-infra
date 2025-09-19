@@ -1,3 +1,4 @@
+#/base/database.yaml
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
@@ -33,7 +34,7 @@ spec:
 
   backup:
     barmanObjectStore:
-      destinationPath: https://homelabstorageaccountdev.blob.core.windows.net/linkding-db
+      destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/linkding-db-clean
       azureCredentials:
         storageAccount:
           name: linkding-db-storage
