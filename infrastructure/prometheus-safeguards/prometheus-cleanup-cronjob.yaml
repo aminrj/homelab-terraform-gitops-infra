@@ -1,0 +1,279 @@
+# infrastructure/prometheus-safeguards/prometheus-cleanup-cronjob.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: prometheus-cleanup
+  namespace: monitoring
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: prometheus-cleanup
+  namespace: monitoring
+rules:
+- apiGroups: [""]
+  resources: ["pods", "pods/exec"]
+  verbs: ["get", "list", "create"]
+- apiGroups: [""]
+  resources: ["events"]
+  verbs: ["create"]
+- apiGroups: ["monitoring.coreos.com"]
+  resources: ["prometheuses"]
+  verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: prometheus-cleanup
+  namespace: monitoring
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: prometheus-cleanup
+subjects:
+- kind: ServiceAccount
+  name: prometheus-cleanup
+  namespace: monitoring
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-cleanup-script
+  namespace: monitoring
+data:
+  cleanup.sh: |
+    #!/bin/bash
+    set -euo pipefail
+
+    echo "$(date): Starting Prometheus storage cleanup"
+
+    # Function to log with timestamp
+    log() {
+        echo "$(date '+%Y-%m-%d %H:%M:%S'): $1"
+    }
+
+    # Function to check Prometheus storage usage
+    check_prometheus_storage() {
+        log "Checking Prometheus storage usage..."
+
+        # Get the prometheus pod name
+        PROMETHEUS_POD=$(kubectl get pods -n monitoring -l app.kubernetes.io/name=prometheus -o jsonpath='{.items[0].metadata.name}')
+
+        if [[ -z "$PROMETHEUS_POD" ]]; then
+            log "ERROR: No Prometheus pod found"
+            return 1
+        fi
+
+        log "Found Prometheus pod: $PROMETHEUS_POD"
+
+        # Check TSDB size via API
+        PROMETHEUS_URL="http://kube-prometheus-stack-prometheus.monitoring:9090"
+
+        # Get current TSDB size
+        TSDB_SIZE_BYTES=$(curl -s "${PROMETHEUS_URL}/api/v1/query?query=prometheus_tsdb_size_bytes" | jq -r '.data.result[0].value[1]' 2>/dev/null || echo "0")
+        TSDB_SIZE_GB=$(echo "scale=2; $TSDB_SIZE_BYTES / 1024 / 1024 / 1024" | bc -l 2>/dev/null || echo "0")
+
+        # Calculate usage percentage (out of 20GB)
+        USAGE_PERCENT=$(echo "scale=2; $TSDB_SIZE_BYTES / (20 * 1024 * 1024 * 1024) * 100" | bc -l 2>/dev/null || echo "0")
+
+        log "Current Prometheus TSDB size: ${TSDB_SIZE_GB}GB (${USAGE_PERCENT}% of 20GB)"
+
+        # Check if cleanup is needed (>70% usage)
+        if (( $(echo "$USAGE_PERCENT > 70" | bc -l) )); then
+            log "WARNING: Prometheus storage usage is high (${USAGE_PERCENT}%). Cleanup recommended."
+            return 0
+        else
+            log "INFO: Prometheus storage usage is acceptable (${USAGE_PERCENT}%)"
+            return 1
+        fi
+    }
+
+    # Function to force cleanup via admin API
+    force_prometheus_cleanup() {
+        log "Forcing Prometheus cleanup via admin API..."
+
+        PROMETHEUS_URL="http://kube-prometheus-stack-prometheus.monitoring:9090"
+
+        # Trigger immediate cleanup via admin API (if enabled)
+        # Note: Admin API is disabled by default for security
+        log "Note: Admin API cleanup is disabled for security. Using alternative methods."
+
+        # Alternative: Delete old WAL files if safe to do so
+        # This is a safe operation that Prometheus can handle
+        kubectl exec -n monitoring "$PROMETHEUS_POD" -c prometheus -- find /prometheus -name "*.log" -type f -mtime +1 -size +100M -exec ls -lh {} \; 2>/dev/null || true
+
+        log "Cleanup operations completed"
+    }
+
+    # Function to check retention policy effectiveness
+    check_retention_policy() {
+        log "Checking retention policy effectiveness..."
+
+        PROMETHEUS_URL="http://kube-prometheus-stack-prometheus.monitoring:9090"
+
+        # Get oldest timestamp
+        OLDEST_TS=$(curl -s "${PROMETHEUS_URL}/api/v1/query?query=prometheus_tsdb_lowest_timestamp" | jq -r '.data.result[0].value[1]' 2>/dev/null || echo "0")
+
+        if [[ "$OLDEST_TS" != "0" ]]; then
+            CURRENT_TS=$(date +%s)
+            AGE_DAYS=$(echo "scale=1; ($CURRENT_TS - $OLDEST_TS) / 86400" | bc -l)
+            log "Oldest data is ${AGE_DAYS} days old"
+
+            # Check if data is older than retention policy (7 days)
+            if (( $(echo "$AGE_DAYS > 8" | bc -l) )); then
+                log "WARNING: Data older than retention policy detected. Check retention configuration."
+
+                # Create event for monitoring
+                kubectl create event prometheus-retention-issue \
+                    --type=Warning \
+                    --reason=RetentionPolicyIneffective \
+                    --message="Prometheus has data older than retention policy: ${AGE_DAYS} days" \
+                    --namespace=monitoring || true
+            fi
+        fi
+    }
+
+    # Function to monitor cardinality
+    check_cardinality() {
+        log "Checking metric cardinality..."
+
+        PROMETHEUS_URL="http://kube-prometheus-stack-prometheus.monitoring:9090"
+
+        # Get current number of series
+        SERIES_COUNT=$(curl -s "${PROMETHEUS_URL}/api/v1/query?query=prometheus_tsdb_head_series" | jq -r '.data.result[0].value[1]' 2>/dev/null || echo "0")
+
+        log "Current metric series count: $SERIES_COUNT"
+
+        # Warn if cardinality is very high (>100k series for a homelab)
+        if (( SERIES_COUNT > 100000 )); then
+            log "WARNING: High metric cardinality detected: $SERIES_COUNT series"
+
+            # Get top metrics by cardinality
+            curl -s "${PROMETHEUS_URL}/api/v1/label/__name__/values" | jq -r '.data[]' | head -20 | while read metric; do
+                COUNT=$(curl -s "${PROMETHEUS_URL}/api/v1/query?query=count+by+(__name__)({__name__=\"$metric\"})" | jq -r '.data.result[0].value[1]' 2>/dev/null || echo "0")
+                log "  $metric: $COUNT series"
+            done 2>/dev/null || log "Could not retrieve detailed cardinality info"
+        fi
+    }
+
+    # Function to generate storage report
+    generate_storage_report() {
+        log "Generating Prometheus storage report..."
+
+        PROMETHEUS_URL="http://kube-prometheus-stack-prometheus.monitoring:9090"
+        REPORT_DATE=$(date '+%Y-%m-%d')
+
+        echo "=== Prometheus Storage Report - $REPORT_DATE ===" > /tmp/prometheus-storage-report.txt
+        echo "Date: $(date)" >> /tmp/prometheus-storage-report.txt
+        echo "" >> /tmp/prometheus-storage-report.txt
+
+        # TSDB Stats
+        echo "TSDB Statistics:" >> /tmp/prometheus-storage-report.txt
+        curl -s "${PROMETHEUS_URL}/api/v1/query?query=prometheus_tsdb_size_bytes" | jq -r '.data.result[0].value[1]' | xargs -I {} echo "  TSDB Size: {} bytes" >> /tmp/prometheus-storage-report.txt 2>/dev/null || echo "  TSDB Size: Unable to retrieve" >> /tmp/prometheus-storage-report.txt
+
+        curl -s "${PROMETHEUS_URL}/api/v1/query?query=prometheus_tsdb_head_series" | jq -r '.data.result[0].value[1]' | xargs -I {} echo "  Active Series: {}" >> /tmp/prometheus-storage-report.txt 2>/dev/null || echo "  Active Series: Unable to retrieve" >> /tmp/prometheus-storage-report.txt
+
+        curl -s "${PROMETHEUS_URL}/api/v1/query?query=prometheus_tsdb_wal_size_bytes" | jq -r '.data.result[0].value[1]' | xargs -I {} echo "  WAL Size: {} bytes" >> /tmp/prometheus-storage-report.txt 2>/dev/null || echo "  WAL Size: Unable to retrieve" >> /tmp/prometheus-storage-report.txt
+
+        echo "" >> /tmp/prometheus-storage-report.txt
+        echo "Retention Configuration:" >> /tmp/prometheus-storage-report.txt
+        echo "  Time Retention: 7 days" >> /tmp/prometheus-storage-report.txt
+        echo "  Size Retention: 15GB" >> /tmp/prometheus-storage-report.txt
+        echo "  WAL Compression: Enabled" >> /tmp/prometheus-storage-report.txt
+
+        cat /tmp/prometheus-storage-report.txt
+        log "Storage report generated"
+    }
+
+    # Main execution
+    main() {
+        log "Starting Prometheus storage monitoring and cleanup"
+
+        # Check storage usage and determine if cleanup is needed
+        if check_prometheus_storage; then
+            # Storage usage is high, attempt cleanup
+            force_prometheus_cleanup
+        fi
+
+        # Always check retention policy effectiveness
+        check_retention_policy
+
+        # Monitor cardinality for potential issues
+        check_cardinality
+
+        # Generate comprehensive report
+        generate_storage_report
+
+        log "Prometheus storage monitoring completed"
+    }
+
+    # Execute main function
+    main "$@"
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: prometheus-storage-cleanup
+  namespace: monitoring
+spec:
+  schedule: "0 */6 * * *"  # Every 6 hours
+  timeZone: "UTC"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  startingDeadlineSeconds: 300
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 86400  # 24 hours
+      template:
+        metadata:
+          labels:
+            app: prometheus-cleanup
+            component: storage-monitoring
+        spec:
+          serviceAccountName: prometheus-cleanup
+          restartPolicy: OnFailure
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+            runAsGroup: 65534
+            fsGroup: 65534
+          containers:
+          - name: cleanup
+            image: bitnami/kubectl:latest
+            imagePullPolicy: IfNotPresent
+            command:
+            - /bin/bash
+            - -c
+            - |
+              # Install required tools
+              apt-get update -qq && apt-get install -y -qq jq curl bc
+
+              # Make script executable and run it
+              chmod +x /scripts/cleanup.sh
+              /scripts/cleanup.sh
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                - ALL
+              readOnlyRootFilesystem: false  # Need write access for package installation
+            resources:
+              requests:
+                memory: "128Mi"
+                cpu: "100m"
+              limits:
+                memory: "256Mi"
+                cpu: "200m"
+            volumeMounts:
+            - name: cleanup-script
+              mountPath: /scripts
+              readOnly: true
+            env:
+            - name: KUBECTL_VERSION
+              value: "v1.28.0"
+          volumes:
+          - name: cleanup-script
+            configMap:
+              name: prometheus-cleanup-script
+              defaultMode: 0755

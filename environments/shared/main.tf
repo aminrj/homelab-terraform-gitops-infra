@@ -66,7 +66,7 @@ module "argocd" {
 module "microceph" {
   source = "../../modules/microceph"
   
-  prometheus_release_name   = "kube-promethues-stack"
+  prometheus_release_name   = "kube-prometheus-stack"
   deploy_microceph_tools   = false
   enable_status_checks     = false
   monitoring_namespace     = "monitoring"
@@ -103,5 +103,14 @@ module "cnpg_operator" {
   # TODO: Move this value to the tfvars instead
   namespace = var.namespace
   kubeconfig  = var.kubeconfig
+}
+
+module "argocd_infrastructure" {
+  source = "../../modules/argocd-infrastructure"
+  kubeconfig = var.kubeconfig
+
+  depends_on = [
+    module.argocd
+  ]
 }
 

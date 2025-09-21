@@ -9,7 +9,9 @@ resources:
   - capacity-monitor.yaml
   - capacity-dashboard.yaml
 
-commonLabels:
-  app.kubernetes.io/name: storage-planning
-  app.kubernetes.io/part-of: homelab-infrastructure
-  app.kubernetes.io/component: capacity-monitoring
+labels:
+  - includeSelectors: false
+    pairs:
+      app.kubernetes.io/name: storage-planning
+      app.kubernetes.io/part-of: homelab-infrastructure
+      app.kubernetes.io/component: capacity-monitoring

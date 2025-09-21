@@ -5,8 +5,10 @@ kind: Kustomization
 resources:
   - ../../base
 
-commonLabels:
-  environment: prod
+labels:
+  - includeSelectors: false
+    pairs:
+      environment: prod
 
 patches:
 - patch: |-

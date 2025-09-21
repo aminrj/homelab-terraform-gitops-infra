@@ -5,7 +5,9 @@ kind: Kustomization
 resources:
   - storage-alerts.yaml
 
-commonLabels:
-  app.kubernetes.io/name: storage-monitoring
-  app.kubernetes.io/part-of: homelab-infrastructure
-  app.kubernetes.io/component: monitoring
+labels:
+  - includeSelectors: false
+    pairs:
+      app.kubernetes.io/name: storage-monitoring
+      app.kubernetes.io/part-of: homelab-infrastructure
+      app.kubernetes.io/component: monitoring

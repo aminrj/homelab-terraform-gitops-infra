@@ -1,0 +1,178 @@
+# infrastructure/prometheus-safeguards/prometheus-storage-alerts.yaml
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: prometheus-storage-safeguards
+  namespace: monitoring
+  labels:
+    app: kube-prometheus-stack
+    release: kube-prometheus-stack
+spec:
+  groups:
+  - name: prometheus.storage.critical
+    interval: 30s
+    rules:
+    # Prometheus TSDB Size Alerts
+    - alert: PrometheusStorageExhaustion
+      expr: |
+        (
+          prometheus_tsdb_size_bytes{job="prometheus"} / (20 * 1024 * 1024 * 1024) * 100 > 85
+        )
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Prometheus storage is approaching exhaustion"
+        description: "Prometheus {{ $labels.instance }} is using {{ printf \"%.2f\" $value }}% of allocated storage"
+
+    - alert: PrometheusStorageWarning
+      expr: |
+        (
+          prometheus_tsdb_size_bytes{job="prometheus"} / (20 * 1024 * 1024 * 1024) * 100 > 70
+        )
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Prometheus storage usage is high"
+        description: "Prometheus {{ $labels.instance }} is using {{ printf \"%.2f\" $value }}% of allocated storage"
+
+    # Prometheus WAL Size Alerts
+    - alert: PrometheusWALSizeHigh
+      expr: |
+        prometheus_tsdb_wal_size_bytes{job="prometheus"} / (1024 * 1024 * 1024) > 2
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Prometheus WAL size is unusually large"
+        description: "Prometheus {{ $labels.instance }} WAL size is {{ printf \"%.2f\" $value }}GB, indicating potential issues with WAL truncation"
+
+    # Prometheus Ingestion Rate Monitoring
+    - alert: PrometheusIngestionRateHigh
+      expr: |
+        rate(prometheus_tsdb_samples_appended_total{job="prometheus"}[5m]) > 50000
+      for: 15m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Prometheus ingestion rate is very high"
+        description: "Prometheus {{ $labels.instance }} is ingesting {{ printf \"%.0f\" $value }} samples/sec, which may lead to rapid storage growth"
+
+    # Prometheus Chunk Creation Rate
+    - alert: PrometheusChunkCreationHigh
+      expr: |
+        rate(prometheus_tsdb_head_chunks_created_total{job="prometheus"}[5m]) > 1000
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Prometheus chunk creation rate is high"
+        description: "Prometheus {{ $labels.instance }} is creating {{ printf \"%.0f\" $value }} chunks/sec, indicating high cardinality or ingestion rate"
+
+    # Prometheus Compaction Issues
+    - alert: PrometheusCompactionDuration
+      expr: |
+        prometheus_tsdb_compaction_duration_seconds{quantile="0.99"} > 300
+      for: 15m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Prometheus compaction is taking too long"
+        description: "Prometheus {{ $labels.instance }} 99th percentile compaction duration is {{ printf \"%.2f\" $value }}s, which may indicate storage performance issues"
+
+    # Prometheus Memory Usage in Relation to Storage
+    - alert: PrometheusMemoryUsageHigh
+      expr: |
+        (
+          process_resident_memory_bytes{job="prometheus"} / (4 * 1024 * 1024 * 1024) * 100 > 90
+        )
+      for: 10m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Prometheus memory usage is critically high"
+        description: "Prometheus {{ $labels.instance }} is using {{ printf \"%.2f\" $value }}% of its memory limit"
+
+  - name: prometheus.retention.monitoring
+    interval: 60s
+    rules:
+    # Monitor retention effectiveness
+    - alert: PrometheusRetentionPolicyIneffective
+      expr: |
+        (
+          prometheus_tsdb_size_bytes{job="prometheus"} / (15 * 1024 * 1024 * 1024) * 100 > 95
+        )
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Prometheus retention policy is not preventing storage exhaustion"
+        description: "Prometheus {{ $labels.instance }} storage is at {{ printf \"%.2f\" $value }}% despite retention settings. Check retentionSize configuration."
+
+    # Monitor for old data not being cleaned up
+    - alert: PrometheusOldDataNotCleaned
+      expr: |
+        (
+          time() - prometheus_tsdb_lowest_timestamp{job="prometheus"} > 8 * 24 * 3600
+        )
+      for: 30m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Prometheus contains data older than retention policy"
+        description: "Prometheus {{ $labels.instance }} has data from {{ printf \"%.1f\" $value }} seconds ago, exceeding the 7-day retention policy"
+
+  - name: prometheus.cardinality.monitoring
+    interval: 300s  # Check every 5 minutes
+    rules:
+    # High cardinality alerts that can cause storage issues
+    - alert: PrometheusHighCardinality
+      expr: |
+        prometheus_tsdb_symbol_table_size_bytes{job="prometheus"} > 64 * 1024 * 1024  # 64MB
+      for: 15m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Prometheus metric cardinality is very high"
+        description: "Prometheus {{ $labels.instance }} symbol table size is very large, indicating high cardinality metrics that may cause storage growth"
+
+    # Monitor series creation rate
+    - alert: PrometheusSeriesCreationHigh
+      expr: |
+        rate(prometheus_tsdb_head_series_created_total{job="prometheus"}[5m]) > 100
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Prometheus is creating too many new series"
+        description: "Prometheus {{ $labels.instance }} is creating {{ printf \"%.0f\" $value }} new series/sec, which may indicate metric explosion"
+
+  - name: prometheus.health.storage
+    interval: 30s
+    rules:
+    # Filesystem monitoring for Prometheus pod
+    - alert: PrometheusFilesystemSpaceLow
+      expr: |
+        (
+          (1 - (node_filesystem_avail_bytes{mountpoint="/prometheus"} / node_filesystem_size_bytes{mountpoint="/prometheus"})) * 100 > 85
+        )
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Prometheus filesystem space critically low"
+        description: "Prometheus filesystem on {{ $labels.instance }} is {{ printf \"%.2f\" $value }}% full"
+
+    # PVC usage for Prometheus
+    - alert: PrometheusPVCUsageHigh
+      expr: |
+        (
+          (kubelet_volume_stats_capacity_bytes{persistentvolumeclaim=~"prometheus-kube-prometheus-stack-prometheus-db.*"} - kubelet_volume_stats_available_bytes{persistentvolumeclaim=~"prometheus-kube-prometheus-stack-prometheus-db.*"}) / kubelet_volume_stats_capacity_bytes{persistentvolumeclaim=~"prometheus-kube-prometheus-stack-prometheus-db.*"} * 100 > 85
+        )
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Prometheus PVC usage critically high"
+        description: "Prometheus PVC {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} is {{ printf \"%.2f\" $value }}% full"
