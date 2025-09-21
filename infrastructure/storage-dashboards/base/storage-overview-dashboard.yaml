@@ -1,0 +1,151 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: storage-overview-dashboard
+  labels:
+    grafana_dashboard: "1"
+data:
+  storage-overview.json: |
+    {
+      "dashboard": {
+        "id": null,
+        "title": "Storage Overview & Monitoring",
+        "tags": ["storage", "monitoring", "homelab"],
+        "timezone": "browser",
+        "panels": [
+          {
+            "id": 1,
+            "title": "Storage Usage by Node",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "100 - (node_filesystem_avail_bytes{mountpoint=\"/\"} / node_filesystem_size_bytes{mountpoint=\"/\"} * 100)",
+                "legendFormat": "{{instance}}",
+                "refId": "A"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "thresholds": {
+                  "steps": [
+                    {"color": "green", "value": null},
+                    {"color": "yellow", "value": 70},
+                    {"color": "red", "value": 85}
+                  ]
+                },
+                "unit": "percent"
+              }
+            },
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0}
+          },
+          {
+            "id": 2,
+            "title": "Prometheus Storage Usage",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "prometheus_tsdb_size_bytes / (20 * 1024 * 1024 * 1024) * 100",
+                "legendFormat": "Prometheus DB",
+                "refId": "A"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "thresholds": {
+                  "steps": [
+                    {"color": "green", "value": null},
+                    {"color": "yellow", "value": 70},
+                    {"color": "red", "value": 85}
+                  ]
+                },
+                "unit": "percent",
+                "max": 100
+              }
+            },
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}
+          },
+          {
+            "id": 3,
+            "title": "Storage Usage Trend (24h)",
+            "type": "timeseries",
+            "targets": [
+              {
+                "expr": "100 - (node_filesystem_avail_bytes{mountpoint=\"/\"} / node_filesystem_size_bytes{mountpoint=\"/\"} * 100)",
+                "legendFormat": "{{instance}} - Root FS",
+                "refId": "A"
+              },
+              {
+                "expr": "prometheus_tsdb_size_bytes / (20 * 1024 * 1024 * 1024) * 100",
+                "legendFormat": "Prometheus DB",
+                "refId": "B"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "thresholds": {
+                  "steps": [
+                    {"color": "green", "value": null},
+                    {"color": "yellow", "value": 70},
+                    {"color": "red", "value": 85}
+                  ]
+                },
+                "unit": "percent"
+              }
+            },
+            "gridPos": {"h": 8, "w": 24, "x": 0, "y": 8}
+          },
+          {
+            "id": 4,
+            "title": "PVC Usage by Namespace",
+            "type": "table",
+            "targets": [
+              {
+                "expr": "kube_persistentvolumeclaim_info",
+                "legendFormat": "{{namespace}}/{{persistentvolumeclaim}}",
+                "refId": "A",
+                "format": "table"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "custom": {
+                  "displayMode": "table"
+                }
+              }
+            },
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16}
+          },
+          {
+            "id": 5,
+            "title": "Storage Alerts Status",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "ALERTS{alertname=~\".*Storage.*|.*Filesystem.*|.*Disk.*\"}",
+                "legendFormat": "{{alertname}} - {{severity}}",
+                "refId": "A"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "thresholds": {
+                  "steps": [
+                    {"color": "green", "value": 0},
+                    {"color": "yellow", "value": 1},
+                    {"color": "red", "value": 2}
+                  ]
+                }
+              }
+            },
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16}
+          }
+        ],
+        "time": {
+          "from": "now-24h",
+          "to": "now"
+        },
+        "refresh": "30s",
+        "schemaVersion": 30,
+        "version": 1
+      }
+    }

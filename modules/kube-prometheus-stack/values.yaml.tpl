@@ -1,7 +1,13 @@
 prometheus:
-  retention: "4d"
-  walCompression: true
   prometheusSpec:
+    # CRITICAL: Prevent storage exhaustion with multiple safety limits
+    retention: "7d"                    # Time-based retention: 7 days max
+    retentionSize: "15GB"              # Size-based retention: 15GB max (75% of 20GB)
+
+    # Storage efficiency and performance
+    walCompression: true               # Compress WAL files (30-50% savings)
+
+    # Storage configuration
     storageSpec:
       volumeClaimTemplate:
         spec:
@@ -11,9 +17,37 @@ prometheus:
             requests:
               storage: 20Gi
 
-    nodeSelector:
-      kubernetes.io/hostname: microk8s-prod-llm1
+    # Resource limits heavily optimized for cluster capacity
+    resources:
+      requests:
+        memory: "512Mi"      # Minimal memory requirement
+        cpu: "100m"          # Minimal CPU requirement
+      limits:
+        memory: "1Gi"        # Conservative memory limit
+        cpu: "500m"          # Conservative CPU limit
 
+    # Allow scheduling on control plane when necessary
+    tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule
+
+    # Scraping and evaluation optimization
+    scrapeInterval: "30s"              # Default scrape interval
+    evaluationInterval: "30s"          # Rule evaluation interval
+
+    # Query optimization
+    queryTimeout: "2m"                 # Prevent long-running queries
+    queryMaxConcurrency: 20            # Limit concurrent queries
+
+    # TSDB optimization for storage efficiency
+    tsdb:
+      outOfOrderTimeWindow: "0s"       # Disable out-of-order samples (saves space)
+
+    # Remote write configuration (for external storage if needed)
+    # remoteWrite: []                  # Disabled by default
+
+    # Service discovery optimization
     podMonitorSelector: {}
     podMonitorSelectorNilUsesHelmValues: false
     podMonitorNamespaceSelector: {}
@@ -28,8 +62,6 @@ grafana:
     size: 20Gi
     storageClassName: "${storage_class}"
     accessModes: ["ReadWriteOnce"]
-  nodeSelector:
-    kubernetes.io/hostname: microk8s-prod-llm1
   sidecar:
     dashboards:
       enabled: true
@@ -47,8 +79,6 @@ alertmanager:
           resources:
             requests:
               storage: 5Gi
-    nodeSelector:
-      kubernetes.io/hostname: microk8s-prod-llm1
 
   config:
     global:
