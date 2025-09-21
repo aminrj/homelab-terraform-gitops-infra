@@ -10,7 +10,11 @@
       "Bash(kubectl --kubeconfig ~/.kube/microk8s-config delete cluster linkding-db-restore-august -n cnpg-prod)",
       "Bash(kubectl:*)",
       "Bash(curl:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "mcp__sequential-thinking__sequentialthinking",
+      "Bash(terraform apply:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []

@@ -1,7 +1,7 @@
 
 # Install Kube-promethues-stack
 resource "helm_release" "kube-prometheus-stack" {
-  name       = "kube-promethues-stack"
+  name       = "kube-prometheus-stack"
   namespace  = var.namespace
   chart      = "kube-prometheus-stack"
   repository = "https://prometheus-community.github.io/helm-charts"
