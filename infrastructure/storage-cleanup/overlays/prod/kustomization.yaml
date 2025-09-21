@@ -1,0 +1,36 @@
+# infrastructure/storage-cleanup/overlays/prod/kustomization.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+
+commonLabels:
+  environment: prod
+
+patches:
+- patch: |-
+    - op: replace
+      path: /spec/schedule
+      value: "0 2 * * *"  # Run at 2 AM daily in production
+    - op: add
+      path: /metadata/annotations/maintenance~1window
+      value: "02:00-04:00 UTC"
+  target:
+    kind: CronJob
+    name: storage-cleanup
+
+- patch: |-
+    - op: add
+      path: /spec/jobTemplate/spec/template/spec/containers/0/env/-
+      value:
+        name: ENVIRONMENT
+        value: "production"
+    - op: add
+      path: /spec/jobTemplate/spec/template/spec/containers/0/env/-
+      value:
+        name: MAX_PV_CLEANUP
+        value: "5"  # Conservative limit for production
+  target:
+    kind: CronJob
+    name: storage-cleanup

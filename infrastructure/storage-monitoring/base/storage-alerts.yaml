@@ -1,0 +1,184 @@
+# infrastructure/storage-monitoring/base/storage-alerts.yaml
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: storage-critical-alerts
+  labels:
+    app: kube-prometheus-stack
+    release: kube-promethues-stack
+spec:
+  groups:
+  - name: storage.critical.rules
+    rules:
+    # Node Filesystem Alerts
+    - alert: NodeFilesystemSpaceFillingUp
+      expr: |
+        (
+          node_filesystem_avail_bytes{job="node-exporter",fstype!="",mountpoint!=""} / node_filesystem_size_bytes{job="node-exporter",fstype!="",mountpoint!=""} * 100 < 20
+        and
+          predict_linear(node_filesystem_avail_bytes{job="node-exporter",fstype!="",mountpoint!=""}[6h], 24*60*60) < 0
+        and
+          node_filesystem_readonly{job="node-exporter",fstype!="",mountpoint!=""} == 0
+        )
+      for: 1h
+      labels:
+        severity: warning
+      annotations:
+        summary: "Filesystem is predicted to run out of space within the next 24 hours"
+        description: "Filesystem on {{ $labels.device }} at {{ $labels.instance }} has only {{ printf \"%.2f\" $value }}% available space left and is filling up"
+
+    - alert: NodeFilesystemSpaceFillingUp
+      expr: |
+        (
+          node_filesystem_avail_bytes{job="node-exporter",fstype!="",mountpoint!=""} / node_filesystem_size_bytes{job="node-exporter",fstype!="",mountpoint!=""} * 100 < 10
+        and
+          predict_linear(node_filesystem_avail_bytes{job="node-exporter",fstype!="",mountpoint!=""}[6h], 4*60*60) < 0
+        and
+          node_filesystem_readonly{job="node-exporter",fstype!="",mountpoint!=""} == 0
+        )
+      for: 1h
+      labels:
+        severity: critical
+      annotations:
+        summary: "Filesystem is predicted to run out of space within the next 4 hours"
+        description: "Filesystem on {{ $labels.device }} at {{ $labels.instance }} has only {{ printf \"%.2f\" $value }}% available space left and is filling up fast"
+
+    - alert: NodeFilesystemAlmostOutOfSpace
+      expr: |
+        (
+          node_filesystem_avail_bytes{job="node-exporter",fstype!="",mountpoint!=""} / node_filesystem_size_bytes{job="node-exporter",fstype!="",mountpoint!=""} * 100 < 5
+        and
+          node_filesystem_readonly{job="node-exporter",fstype!="",mountpoint!=""} == 0
+        )
+      for: 1h
+      labels:
+        severity: critical
+      annotations:
+        summary: "Filesystem has less than 5% space left"
+        description: "Filesystem on {{ $labels.device }} at {{ $labels.instance }} has only {{ printf \"%.2f\" $value }}% available space left"
+
+    - alert: NodeFilesystemFilesFillingUp
+      expr: |
+        (
+          node_filesystem_files_free{job="node-exporter",fstype!="",mountpoint!=""} / node_filesystem_files{job="node-exporter",fstype!="",mountpoint!=""} * 100 < 20
+        and
+          predict_linear(node_filesystem_files_free{job="node-exporter",fstype!="",mountpoint!=""}[6h], 24*60*60) < 0
+        and
+          node_filesystem_readonly{job="node-exporter",fstype!="",mountpoint!=""} == 0
+        )
+      for: 1h
+      labels:
+        severity: warning
+      annotations:
+        summary: "Filesystem is predicted to run out of inodes within the next 24 hours"
+        description: "Filesystem on {{ $labels.device }} at {{ $labels.instance }} has only {{ printf \"%.2f\" $value }}% available inodes left and is filling up"
+
+    - alert: NodeFilesystemAlmostOutOfFiles
+      expr: |
+        (
+          node_filesystem_files_free{job="node-exporter",fstype!="",mountpoint!=""} / node_filesystem_files{job="node-exporter",fstype!="",mountpoint!=""} * 100 < 3
+        and
+          node_filesystem_readonly{job="node-exporter",fstype!="",mountpoint!=""} == 0
+        )
+      for: 1h
+      labels:
+        severity: critical
+      annotations:
+        summary: "Filesystem has less than 3% inodes left"
+        description: "Filesystem on {{ $labels.device }} at {{ $labels.instance }} has only {{ printf \"%.2f\" $value }}% available inodes left"
+
+  - name: storage.pvc.rules
+    rules:
+    # PVC Usage Alerts
+    - alert: PersistentVolumeClaimSpaceFillingUp
+      expr: |
+        (
+          kubelet_volume_stats_available_bytes{job="kubelet",metrics_path="/metrics"} / kubelet_volume_stats_capacity_bytes{job="kubelet",metrics_path="/metrics"} * 100 < 15
+        and
+          predict_linear(kubelet_volume_stats_available_bytes{job="kubelet",metrics_path="/metrics"}[6h], 24*60*60) < 0
+        )
+      for: 1h
+      labels:
+        severity: warning
+      annotations:
+        summary: "PVC {{ $labels.persistentvolumeclaim }} in {{ $labels.namespace }} is filling up"
+        description: "PVC {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} has {{ printf \"%.2f\" $value }}% available space left and is predicted to fill up within 24 hours"
+
+    - alert: PersistentVolumeClaimSpaceFillingUp
+      expr: |
+        (
+          kubelet_volume_stats_available_bytes{job="kubelet",metrics_path="/metrics"} / kubelet_volume_stats_capacity_bytes{job="kubelet",metrics_path="/metrics"} * 100 < 5
+        and
+          predict_linear(kubelet_volume_stats_available_bytes{job="kubelet",metrics_path="/metrics"}[6h], 4*60*60) < 0
+        )
+      for: 1h
+      labels:
+        severity: critical
+      annotations:
+        summary: "PVC {{ $labels.persistentvolumeclaim }} in {{ $labels.namespace }} is filling up fast"
+        description: "PVC {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} has {{ printf \"%.2f\" $value }}% available space left and is predicted to fill up within 4 hours"
+
+    - alert: PersistentVolumeClaimAlmostOutOfSpace
+      expr: |
+        kubelet_volume_stats_available_bytes{job="kubelet",metrics_path="/metrics"} / kubelet_volume_stats_capacity_bytes{job="kubelet",metrics_path="/metrics"} * 100 < 3
+      for: 1h
+      labels:
+        severity: critical
+      annotations:
+        summary: "PVC {{ $labels.persistentvolumeclaim }} in {{ $labels.namespace }} is almost full"
+        description: "PVC {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} has only {{ printf \"%.2f\" $value }}% available space left"
+
+  - name: storage.kubernetes.rules
+    rules:
+    # Kubernetes Storage System Alerts
+    - alert: KubePersistentVolumeErrors
+      expr: kube_persistentvolume_status_phase{phase=~"Failed|Pending"} == 1
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: "PersistentVolume {{ $labels.persistentvolume }} is in {{ $labels.phase }} state"
+        description: "PersistentVolume {{ $labels.persistentvolume }} has been in {{ $labels.phase }} state for more than 5 minutes"
+
+    - alert: KubeStorageClassProvisioningErrors
+      expr: increase(storage_operation_duration_seconds_count{status="fail-unknown"}[10m]) > 0
+      for: 0m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Storage provisioning is failing"
+        description: "{{ $value }} storage operations have failed in the last 10 minutes with unknown errors"
+
+    - alert: HighNumberOfReleasedPersistentVolumes
+      expr: count by (cluster) (kube_persistentvolume_status_phase{phase="Released"}) > 5
+      for: 15m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High number of Released PersistentVolumes"
+        description: "{{ $value }} PersistentVolumes are in Released state and may need cleanup"
+
+  - name: storage.database.rules
+    rules:
+    # Database-specific Storage Alerts
+    - alert: PostgreSQLDatabaseSizeGrowthHigh
+      expr: |
+        (
+          increase(cnpg_pg_database_size_bytes[24h]) / cnpg_pg_database_size_bytes * 100 > 20
+        )
+      for: 0m
+      labels:
+        severity: warning
+      annotations:
+        summary: "PostgreSQL database {{ $labels.datname }} grew by more than 20% in 24h"
+        description: "Database {{ $labels.datname }} in cluster {{ $labels.cluster }} grew by {{ printf \"%.2f\" $value }}% in the last 24 hours"
+
+    - alert: PostgreSQLDatabaseSizeCritical
+      expr: |
+        cnpg_pg_database_size_bytes > 10 * 1024 * 1024 * 1024  # 10GB
+      for: 0m
+      labels:
+        severity: warning
+      annotations:
+        summary: "PostgreSQL database {{ $labels.datname }} exceeds 10GB"
+        description: "Database {{ $labels.datname }} in cluster {{ $labels.cluster }} is {{ $value | humanizeBytes }} which may indicate need for maintenance"

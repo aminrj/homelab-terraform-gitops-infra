@@ -1,0 +1,135 @@
+# infrastructure/storage-cleanup/base/cleanup-script.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: storage-cleanup-script
+  namespace: kube-system
+data:
+  cleanup.sh: |
+    #!/bin/bash
+    set -euo pipefail
+
+    echo "$(date): Starting storage cleanup process"
+
+    # Function to log with timestamp
+    log() {
+        echo "$(date '+%Y-%m-%d %H:%M:%S'): $1"
+    }
+
+    # Function to cleanup Released PVs
+    cleanup_released_pvs() {
+        log "Checking for Released PersistentVolumes..."
+
+        # Get PVs that are in Released status and older than 24 hours
+        RELEASED_PVS=$(kubectl get pv -o json | jq -r '.items[] | select(.status.phase == "Released") | select((.metadata.creationTimestamp | fromdateiso8601) < (now - 86400)) | .metadata.name')
+
+        if [ -z "$RELEASED_PVS" ]; then
+            log "No Released PVs older than 24 hours found"
+            return 0
+        fi
+
+        log "Found Released PVs older than 24 hours:"
+        echo "$RELEASED_PVS"
+
+        # Safety check: Don't delete more than 10 PVs at once
+        PV_COUNT=$(echo "$RELEASED_PVS" | wc -l)
+        if [ "$PV_COUNT" -gt 10 ]; then
+            log "WARNING: Found $PV_COUNT Released PVs. Only processing first 10 for safety."
+            RELEASED_PVS=$(echo "$RELEASED_PVS" | head -10)
+        fi
+
+        # Delete each Released PV
+        for pv in $RELEASED_PVS; do
+            log "Deleting Released PV: $pv"
+            if kubectl delete pv "$pv" --timeout=30s; then
+                log "Successfully deleted PV: $pv"
+            else
+                log "ERROR: Failed to delete PV: $pv"
+            fi
+        done
+    }
+
+    # Function to cleanup unused container images on nodes
+    cleanup_container_images() {
+        log "Checking node storage for container image cleanup..."
+
+        # Get nodes with high disk usage
+        HIGH_USAGE_NODES=$(kubectl top nodes 2>/dev/null | awk 'NR>1 && $5 ~ /[8-9][0-9]%|100%/ {print $1}' || true)
+
+        if [ -z "$HIGH_USAGE_NODES" ]; then
+            log "No nodes with high disk usage detected"
+            return 0
+        fi
+
+        log "Nodes with high disk usage detected: $HIGH_USAGE_NODES"
+        log "Note: Container image cleanup requires node-level access (crictl/docker)"
+        log "Recommend running 'microk8s.crictl images prune' on affected nodes"
+
+        # Create an event to notify about high disk usage
+        kubectl create event cleanup-recommendation \
+            --type=Warning \
+            --reason=HighDiskUsage \
+            --message="Nodes with high disk usage detected: $HIGH_USAGE_NODES. Manual container image cleanup recommended." \
+            --namespace=kube-system || true
+    }
+
+    # Function to cleanup old log files
+    cleanup_logs() {
+        log "Checking for old log cleanup opportunities..."
+
+        # Find pods with excessive log disk usage
+        kubectl get pods --all-namespaces -o json | jq -r '.items[] | select(.status.phase == "Running") | "\(.metadata.namespace)/\(.metadata.name)"' | while read pod; do
+            namespace=$(echo "$pod" | cut -d'/' -f1)
+            name=$(echo "$pod" | cut -d'/' -f2)
+
+            # Check if this is a logging-heavy application
+            if [[ "$name" =~ (nginx|apache|envoy|istio|grafana|prometheus) ]]; then
+                log "High-log-volume pod detected: $namespace/$name - monitor for log rotation"
+            fi
+        done
+    }
+
+    # Function to generate storage report
+    generate_storage_report() {
+        log "Generating storage usage report..."
+
+        echo "=== Storage Cleanup Summary ===" > /tmp/cleanup-report.txt
+        echo "Date: $(date)" >> /tmp/cleanup-report.txt
+        echo "" >> /tmp/cleanup-report.txt
+
+        echo "PV Status Summary:" >> /tmp/cleanup-report.txt
+        kubectl get pv --no-headers | awk '{print $5}' | sort | uniq -c >> /tmp/cleanup-report.txt
+        echo "" >> /tmp/cleanup-report.txt
+
+        echo "PVC Usage by Namespace:" >> /tmp/cleanup-report.txt
+        kubectl get pvc --all-namespaces --no-headers | awk '{print $1}' | sort | uniq -c >> /tmp/cleanup-report.txt
+        echo "" >> /tmp/cleanup-report.txt
+
+        echo "Node Storage Status (if metrics available):" >> /tmp/cleanup-report.txt
+        kubectl top nodes 2>/dev/null | grep -E "(NAME|%)" >> /tmp/cleanup-report.txt || echo "Node metrics not available" >> /tmp/cleanup-report.txt
+
+        cat /tmp/cleanup-report.txt
+        log "Storage cleanup completed"
+    }
+
+    # Main execution
+    main() {
+        log "Starting automated storage cleanup"
+
+        # Verify we have necessary permissions
+        if ! kubectl auth can-i list persistentvolumes; then
+            log "ERROR: Insufficient permissions to list PersistentVolumes"
+            exit 1
+        fi
+
+        # Run cleanup tasks
+        cleanup_released_pvs
+        cleanup_container_images
+        cleanup_logs
+        generate_storage_report
+
+        log "Automated storage cleanup completed successfully"
+    }
+
+    # Execute main function
+    main "$@"

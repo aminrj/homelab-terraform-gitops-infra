@@ -1,0 +1,210 @@
+# infrastructure/storage-planning/base/capacity-monitor.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: storage-capacity-config
+  namespace: monitoring
+data:
+  capacity-thresholds.yaml: |
+    # Storage Capacity Planning Configuration
+    cluster:
+      name: "microk8s-homelab"
+      environment: "production"
+
+    thresholds:
+      # Node-level storage thresholds
+      node_storage:
+        warning: 75    # %
+        critical: 85   # %
+        emergency: 95  # %
+
+      # PVC growth thresholds
+      pvc_growth:
+        daily_warning: 10     # % growth per day
+        weekly_warning: 50    # % growth per week
+        monthly_warning: 200  # % growth per month
+
+      # Database-specific thresholds
+      database:
+        size_warning: 5       # GB
+        size_critical: 10     # GB
+        growth_warning: 20    # % growth per day
+
+      # Container image storage
+      images:
+        cache_size_limit: 20  # GB total
+        cleanup_threshold: 15 # GB - trigger cleanup
+
+    # Capacity planning parameters
+    planning:
+      forecast_days: 90          # Days to forecast
+      growth_analysis_days: 30   # Days of history for growth analysis
+      safety_margin: 20          # % safety margin for capacity planning
+
+    # Auto-scaling triggers
+    auto_actions:
+      cleanup_enabled: true
+      notification_enabled: true
+      emergency_cleanup_threshold: 90  # % usage to trigger emergency cleanup
+
+    # Application-specific limits
+    applications:
+      linkding:
+        max_db_size: 5          # GB
+        max_media_size: 2       # GB
+
+      n8n:
+        max_db_size: 2          # GB
+        max_execution_logs: 1   # GB
+
+      argocd:
+        max_repo_cache: 1       # GB
+
+      prometheus:
+        retention_days: 30
+        max_storage: 10         # GB
+
+  capacity-queries.yaml: |
+    # Prometheus queries for capacity monitoring
+    queries:
+      node_filesystem_usage:
+        query: |
+          (
+            (node_filesystem_size_bytes{job="node-exporter",fstype!="",mountpoint!=""} - node_filesystem_avail_bytes{job="node-exporter",fstype!="",mountpoint!=""})
+            / node_filesystem_size_bytes{job="node-exporter",fstype!="",mountpoint!=""} * 100
+          )
+        description: "Node filesystem usage percentage"
+
+      pvc_usage_percentage:
+        query: |
+          (
+            (kubelet_volume_stats_capacity_bytes{job="kubelet",metrics_path="/metrics"} - kubelet_volume_stats_available_bytes{job="kubelet",metrics_path="/metrics"})
+            / kubelet_volume_stats_capacity_bytes{job="kubelet",metrics_path="/metrics"} * 100
+          )
+        description: "PVC usage percentage"
+
+      database_size_growth:
+        query: |
+          increase(cnpg_pg_database_size_bytes[24h]) / cnpg_pg_database_size_bytes * 100
+        description: "Database size growth percentage over 24h"
+
+      container_image_usage:
+        query: |
+          sum by (node) (
+            node_filesystem_size_bytes{job="node-exporter",mountpoint="/var/lib/docker"} -
+            node_filesystem_avail_bytes{job="node-exporter",mountpoint="/var/lib/docker"}
+          ) / 1024 / 1024 / 1024
+        description: "Container image storage usage in GB"
+
+      storage_growth_trend:
+        query: |
+          predict_linear(
+            node_filesystem_avail_bytes{job="node-exporter",fstype!="",mountpoint!=""}[7d],
+            7*24*3600
+          ) < 0
+        description: "Predict if storage will be exhausted in 7 days"
+
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: capacity-analysis
+  namespace: monitoring
+spec:
+  schedule: "0 6 * * *"  # Daily at 6 AM
+  timeZone: "UTC"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 7
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 86400
+      template:
+        metadata:
+          labels:
+            app: capacity-analysis
+        spec:
+          serviceAccountName: monitoring-reader
+          restartPolicy: OnFailure
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+            runAsGroup: 65534
+          containers:
+          - name: capacity-analyzer
+            image: prom/prometheus:latest
+            imagePullPolicy: IfNotPresent
+            command:
+            - /bin/sh
+            - -c
+            - |
+              # Install required tools
+              apk add --no-cache curl jq bc
+
+              # Source configuration
+              source /config/capacity-thresholds.yaml
+
+              # Generate capacity report
+              REPORT_DATE=$(date '+%Y-%m-%d')
+              REPORT_FILE="/tmp/capacity-report-${REPORT_DATE}.json"
+
+              echo "Starting capacity analysis for ${REPORT_DATE}"
+
+              # Query Prometheus for metrics
+              PROMETHEUS_URL="http://prometheus:9090"
+
+              # Function to query Prometheus
+              query_prometheus() {
+                local query="$1"
+                local url="${PROMETHEUS_URL}/api/v1/query?query=${query}"
+                curl -s "${url}" | jq '.data.result'
+              }
+
+              # Generate JSON report
+              cat > "${REPORT_FILE}" << EOF
+              {
+                "report_date": "${REPORT_DATE}",
+                "cluster": {
+                  "name": "microk8s-homelab",
+                  "environment": "production"
+                },
+                "analysis": {
+                  "node_storage": $(query_prometheus 'node_filesystem_usage'),
+                  "pvc_usage": $(query_prometheus 'pvc_usage_percentage'),
+                  "database_growth": $(query_prometheus 'database_size_growth'),
+                  "storage_forecast": $(query_prometheus 'storage_growth_trend')
+                },
+                "recommendations": [],
+                "alerts": []
+              }
+              EOF
+
+              # Process analysis and generate recommendations
+              echo "Capacity analysis completed. Report: ${REPORT_FILE}"
+              cat "${REPORT_FILE}"
+
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                - ALL
+              readOnlyRootFilesystem: true
+            resources:
+              requests:
+                memory: "128Mi"
+                cpu: "100m"
+              limits:
+                memory: "256Mi"
+                cpu: "200m"
+            volumeMounts:
+            - name: config
+              mountPath: /config
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+          volumes:
+          - name: config
+            configMap:
+              name: storage-capacity-config
+          - name: tmp
+            emptyDir: {}

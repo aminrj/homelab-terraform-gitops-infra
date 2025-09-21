@@ -1,0 +1,76 @@
+# infrastructure/storage-planning/overlays/prod/kustomization.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+
+commonLabels:
+  environment: prod
+
+patches:
+- patch: |-
+    - op: replace
+      path: /spec/schedule
+      value: "0 6 * * *"  # Daily at 6 AM production schedule
+    - op: add
+      path: /metadata/annotations/capacity~1planning~1tier
+      value: "production"
+  target:
+    kind: CronJob
+    name: capacity-analysis
+
+- patch: |-
+    - op: add
+      path: /data/capacity-thresholds.yaml
+      value: |
+        # Production Storage Capacity Configuration
+        cluster:
+          name: "microk8s-homelab"
+          environment: "production"
+
+        thresholds:
+          node_storage:
+            warning: 70    # % - More conservative for production
+            critical: 80   # %
+            emergency: 90  # %
+
+          pvc_growth:
+            daily_warning: 15     # % growth per day
+            weekly_warning: 75    # % growth per week
+            monthly_warning: 300  # % growth per month
+
+          database:
+            size_warning: 3       # GB - Lower threshold for production
+            size_critical: 7      # GB
+            growth_warning: 15    # % growth per day
+
+          images:
+            cache_size_limit: 15  # GB total - More conservative
+            cleanup_threshold: 10 # GB
+
+        planning:
+          forecast_days: 90
+          growth_analysis_days: 30
+          safety_margin: 30          # % - Higher safety margin for production
+
+        auto_actions:
+          cleanup_enabled: true
+          notification_enabled: true
+          emergency_cleanup_threshold: 85  # % - More aggressive for production
+
+        applications:
+          linkding:
+            max_db_size: 3          # GB - Conservative limits
+            max_media_size: 1       # GB
+
+          n8n:
+            max_db_size: 1          # GB
+            max_execution_logs: 500 # MB
+
+          prometheus:
+            retention_days: 30
+            max_storage: 8          # GB
+  target:
+    kind: ConfigMap
+    name: storage-capacity-config
