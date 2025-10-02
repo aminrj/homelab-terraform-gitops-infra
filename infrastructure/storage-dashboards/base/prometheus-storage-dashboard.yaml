@@ -7,179 +7,177 @@ metadata:
 data:
   prometheus-storage.json: |
     {
-      "dashboard": {
-        "id": null,
-        "title": "Prometheus Storage Safeguards",
-        "tags": ["prometheus", "storage", "safeguards", "homelab"],
-        "timezone": "browser",
-        "panels": [
-          {
-            "id": 1,
-            "title": "Prometheus TSDB Size (GB)",
-            "type": "stat",
-            "targets": [
-              {
-                "expr": "prometheus_tsdb_size_bytes / (1024^3)",
-                "legendFormat": "Current Size",
-                "refId": "A"
-              }
-            ],
-            "fieldConfig": {
-              "defaults": {
-                "thresholds": {
-                  "steps": [
-                    {"color": "green", "value": null},
-                    {"color": "yellow", "value": 12},
-                    {"color": "red", "value": 15}
-                  ]
-                },
-                "unit": "bytes",
-                "max": 20,
-                "decimals": 2
-              }
-            },
-            "gridPos": {"h": 8, "w": 6, "x": 0, "y": 0}
-          },
-          {
-            "id": 2,
-            "title": "Storage Usage Percentage",
-            "type": "gauge",
-            "targets": [
-              {
-                "expr": "prometheus_tsdb_size_bytes / (20 * 1024^3) * 100",
-                "legendFormat": "Storage %",
-                "refId": "A"
-              }
-            ],
-            "fieldConfig": {
-              "defaults": {
-                "thresholds": {
-                  "steps": [
-                    {"color": "green", "value": null},
-                    {"color": "yellow", "value": 60},
-                    {"color": "orange", "value": 75},
-                    {"color": "red", "value": 85}
-                  ]
-                },
-                "unit": "percent",
-                "max": 100,
-                "min": 0
-              }
-            },
-            "gridPos": {"h": 8, "w": 6, "x": 6, "y": 0}
-          },
-          {
-            "id": 3,
-            "title": "Series Count",
-            "type": "stat",
-            "targets": [
-              {
-                "expr": "prometheus_tsdb_symbol_table_size_bytes",
-                "legendFormat": "Series",
-                "refId": "A"
-              }
-            ],
-            "fieldConfig": {
-              "defaults": {
-                "unit": "short",
-                "decimals": 0
-              }
-            },
-            "gridPos": {"h": 8, "w": 6, "x": 12, "y": 0}
-          },
-          {
-            "id": 4,
-            "title": "WAL Size",
-            "type": "stat",
-            "targets": [
-              {
-                "expr": "prometheus_tsdb_wal_size_bytes / (1024^2)",
-                "legendFormat": "WAL Size (MB)",
-                "refId": "A"
-              }
-            ],
-            "fieldConfig": {
-              "defaults": {
-                "unit": "bytes",
-                "decimals": 1
-              }
-            },
-            "gridPos": {"h": 8, "w": 6, "x": 18, "y": 0}
-          },
-          {
-            "id": 5,
-            "title": "Storage Growth Rate (24h)",
-            "type": "timeseries",
-            "targets": [
-              {
-                "expr": "rate(prometheus_tsdb_size_bytes[1h]) * 3600",
-                "legendFormat": "Growth per hour",
-                "refId": "A"
-              }
-            ],
-            "fieldConfig": {
-              "defaults": {
-                "unit": "bytes",
-                "custom": {
-                  "drawStyle": "line",
-                  "lineInterpolation": "linear",
-                  "fillOpacity": 10
-                }
-              }
-            },
-            "gridPos": {"h": 8, "w": 24, "x": 0, "y": 8}
-          },
-          {
-            "id": 6,
-            "title": "Compaction Stats",
-            "type": "timeseries",
-            "targets": [
-              {
-                "expr": "rate(prometheus_tsdb_compactions_total[5m])",
-                "legendFormat": "Compactions/sec",
-                "refId": "A"
+      "id": null,
+      "title": "Prometheus Storage Safeguards",
+      "tags": ["prometheus", "storage", "safeguards", "homelab"],
+      "timezone": "browser",
+      "panels": [
+        {
+          "id": 1,
+          "title": "Prometheus TSDB Size (GB)",
+          "type": "stat",
+          "targets": [
+            {
+              "expr": "prometheus_tsdb_size_bytes / (1024^3)",
+              "legendFormat": "Current Size",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "thresholds": {
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 12},
+                  {"color": "red", "value": 15}
+                ]
               },
-              {
-                "expr": "rate(prometheus_tsdb_head_gc_duration_seconds[5m])",
-                "legendFormat": "GC Duration",
-                "refId": "B"
-              }
-            ],
-            "fieldConfig": {
-              "defaults": {
-                "unit": "short"
-              }
-            },
-            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16}
+              "unit": "bytes",
+              "max": 20,
+              "decimals": 2
+            }
           },
-          {
-            "id": 7,
-            "title": "Storage Alerts",
-            "type": "table",
-            "targets": [
-              {
-                "expr": "ALERTS{alertname=~\"PrometheusStorage.*\"}",
-                "legendFormat": "{{alertname}}",
-                "refId": "A",
-                "format": "table"
-              }
-            ],
-            "fieldConfig": {
-              "defaults": {
-                "custom": {
-                  "displayMode": "table"
-                }
-              }
-            },
-            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16}
-          }
-        ],
-        "time": {
-          "from": "now-6h",
-          "to": "now"
+          "gridPos": {"h": 8, "w": 6, "x": 0, "y": 0}
         },
-        "refresh": "30s",
-        "schemaVersion": 30,
-        "version": 1
-      }
+        {
+          "id": 2,
+          "title": "Storage Usage Percentage",
+          "type": "gauge",
+          "targets": [
+            {
+              "expr": "prometheus_tsdb_size_bytes / (20 * 1024^3) * 100",
+              "legendFormat": "Storage %",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "thresholds": {
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 60},
+                  {"color": "orange", "value": 75},
+                  {"color": "red", "value": 85}
+                ]
+              },
+              "unit": "percent",
+              "max": 100,
+              "min": 0
+            }
+          },
+          "gridPos": {"h": 8, "w": 6, "x": 6, "y": 0}
+        },
+        {
+          "id": 3,
+          "title": "Series Count",
+          "type": "stat",
+          "targets": [
+            {
+              "expr": "prometheus_tsdb_symbol_table_size_bytes",
+              "legendFormat": "Series",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "decimals": 0
+            }
+          },
+          "gridPos": {"h": 8, "w": 6, "x": 12, "y": 0}
+        },
+        {
+          "id": 4,
+          "title": "WAL Size",
+          "type": "stat",
+          "targets": [
+            {
+              "expr": "prometheus_tsdb_wal_size_bytes / (1024^2)",
+              "legendFormat": "WAL Size (MB)",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "bytes",
+              "decimals": 1
+            }
+          },
+          "gridPos": {"h": 8, "w": 6, "x": 18, "y": 0}
+        },
+        {
+          "id": 5,
+          "title": "Storage Growth Rate (24h)",
+          "type": "timeseries",
+          "targets": [
+            {
+              "expr": "rate(prometheus_tsdb_size_bytes[1h]) * 3600",
+              "legendFormat": "Growth per hour",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "bytes",
+              "custom": {
+                "drawStyle": "line",
+                "lineInterpolation": "linear",
+                "fillOpacity": 10
+              }
+            }
+          },
+          "gridPos": {"h": 8, "w": 24, "x": 0, "y": 8}
+        },
+        {
+          "id": 6,
+          "title": "Compaction Stats",
+          "type": "timeseries",
+          "targets": [
+            {
+              "expr": "rate(prometheus_tsdb_compactions_total[5m])",
+              "legendFormat": "Compactions/sec",
+              "refId": "A"
+            },
+            {
+              "expr": "rate(prometheus_tsdb_head_gc_duration_seconds[5m])",
+              "legendFormat": "GC Duration",
+              "refId": "B"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short"
+            }
+          },
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16}
+        },
+        {
+          "id": 7,
+          "title": "Storage Alerts",
+          "type": "table",
+          "targets": [
+            {
+              "expr": "ALERTS{alertname=~\"PrometheusStorage.*\"}",
+              "legendFormat": "{{alertname}}",
+              "refId": "A",
+              "format": "table"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "displayMode": "table"
+              }
+            }
+          },
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16}
+        }
+      ],
+      "time": {
+        "from": "now-6h",
+        "to": "now"
+      },
+      "refresh": "30s",
+      "schemaVersion": 30,
+      "version": 1
     }
