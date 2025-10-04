@@ -1,0 +1,9 @@
+# databases/commafeed/overlays/prod/restore-from-backup.yaml
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: commafeed-db-cnpg-v1
+spec:
+  bootstrap:
+    recovery:
+      source: clusterBackup

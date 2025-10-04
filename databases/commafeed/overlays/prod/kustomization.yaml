@@ -8,3 +8,4 @@ resources:
 
 patches:
   - path: destination-path-patch.yaml
+  - path: restore-from-backup.yaml
