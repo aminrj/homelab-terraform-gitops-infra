@@ -2,9 +2,9 @@
 apiVersion: postgresql.cnpg.io/v1
 kind: ScheduledBackup
 metadata:
-  name: prod-daily-backup
+  name: n8n-daily-backup
 spec:
-  schedule: "0 2 * * *"  # Daily at 3 AM (off-peak)
+  schedule: "0 2 * * *"  # Daily at 2 AM UTC
   backupOwnerReference: cluster
   cluster:
     name: n8n-db-cnpg-v3
