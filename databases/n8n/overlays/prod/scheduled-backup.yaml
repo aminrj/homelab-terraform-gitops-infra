@@ -7,6 +7,6 @@ spec:
   schedule: "0 2 * * *"  # Daily at 3 AM (off-peak)
   backupOwnerReference: cluster
   cluster:
-    name: n8n-db-cnpg-v2
+    name: n8n-db-cnpg-v3
   suspend: false  # Ensure backups are active
 

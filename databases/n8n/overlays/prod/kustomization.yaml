@@ -9,10 +9,12 @@ patches:
   - path: destination-path-patch.yaml
   - target:
       kind: Cluster
-      name: n8n-db-cnpg-v2
+      name: n8n-db-cnpg-v3
     patch: |-
       - op: replace
         path: /spec/bootstrap
         value:
           recovery:
             source: clusterBackup
+            recoveryTarget:
+              targetTime: "2025-10-03 12:00:00"

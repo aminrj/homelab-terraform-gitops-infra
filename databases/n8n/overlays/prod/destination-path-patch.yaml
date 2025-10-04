@@ -2,12 +2,9 @@
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
-  name: n8n-db-cnpg-v2
+  name: n8n-db-cnpg-v3
 spec:
-  backup:
-    barmanObjectStore:
-      serverName: n8n-db-cnpg-v2
-    retentionPolicy: "7d"
+  backup: null
 
   externalClusters:
     - name: clusterBackup

@@ -14,4 +14,4 @@ patches:
     patch: |-
       - op: replace
         path: /spec/template/spec/containers/0/env/0/value
-        value: n8n-db-cnpg-v2-rw.cnpg-prod.svc.cluster.local
+        value: n8n-db-cnpg-v3-rw.cnpg-prod.svc.cluster.local
