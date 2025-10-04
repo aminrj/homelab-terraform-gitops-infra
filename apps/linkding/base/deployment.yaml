@@ -72,15 +72,6 @@ spec:
                 secretKeyRef:
                   name: linkding-db-creds
                   key: password
-          readinessProbe:
-            httpGet:
-              path: /
-              port: 9090
-            initialDelaySeconds: 5
-            periodSeconds: 10
-            timeoutSeconds: 2
-            successThreshold: 1
-            failureThreshold: 3
           volumeMounts:
             - name: linkding-data
               mountPath: /etc/linkding/data

@@ -33,10 +33,10 @@ spec:
             periodSeconds: 10
           readinessProbe:
             httpGet:
-              path: /q/health/ready
+              path: /
               port: 8082
-            initialDelaySeconds: 5
-            periodSeconds: 5
+            initialDelaySeconds: 10
+            periodSeconds: 10
           securityContext:
             runAsNonRoot: true
             runAsUser: 1000
