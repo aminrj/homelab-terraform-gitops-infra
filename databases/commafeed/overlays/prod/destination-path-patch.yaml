@@ -5,30 +5,4 @@ metadata:
   name: commafeed-db-cnpg-v1
 spec:
   backup:
-    barmanObjectStore:
-      destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/commafeed-db-clean
-      serverName: commafeed-db-cnpg-v1-restored
-      azureCredentials:
-        storageAccount:
-          name: commafeed-db-storage
-          key: container-name
-        storageSasToken:
-          name: commafeed-db-storage
-          key: blob-sas
-      wal:
-        compression: gzip
-      data:
-        compression: gzip
     retentionPolicy: "7d"
-  externalClusters:
-    - name: clusterBackup
-      barmanObjectStore:
-        destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/commafeed-db-clean
-        serverName: commafeed-db-cnpg-v1
-        azureCredentials:
-          storageAccount:
-            name: commafeed-db-storage
-            key: container-name
-          storageSasToken:
-            name: commafeed-db-storage
-            key: blob-sas
