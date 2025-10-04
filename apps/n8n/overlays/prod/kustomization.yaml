@@ -14,8 +14,4 @@ patches:
     patch: |-
       - op: replace
         path: /spec/template/spec/containers/0/env/0/value
-        value: n8n-db-cnpg-v1-rw.cnpg-prod.svc.cluster.local:5432/n8n
-        # value: jdbc:postgresql://n8n-db-cnpg-v1-rw.cnpg-prod.svc.cluster.local:5432/n8n
-      # - op: replace
-      #   path: /spec/template/spec/containers/1/env/1/value
-      #   value: jdbc:postgresql://n8n-db-cnpg-v1-rw.cnpg-prod.svc.cluster.local:5432/n8n
+        value: n8n-db-cnpg-v1-rw.cnpg-prod.svc.cluster.local
