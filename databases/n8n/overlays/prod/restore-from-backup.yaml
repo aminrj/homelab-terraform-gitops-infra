@@ -1,0 +1,5 @@
+- op: replace
+  path: /spec/bootstrap
+  value:
+    recovery:
+      source: clusterBackup

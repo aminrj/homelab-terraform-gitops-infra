@@ -7,3 +7,12 @@ resources:
 
 patches:
   - path: destination-path-patch.yaml
+  - target:
+      kind: Cluster
+      name: n8n-db-cnpg-v2
+    patch: |-
+      - op: replace
+        path: /spec/bootstrap
+        value:
+          recovery:
+            source: clusterBackup

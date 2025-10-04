@@ -14,7 +14,15 @@
       "mcp__sequential-thinking__sequentialthinking",
       "Bash(terraform apply:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(argocd app sync:*)",
+      "Bash(cat:*)",
+      "Bash(git push:*)",
+      "Read(//Users/ARAJI/.claude/**)",
+      "Bash(git log:*)",
+      "Bash(git rebase:*)",
+      "Bash(git stash:*)",
+      "Bash(sort:*)"
     ],
     "deny": [],
     "ask": []

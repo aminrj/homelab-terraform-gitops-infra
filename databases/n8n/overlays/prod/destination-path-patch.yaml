@@ -2,15 +2,18 @@
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
-  name: n8n-db-cnpg-v1
+  name: n8n-db-cnpg-v2
 spec:
   backup:
-    retentionPolicy: "7d"     # one week retention
+    barmanObjectStore:
+      serverName: n8n-db-cnpg-v2
+    retentionPolicy: "7d"
+
   externalClusters:
     - name: clusterBackup
       barmanObjectStore:
-        destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/n8n-db-restored # Source
-        serverName: n8n-db-cnpg-v1  # Fixed: match your backup path structure
+        destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/n8n-db-clean
+        serverName: n8n-db-cnpg-v1
         azureCredentials:
           storageAccount:
             name: n8n-db-storage
@@ -18,3 +21,5 @@ spec:
           storageSasToken:
             name: n8n-db-storage
             key: blob-sas
+        wal:
+          compression: gzip
