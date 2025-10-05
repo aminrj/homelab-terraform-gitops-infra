@@ -22,7 +22,8 @@
       "Bash(git log:*)",
       "Bash(git rebase:*)",
       "Bash(git stash:*)",
-      "Bash(sort:*)"
+      "Bash(sort:*)",
+      "WebFetch(domain:aminrj.com)"
     ],
     "deny": [],
     "ask": []
