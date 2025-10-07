@@ -58,21 +58,19 @@ spec:
         wal:
           compression: gzip
 
-  # Backup configuration commented out during restore to avoid WAL archive check
-  # Uncomment after successful restore
-  # backup:
-  #   barmanObjectStore:
-  #     destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/commafeed-db-clean
-  #     azureCredentials:
-  #       storageAccount:
-  #         name: commafeed-db-storage
-  #         key: container-name
-  #       storageSasToken:
-  #         name: commafeed-db-storage
-  #         key: blob-sas
-  #     wal:
-  #       compression: gzip
-  #     data:
-  #       compression: gzip
-  #   retentionPolicy: 7d
+  backup:
+    barmanObjectStore:
+      destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/commafeed-db-restore-new
+      azureCredentials:
+        storageAccount:
+          name: commafeed-db-storage
+          key: container-name
+        storageSasToken:
+          name: commafeed-db-storage
+          key: blob-sas
+      wal:
+        compression: gzip
+      data:
+        compression: gzip
+    retentionPolicy: 7d
 

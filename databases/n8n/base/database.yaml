@@ -48,20 +48,18 @@ spec:
           compression: gzip
 
 
-  # Backup configuration commented out during restore to avoid WAL archive check
-  # Uncomment after successful restore
-  # backup:
-  #   barmanObjectStore:
-  #     destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/n8n-db-clean
-  #     azureCredentials:
-  #       storageAccount:
-  #         name: n8n-db-storage
-  #         key: container-name
-  #       storageSasToken:
-  #         name: n8n-db-storage
-  #         key: blob-sas
-  #     wal:
-  #       compression: gzip
-  #     data:
-  #       compression: gzip
-  #   retentionPolicy: 7d
+  backup:
+    barmanObjectStore:
+      destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/n8n-db-restore-new
+      azureCredentials:
+        storageAccount:
+          name: n8n-db-storage
+          key: container-name
+        storageSasToken:
+          name: n8n-db-storage
+          key: blob-sas
+      wal:
+        compression: gzip
+      data:
+        compression: gzip
+    retentionPolicy: 7d
