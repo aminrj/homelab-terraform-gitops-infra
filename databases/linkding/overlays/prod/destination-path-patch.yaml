@@ -6,3 +6,6 @@
 - op: add
   path: /spec/storage/storageClass
   value: "local-path"
+- op: add
+  path: /spec/backup/barmanObjectStore/destinationPath
+  value: "https://homelabstorageaccntprod.blob.core.windows.net/linkding-db-restore-v2"

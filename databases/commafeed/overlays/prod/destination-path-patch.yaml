@@ -7,4 +7,6 @@ spec:
   storage:
     storageClass: local-path
   backup:
+    barmanObjectStore:
+      destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/commafeed-db-restore-v2
     retentionPolicy: "7d"
