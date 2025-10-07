@@ -32,6 +32,7 @@ spec:
     - name: linkding-backup
       barmanObjectStore:
         destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/linkding-db-clean
+        endpointURL: https://homelabstorageaccntprod.blob.core.windows.net
         serverName: linkding-db-cnpg-v1
         azureCredentials:
           storageAccount:

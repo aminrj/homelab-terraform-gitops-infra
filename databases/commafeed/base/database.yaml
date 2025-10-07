@@ -52,6 +52,7 @@ spec:
     - name: commafeed-backup
       barmanObjectStore:
         destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/commafeed-db-clean
+        endpointURL: https://homelabstorageaccntprod.blob.core.windows.net
         serverName: commafeed-db-cnpg-v1
         azureCredentials:
           storageAccount:
