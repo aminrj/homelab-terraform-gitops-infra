@@ -1,0 +1,89 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: n8n-db-cnpg-v4
+  namespace: cnpg-prod
+  labels:
+    app: n8n
+    storage: local-path
+spec:
+  instances: 2
+  imageName: quay.io/enterprisedb/postgresql:16.1
+
+  # NEW: Use local-path storage
+  storage:
+    storageClass: local-path
+    size: 10Gi
+
+  # NEW: Prefer node2 (12GB RAM)
+  affinity:
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          preference:
+            matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                  - microk8s-node2  # Prefer node2 for most memory
+
+  # Bootstrap from existing cluster backup
+  bootstrap:
+    recovery:
+      source: n8n-db-cnpg-v3
+      database: n8n
+      owner: n8n
+      secret:
+        name: n8n-db-creds
+
+  # External cluster configuration for recovery
+  externalClusters:
+    - name: n8n-db-cnpg-v3
+      barmanObjectStore:
+        azureCredentials:
+          storageAccount:
+            key: container-name
+            name: n8n-db-storage
+          storageSasToken:
+            key: blob-sas
+            name: n8n-db-storage
+        data:
+          compression: gzip
+        destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/n8n-db-clean
+        serverName: n8n-db-cnpg-v3
+        wal:
+          compression: gzip
+
+  # Continue with backups to Azure
+  backup:
+    barmanObjectStore:
+      azureCredentials:
+        storageAccount:
+          key: container-name
+          name: n8n-db-storage
+        storageSasToken:
+          key: blob-sas
+          name: n8n-db-storage
+      data:
+        compression: gzip
+      destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/n8n-db-clean
+      serverName: n8n-db-cnpg-v4
+      wal:
+        compression: gzip
+    retentionPolicy: 7d
+    target: prefer-standby
+
+  description: "N8N PostgreSQL cluster on local-path storage (migrated from v3)"
+  enablePDB: true
+  enableSuperuserAccess: false
+  failoverDelay: 0
+
+  primaryUpdateStrategy: unsupervised
+
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "2Gi"
+      cpu: "1000m"

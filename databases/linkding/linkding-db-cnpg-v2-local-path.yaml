@@ -1,0 +1,89 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: linkding-db-cnpg-v2
+  namespace: cnpg-prod
+  labels:
+    app: linkding
+    storage: local-path
+spec:
+  instances: 1
+  imageName: quay.io/enterprisedb/postgresql:16.1
+
+  # Use local-path storage
+  storage:
+    storageClass: local-path
+    size: 5Gi
+
+  # Prefer node2 (12GB RAM) - node3 has DNS issues
+  affinity:
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          preference:
+            matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                  - microk8s-node2
+
+  # Bootstrap from existing cluster backup
+  bootstrap:
+    recovery:
+      source: linkding-db-cnpg-v1
+      database: linkding
+      owner: linkding
+      secret:
+        name: linkding-db-creds
+
+  # External cluster configuration for recovery
+  externalClusters:
+    - name: linkding-db-cnpg-v1
+      barmanObjectStore:
+        azureCredentials:
+          storageAccount:
+            key: container-name
+            name: linkding-db-storage
+          storageSasToken:
+            key: blob-sas
+            name: linkding-db-storage
+        data:
+          compression: gzip
+        destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/linkding-db-clean
+        serverName: linkding-db-cnpg-v1
+        wal:
+          compression: gzip
+
+  # Continue with backups to Azure
+  backup:
+    barmanObjectStore:
+      azureCredentials:
+        storageAccount:
+          key: container-name
+          name: linkding-db-storage
+        storageSasToken:
+          key: blob-sas
+          name: linkding-db-storage
+      data:
+        compression: gzip
+      destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/linkding-db-clean
+      serverName: linkding-db-cnpg-v2
+      wal:
+        compression: gzip
+    retentionPolicy: 7d
+    target: prefer-standby
+
+  description: "Linkding PostgreSQL cluster on local-path storage (migrated from v1)"
+  enablePDB: true
+  enableSuperuserAccess: false
+  failoverDelay: 0
+
+  primaryUpdateStrategy: unsupervised
+
+  resources:
+    requests:
+      memory: "600Mi"
+      cpu: "100m"
+    limits:
+      memory: "1Gi"
+      cpu: "500m"
