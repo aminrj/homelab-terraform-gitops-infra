@@ -23,8 +23,6 @@ spec:
   bootstrap:
     recovery:
       source: linkding-backup
-      recoveryTarget:
-        targetImmediate: true
 
   externalClusters:
     - name: linkding-backup
@@ -44,19 +42,21 @@ spec:
     requests:
       memory: 600Mi
 
-  backup:
-    barmanObjectStore:
-      destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/linkding-db-clean
-      azureCredentials:
-        storageAccount:
-          name: linkding-db-storage
-          key: container-name
-        storageSasToken:
-          name: linkding-db-storage
-          key: blob-sas
-      wal:
-        compression: gzip
-      data:
-        compression: gzip
-    retentionPolicy: 7d
+  # Backup configuration commented out during restore to avoid WAL archive check
+  # Uncomment after successful restore
+  # backup:
+  #   barmanObjectStore:
+  #     destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/linkding-db-clean
+  #     azureCredentials:
+  #       storageAccount:
+  #         name: linkding-db-storage
+  #         key: container-name
+  #       storageSasToken:
+  #         name: linkding-db-storage
+  #         key: blob-sas
+  #     wal:
+  #       compression: gzip
+  #     data:
+  #       compression: gzip
+  #   retentionPolicy: 7d
 
