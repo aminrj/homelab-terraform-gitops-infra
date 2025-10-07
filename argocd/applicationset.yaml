@@ -9,7 +9,7 @@ spec:
         repoURL: https://github.com/aminrj/homelab-terraform-gitops-infra.git
         revision: main
         directories:
-          - path: apps/*/overlays/* # <app-name>/overlays/<env> auto-detect all apps & env
+          - path: apps/*/overlays/prod # Only prod environment
   template:
     metadata:
       name: '{{path[1]}}-{{path[3]}}' # example: commafeed-dev, listmonk-qa...

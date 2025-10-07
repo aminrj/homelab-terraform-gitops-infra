@@ -9,7 +9,7 @@ spec:
         repoURL: https://github.com/aminrj/homelab-terraform-gitops-infra.git
         revision: main
         directories:
-          - path: infrastructure/*/overlays/* # <component>/overlays/<env>
+          - path: infrastructure/*/overlays/prod # Only prod environment
   template:
     metadata:
       name: 'infra-{{path[1]}}-{{path[3]}}' # example: infra-storage-monitoring-prod

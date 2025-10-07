@@ -9,7 +9,7 @@ spec:
         repoURL: https://github.com/aminrj/homelab-terraform-gitops-infra.git
         revision: main
         directories:
-          - path: databases/*/overlays/*
+          - path: databases/*/overlays/prod
   template:
     metadata:
       name: 'db-{{path[1]}}-{{path[3]}}'
