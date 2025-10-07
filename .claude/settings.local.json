@@ -22,7 +22,9 @@
       "Bash(git log:*)",
       "Bash(git rebase:*)",
       "Bash(git stash:*)",
-      "Bash(sort:*)"
+      "Bash(sort:*)",
+      "Bash(microk8s status:*)",
+      "Bash(chmod:*)"
     ],
     "deny": [],
     "ask": []

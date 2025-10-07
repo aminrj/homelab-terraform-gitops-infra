@@ -63,7 +63,7 @@ alertmanager:
     storage:
       volumeClaimTemplate:
         spec:
-          # storageClassName: longhorn  # Use your storage class
+          storageClassName: microceph-rbd
           accessModes: ["ReadWriteOnce"]
           resources:
             requests:
