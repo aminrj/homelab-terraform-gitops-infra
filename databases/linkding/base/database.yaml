@@ -50,7 +50,7 @@ spec:
 
   backup:
     barmanObjectStore:
-      destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/linkding-db-restore-new
+      destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/linkding-db-restore-v2
       azureCredentials:
         storageAccount:
           name: linkding-db-storage
