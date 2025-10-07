@@ -4,6 +4,8 @@ kind: Cluster
 metadata:
   name: n8n-db-cnpg-v3
 spec:
+  storage:
+    storageClass: local-path
   backup:
     barmanObjectStore:
       serverName: n8n-db-cnpg-v3

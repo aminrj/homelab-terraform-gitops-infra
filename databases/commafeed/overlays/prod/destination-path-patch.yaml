@@ -4,5 +4,7 @@ kind: Cluster
 metadata:
   name: commafeed-db-cnpg-v1
 spec:
+  storage:
+    storageClass: local-path
   backup:
     retentionPolicy: "7d"

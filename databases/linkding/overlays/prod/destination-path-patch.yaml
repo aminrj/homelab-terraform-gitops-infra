@@ -5,4 +5,4 @@
   value: "15Gi"
 - op: add
   path: /spec/storage/storageClass
-  value: "microk8s-hostpath"
+  value: "local-path"
