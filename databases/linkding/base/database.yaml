@@ -20,13 +20,22 @@ spec:
       policy-type: "database"
 
   bootstrap:
-    # recovery:
-    #   source: "clusterBackup"
-    initdb:
-      database: linkding
-      owner: linkding
-      secret:
-        name: linkding-db-creds   # Same ExternalSecret you already have
+    recovery:
+      source: linkding-backup
+
+  externalClusters:
+    - name: linkding-backup
+      barmanObjectStore:
+        destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/linkding-db-clean
+        azureCredentials:
+          storageAccount:
+            name: linkding-db-storage
+            key: container-name
+          storageSasToken:
+            name: linkding-db-storage
+            key: blob-sas
+        wal:
+          compression: gzip
 
   resources:
     requests:

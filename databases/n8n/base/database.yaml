@@ -29,11 +29,22 @@ spec:
       cpu: 500m
 
   bootstrap:
-    initdb:
-      database: n8n
-      owner: n8n
-      secret:
-        name: n8n-db-creds
+    recovery:
+      source: n8n-backup
+
+  externalClusters:
+    - name: n8n-backup
+      barmanObjectStore:
+        destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/n8n-db-clean
+        azureCredentials:
+          storageAccount:
+            name: n8n-db-storage
+            key: container-name
+          storageSasToken:
+            name: n8n-db-storage
+            key: blob-sas
+        wal:
+          compression: gzip
 
 
   backup:

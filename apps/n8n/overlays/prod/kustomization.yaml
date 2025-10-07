@@ -15,3 +15,10 @@ patches:
       - op: replace
         path: /spec/template/spec/containers/0/env/0/value
         value: n8n-db-cnpg-v3-rw.cnpg-prod.svc.cluster.local
+  - target:
+      kind: PersistentVolumeClaim
+      name: n8n-data
+    patch: |-
+      - op: add
+        path: /spec/storageClassName
+        value: local-path

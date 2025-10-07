@@ -40,11 +40,22 @@ spec:
       policy-type: "database"
 
   bootstrap:
-    initdb:
-      database: commafeed
-      owner: commafeed
-      secret:
-        name: commafeed-db-creds
+    recovery:
+      source: commafeed-backup
+
+  externalClusters:
+    - name: commafeed-backup
+      barmanObjectStore:
+        destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/commafeed-db-clean
+        azureCredentials:
+          storageAccount:
+            name: commafeed-db-storage
+            key: container-name
+          storageSasToken:
+            name: commafeed-db-storage
+            key: blob-sas
+        wal:
+          compression: gzip
 
   backup:
     barmanObjectStore:
