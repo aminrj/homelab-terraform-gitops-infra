@@ -135,3 +135,8 @@ variable "storage_account_name" {
 #   default = "LoadBalancer"
 # }
 
+variable "slack_webhook_url" {
+  description = "Slack webhook URL for alertmanager notifications"
+  type        = string
+  default     = ""
+}

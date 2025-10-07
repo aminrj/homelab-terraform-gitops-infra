@@ -2,12 +2,12 @@
 
 output "servicemonitor_name" {
   description = "Name of the MicroCeph ServiceMonitor"
-  value       = kubernetes_manifest.microceph_mgr_servicemonitor.manifest.metadata.name
+  value       = "microceph-mgr"
 }
 
 output "prometheus_rule_name" {
   description = "Name of the MicroCeph PrometheusRule"
-  value       = kubernetes_manifest.microceph_storage_alerts.manifest.metadata.name
+  value       = "microceph-storage-alerts"
 }
 
 output "microceph_service_name" {

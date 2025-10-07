@@ -150,8 +150,9 @@ module "external_secrets" {
 
 module "prometheus-stack" {
   source            = "../../modules/kube-prometheus-stack"
-  kubeconfig  = var.kubeconfig
-  storage_class = var.storage_class
+  kubeconfig        = var.kubeconfig
+  storage_class     = var.storage_class
+  slack_webhook_url = var.slack_webhook_url
 }
 
 module "cnpg_operator" {

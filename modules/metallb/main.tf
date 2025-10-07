@@ -25,6 +25,23 @@
 #
 # }
 
+terraform {
+  required_providers {
+    kubectl = {
+      source  = "gavinbunney/kubectl"
+      version = ">= 1.19.0"
+    }
+    helm = {
+      source  = "hashicorp/helm"
+      version = ">= 2.0"
+    }
+    time = {
+      source  = "hashicorp/time"
+      version = ">= 0.9"
+    }
+  }
+}
+
 # metallb/main.tf
 resource "helm_release" "metallb" {
   name             = "metallb"
@@ -36,34 +53,47 @@ resource "helm_release" "metallb" {
   wait             = true
 }
 
-resource "kubernetes_manifest" "metallb_ipaddresspool" {
+# Wait for MetalLB CRDs to be installed
+resource "time_sleep" "wait_for_metallb_crds" {
   depends_on = [helm_release.metallb]
-  
-  manifest = {
-    apiVersion = "metallb.io/v1beta1"
-    kind       = "IPAddressPool"
-    metadata = {
-      name      = "lb-addresses"
-      namespace = "metallb-system"
-    }
-    spec = {
-      addresses = [var.metallb_address_range]
-    }
-  }
+  create_duration = "60s"
 }
 
-resource "kubernetes_manifest" "metallb_l2advertisement" {
-  depends_on = [kubernetes_manifest.metallb_ipaddresspool]
+# Use kubectl provider for CRD-dependent resources
+resource "kubectl_manifest" "metallb_ipaddresspool" {
+  depends_on = [time_sleep.wait_for_metallb_crds]
   
-  manifest = {
-    apiVersion = "metallb.io/v1beta1"
-    kind       = "L2Advertisement"
-    metadata = {
-      name      = "lb-addresses"
-      namespace = "metallb-system"
-    }
-    spec = {
-      ipAddressPools = ["lb-addresses"]
-    }
-  }
+  validate_schema    = false
+  server_side_apply  = true
+  wait_for_rollout   = true
+  
+  yaml_body = <<YAML
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: lb-addresses
+  namespace: metallb-system
+spec:
+  addresses:
+  - ${var.metallb_address_range}
+YAML
+}
+
+resource "kubectl_manifest" "metallb_l2advertisement" {
+  depends_on = [kubectl_manifest.metallb_ipaddresspool]
+  
+  validate_schema    = false
+  server_side_apply  = true
+  wait_for_rollout   = true
+  
+  yaml_body = <<YAML
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: lb-addresses
+  namespace: metallb-system
+spec:
+  ipAddressPools:
+  - lb-addresses
+YAML
 }

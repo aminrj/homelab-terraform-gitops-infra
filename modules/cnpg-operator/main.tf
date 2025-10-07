@@ -21,7 +21,7 @@ resource "helm_release" "cnpg_operator" {
   # namespace        = "cnpg" #TODO change this
   repository       = "https://cloudnative-pg.github.io/charts"
   chart            = "cloudnative-pg"
-  version          = "0.24.1"
+  version          = "0.26.0"
   create_namespace = true
   wait             = true
 
