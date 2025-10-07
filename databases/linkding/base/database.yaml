@@ -23,11 +23,16 @@ spec:
   bootstrap:
     recovery:
       source: linkding-backup
+      database: linkding
+      owner: linkding
+      secret:
+        name: linkding-db-creds
 
   externalClusters:
     - name: linkding-backup
       barmanObjectStore:
         destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/linkding-db-clean
+        serverName: linkding-db-cnpg-v1
         azureCredentials:
           storageAccount:
             name: linkding-db-storage

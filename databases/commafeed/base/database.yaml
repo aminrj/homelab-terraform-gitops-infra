@@ -43,11 +43,16 @@ spec:
   bootstrap:
     recovery:
       source: commafeed-backup
+      database: commafeed
+      owner: commafeed
+      secret:
+        name: commafeed-db-creds
 
   externalClusters:
     - name: commafeed-backup
       barmanObjectStore:
         destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/commafeed-db-clean
+        serverName: commafeed-db-cnpg-v1
         azureCredentials:
           storageAccount:
             name: commafeed-db-storage
