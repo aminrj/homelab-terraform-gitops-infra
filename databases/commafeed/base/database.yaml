@@ -43,6 +43,8 @@ spec:
   bootstrap:
     recovery:
       source: commafeed-backup
+      recoveryTarget:
+        targetImmediate: true
 
   externalClusters:
     - name: commafeed-backup

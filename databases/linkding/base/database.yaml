@@ -23,6 +23,8 @@ spec:
   bootstrap:
     recovery:
       source: linkding-backup
+      recoveryTarget:
+        targetImmediate: true
 
   externalClusters:
     - name: linkding-backup

@@ -32,6 +32,8 @@ spec:
   bootstrap:
     recovery:
       source: n8n-backup
+      recoveryTarget:
+        targetImmediate: true
 
   externalClusters:
     - name: n8n-backup
