@@ -27,16 +27,20 @@ spec:
               cpu: "500m"
           livenessProbe:
             httpGet:
-              path: /q/health/live
+              path: /
               port: 8082
             initialDelaySeconds: 30
             periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
           readinessProbe:
             httpGet:
               path: /
               port: 8082
             initialDelaySeconds: 10
             periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
           securityContext:
             runAsNonRoot: true
             runAsUser: 1000
