@@ -22,7 +22,7 @@ This guide walks through setting up a complete GitOps-managed Kubernetes homelab
 
 ### 1.1 Install Required Tools
 
-```bash
+````bash
 # Verify MicroK8s installation
 microk8s status --wait-ready
 
@@ -35,12 +35,6 @@ terraform version
 # Verify Azure CLI
 az version
 
-# Install kubectl CNPG plugin (for database management)
-curl -sSfL \
-  https://github.com/cloudnative-pg/cloudnative-pg/raw/main/hack/install-cnpg-plugin.sh | \
-  sudo sh -s -- -b /usr/local/bin
-```
-
 ### 1.2 Enable MicroK8s Add-ons
 
 ```bash
@@ -51,7 +45,7 @@ microk8s enable rbac
 
 # Verify add-ons are running
 microk8s status
-```
+````
 
 ### 1.3 Configure kubectl
 
@@ -129,6 +123,7 @@ terraform apply -auto-approve
 ```
 
 **Resources Created:**
+
 - MetalLB load balancer
 - cert-manager for SSL certificates
 - nginx-ingress-controller
@@ -212,6 +207,7 @@ terraform apply -auto-approve
 ```
 
 **Resources Created:**
+
 - Azure Key Vault with application secrets
 - Azure Storage Account and containers for backups
 - Service Principal for External Secrets Operator
@@ -221,8 +217,6 @@ terraform apply -auto-approve
 ### 4.4 Configure External Secrets Operator
 
 ```bash
-# Create namespace if not exists
-kubectl create namespace external-secrets --dry-run=client -o yaml | kubectl apply -f -
 
 # Create Azure credentials secret for External Secrets Operator
 kubectl create secret generic azure-creds \
@@ -270,6 +264,7 @@ kubectl port-forward svc/argocd-server -n argocd 8080:443
 ```
 
 Access ArgoCD at `https://localhost:8080` with:
+
 - Username: `admin`
 - Password: `<from above>`
 

@@ -5,6 +5,7 @@
 ## Summary
 
 All 5 PostgreSQL databases in the homelab now have:
+
 - ✅ **Working WAL archiving** for continuous point-in-time recovery
 - ✅ **Daily scheduled backups** at 01:00 UTC with 7-day retention
 - ✅ **Manual backup capability** for on-demand backups
@@ -13,12 +14,12 @@ All 5 PostgreSQL databases in the homelab now have:
 ## Backup Status
 
 | Application | WAL Archiving | Scheduled Backups | Manual Backups | Restore Tested |
-|-------------|---------------|-------------------|----------------|----------------|
-| linkding    | ✅ Working    | ✅ Daily 01:00   | ✅ Functional  | ✅ Verified    |
-| commafeed   | ✅ Working    | ✅ Daily 01:00   | ✅ Functional  | 🔄 Pending     |
-| wallabag    | ✅ Working    | ✅ Daily 01:00   | ✅ Functional  | 🔄 Pending     |
-| n8n         | ✅ Working    | ✅ Daily 01:00   | ✅ Functional  | 🔄 Pending     |
-| listmonk    | ✅ Working    | ✅ Daily 01:00   | ✅ Functional  | 🔄 Pending     |
+| ----------- | ------------- | ----------------- | -------------- | -------------- |
+| linkding    | ✅ Working    | ✅ Daily 01:00    | ✅ Functional  | ✅ Verified    |
+| commafeed   | ✅ Working    | ✅ Daily 01:00    | ✅ Functional  | 🔄 Pending     |
+| wallabag    | ✅ Working    | ✅ Daily 01:00    | ✅ Functional  | 🔄 Pending     |
+| n8n         | ✅ Working    | ✅ Daily 01:00    | ✅ Functional  | 🔄 Pending     |
+| listmonk    | ✅ Working    | ✅ Daily 01:00    | ✅ Functional  | 🔄 Pending     |
 
 ## Emergency Restore Procedures
 
@@ -29,6 +30,7 @@ All 5 PostgreSQL databases in the homelab now have:
 **Recovery Time**: ~2-5 minutes for restore + database startup
 
 **Step 1: Create Restore Configuration**
+
 ```yaml
 # restore-{app-name}.yaml
 apiVersion: postgresql.cnpg.io/v1
@@ -80,11 +82,13 @@ spec:
 ```
 
 **Step 2: Apply Restore Configuration**
+
 ```bash
 kubectl apply -f restore-{app-name}.yaml
 ```
 
 **Step 3: Monitor Restore Progress**
+
 ```bash
 # Check cluster status
 kubectl get cluster {app-name}-db-cnpg-v1-restore -n cnpg-prod -o wide
@@ -97,6 +101,7 @@ kubectl logs {app-name}-db-cnpg-v1-restore-1-full-recovery-* -n cnpg-prod
 ```
 
 **Step 4: Verify Restore Completion**
+
 ```bash
 # Check cluster is healthy
 kubectl get cluster {app-name}-db-cnpg-v1-restore -n cnpg-prod
@@ -107,11 +112,13 @@ kubectl exec {app-name}-db-cnpg-v1-restore-1 -n cnpg-prod -- psql -U postgres -d
 
 **Step 5: Point Application to Restored Database**
 Update application configuration to use restored database service:
+
 - Service name: `{app-name}-db-cnpg-v1-restore-rw.cnpg-prod.svc.cluster.local:5432`
 
 ### Application-Specific Restore Details
 
 #### Linkding Restore (✅ TESTED)
+
 ```bash
 # Database: linkding, User: linkding
 # Verified working with restore test on 2025-09-19
@@ -120,6 +127,7 @@ Update application configuration to use restored database service:
 ```
 
 #### Commafeed Restore
+
 ```bash
 # Database: commafeed, User: commafeed
 # Storage: commafeed-db-clean
@@ -127,6 +135,7 @@ Update application configuration to use restored database service:
 ```
 
 #### Wallabag Restore
+
 ```bash
 # Database: wallabag, User: wallabag
 # Storage: wallabag-db-clean
@@ -134,6 +143,7 @@ Update application configuration to use restored database service:
 ```
 
 #### N8N Restore
+
 ```bash
 # Database: n8n, User: n8n
 # Storage: n8n-db-clean
@@ -141,6 +151,7 @@ Update application configuration to use restored database service:
 ```
 
 #### Listmonk Restore
+
 ```bash
 # Database: listmonk, User: listmonk
 # Storage: listmonk-db-clean
@@ -150,6 +161,7 @@ Update application configuration to use restored database service:
 ## Manual Backup Procedures
 
 ### Create On-Demand Backup
+
 ```bash
 # Create manual backup for any application
 kubectl create backup {app-name}-manual-backup-$(date +%Y%m%d-%H%M%S) \
@@ -161,6 +173,7 @@ kubectl get backups -n cnpg-prod | grep {app-name}
 ```
 
 ### Verify Backup Success
+
 ```bash
 # Check backup details
 kubectl get backup {backup-name} -n cnpg-prod -o yaml
@@ -172,17 +185,19 @@ kubectl get backup {backup-name} -n cnpg-prod -o yaml
 ## Point-in-Time Recovery
 
 ### Restore to Specific Time
+
 ```yaml
 # Add to bootstrap.recovery section:
 recoveryTarget:
-  targetTime: "2025-09-19 10:00:00 UTC"  # Specific timestamp
+  targetTime: "2025-09-19 10:00:00 UTC" # Specific timestamp
   # OR
-  targetLSN: "0/1B000028"  # Specific log sequence number
+  targetLSN: "0/1B000028" # Specific log sequence number
   # OR
-  targetName: "backup-point"  # Named restore point
+  targetName: "backup-point" # Named restore point
 ```
 
 ### Recovery Target Options
+
 - **targetTime**: Restore to specific timestamp (most common)
 - **targetLSN**: Restore to specific log sequence number
 - **targetName**: Restore to named transaction
@@ -191,6 +206,7 @@ recoveryTarget:
 ## Monitoring & Verification
 
 ### Check WAL Archiving Health
+
 ```bash
 # Verify WAL archiving is working for all clusters
 for cluster in linkding commafeed wallabag n8n listmonk; do
@@ -200,6 +216,7 @@ done
 ```
 
 ### Check Scheduled Backup Status
+
 ```bash
 # View all scheduled backups
 kubectl get scheduledbackups -n cnpg-prod
@@ -209,6 +226,7 @@ kubectl get backups -n cnpg-prod --sort-by=.metadata.creationTimestamp | tail -1
 ```
 
 ### Verify Storage Connectivity
+
 ```bash
 # Check external secrets are synced
 kubectl get externalsecrets -n cnpg-prod
@@ -234,6 +252,7 @@ kubectl get secrets -n cnpg-prod | grep storage
 **Solution**: Ensure backup exists in correct namespace and storage path
 
 ### Recovery Verification Commands
+
 ```bash
 # Check cluster health
 kubectl get clusters -n cnpg-prod
@@ -273,3 +292,4 @@ kubectl exec {cluster-name}-1 -n cnpg-prod -- pg_isready
 
 **Last Updated**: 2025-09-19
 **Next Review**: Weekly monitoring of backup status and quarterly restore testing
+

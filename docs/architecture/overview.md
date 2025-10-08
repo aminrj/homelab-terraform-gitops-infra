@@ -74,6 +74,7 @@ Comprehensive architecture documentation for the GitOps homelab infrastructure.
 **Purpose**: Automated deployment and synchronization from Git to Kubernetes
 
 **How it works**:
+
 1. Changes pushed to Git repository
 2. ArgoCD detects changes (polling every 3 minutes)
 3. Automatically syncs to cluster (if auto-sync enabled)
@@ -82,6 +83,7 @@ Comprehensive architecture documentation for the GitOps homelab infrastructure.
 **ApplicationSets**: Auto-discover apps in `/apps/{app}/overlays/{env}/` and create ArgoCD applications
 
 **Key Features**:
+
 - Declarative GitOps CD for Kubernetes
 - Self-healing and auto-sync capabilities
 - Web UI for visualization and management
@@ -92,12 +94,14 @@ Comprehensive architecture documentation for the GitOps homelab infrastructure.
 **Purpose**: Production-grade PostgreSQL on Kubernetes
 
 **Architecture**:
+
 - **Operator**: Manages PostgreSQL cluster lifecycle
 - **Clusters**: Primary instance + optional replicas
 - **Backup**: Continuous WAL archiving + scheduled base backups
 - **Recovery**: Point-in-time recovery from Azure storage
 
 **Features**:
+
 - Automated failover and self-healing
 - Continuous backup and point-in-time recovery
 - Connection pooling with PgBouncer
@@ -108,6 +112,7 @@ Comprehensive architecture documentation for the GitOps homelab infrastructure.
 **Purpose**: Secure secret storage and synchronization
 
 **Flow**:
+
 ```
 Azure Key Vault (source of truth)
     ↓
@@ -119,6 +124,7 @@ Application Pods (consume secrets)
 ```
 
 **Security Benefits**:
+
 - Secrets never stored in Git
 - Centralized secret management
 - Automatic rotation support
@@ -129,12 +135,14 @@ Application Pods (consume secrets)
 **Purpose**: Reproducible infrastructure provisioning
 
 **Environments**:
+
 - **shared**: Core infrastructure (ArgoCD, CNPG, monitoring)
 - **prod**: Production resources (Key Vault, storage, apps)
 - **qa**: QA/staging environment
 - **dev**: Development environment
 
 **Modules**:
+
 - `argocd`: ArgoCD installation and configuration
 - `cnpg-operator`: PostgreSQL operator deployment
 - `cnpg-cluster`: Database cluster definitions
@@ -259,12 +267,14 @@ Application Pods (consume secrets)
 ### DNS Resolution
 
 **Internal DNS** (CoreDNS):
+
 ```
 <service>.<namespace>.svc.cluster.local
 linkding-db-cnpg-v1-rw.cnpg-prod.svc.cluster.local:5432
 ```
 
 **External DNS** (optional):
+
 ```
 app.yourdomain.com → MetalLB LoadBalancer IP
 ```
@@ -328,6 +338,7 @@ app.yourdomain.com → MetalLB LoadBalancer IP
 ### Authentication & Authorization
 
 **Kubernetes RBAC**:
+
 ```
 User/ServiceAccount
     ↓
@@ -339,6 +350,7 @@ Resources (pods, services, secrets)
 ```
 
 **Azure Authentication**:
+
 ```
 Service Principal (managed identity)
     ↓
@@ -371,11 +383,13 @@ External Secrets Operator sync
 ### High Availability
 
 **Current Setup** (Single instance):
+
 - Single MicroK8s node
 - Single PostgreSQL instance per app
 - Local storage (no replication)
 
 **Future HA Options**:
+
 - Multi-node MicroK8s cluster
 - PostgreSQL replicas for read scaling
 - Distributed storage (Ceph/Rook)
@@ -387,12 +401,14 @@ External Secrets Operator sync
 **RPO** (Recovery Point Objective): < 5 minutes
 
 **Backup Strategy**:
+
 - Continuous WAL archiving (5-minute intervals)
 - Daily base backups (01:00 UTC)
 - 7-day retention policy
 - Point-in-time recovery capability
 
 **Failure Scenarios**:
+
 - Pod failure: Automatic restart by Kubernetes
 - Node failure: Requires manual intervention (single node)
 - Database corruption: Restore from Azure backup
@@ -429,16 +445,19 @@ External Secrets Operator sync
 ### Key Metrics
 
 **Database**:
+
 - `cnpg_pg_database_size_bytes`: Database size
 - `cnpg_pg_replication_lag`: Replication lag (if replicas exist)
 - `cnpg_backends_waiting_total`: Connection pool status
 
 **Applications**:
+
 - HTTP request rate and latency
 - Error rates
 - Resource usage (CPU, memory)
 
 **Infrastructure**:
+
 - Node resource utilization
 - Pod status and restarts
 - PVC usage
@@ -449,18 +468,18 @@ External Secrets Operator sync
 
 ### Azure Resources
 
-| Resource | Cost Driver | Optimization |
-|----------|-------------|--------------|
-| **Key Vault** | Transactions | Cache secrets, reduce sync frequency |
-| **Blob Storage** | Storage + transactions | Retention policy, lifecycle management |
-| **Service Principal** | Free | N/A |
+| Resource              | Cost Driver            | Optimization                           |
+| --------------------- | ---------------------- | -------------------------------------- |
+| **Key Vault**         | Transactions           | Cache secrets, reduce sync frequency   |
+| **Blob Storage**      | Storage + transactions | Retention policy, lifecycle management |
+| **Service Principal** | Free                   | N/A                                    |
 
 ### Kubernetes Resources
 
-| Resource | Optimization |
-|----------|--------------|
-| **CPU** | Right-size requests/limits |
-| **Memory** | Monitor actual usage |
+| Resource    | Optimization               |
+| ----------- | -------------------------- |
+| **CPU**     | Right-size requests/limits |
+| **Memory**  | Monitor actual usage       |
 | **Storage** | PVC size, backup retention |
 
 ---
@@ -470,16 +489,19 @@ External Secrets Operator sync
 ### Planned Improvements
 
 1. **High Availability**:
-   - Multi-node cluster
+
+   - Multi-node cluster: add more nodes
    - PostgreSQL replicas
    - Distributed storage
 
 2. **Security Enhancements**:
+
    - Network policies
-   - Pod security policies
+   - Pod security standard
    - Image scanning
 
 3. **Observability**:
+
    - Grafana dashboards
    - Alert manager integration
    - Distributed tracing
@@ -493,12 +515,12 @@ External Secrets Operator sync
 
 ## Reference Links
 
-- **MicroK8s**: https://microk8s.io/docs
-- **ArgoCD**: https://argo-cd.readthedocs.io/
-- **CloudNative-PG**: https://cloudnative-pg.io/documentation/
-- **External Secrets**: https://external-secrets.io/latest/
-- **Terraform**: https://www.terraform.io/docs
-- **Kustomize**: https://kustomize.io/
+- **MicroK8s**: <https://microk8s.io/docs>
+- **ArgoCD**: <https://argo-cd.readthedocs.io/>
+- **CloudNative-PG**: <https://cloudnative-pg.io/documentation/>
+- **External Secrets**: <https://external-secrets.io/latest/>
+- **Terraform**: <https://www.terraform.io/docs>
+- **Kustomize**: <https://kustomize.io/>
 
 ---
 

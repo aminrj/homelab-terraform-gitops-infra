@@ -40,13 +40,13 @@ Azure Blob Storage
 
 ## Database Inventory
 
-| Application | Database Name | User      | Namespace  | Backup Container       |
-|-------------|---------------|-----------|------------|------------------------|
-| linkding    | linkding      | linkding  | cnpg-prod  | linkding-db-clean      |
-| commafeed   | commafeed     | commafeed | cnpg-prod  | commafeed-db-clean     |
-| wallabag    | wallabag      | wallabag  | cnpg-prod  | wallabag-db-clean      |
-| n8n         | n8n           | n8n       | cnpg-prod  | n8n-db-clean           |
-| listmonk    | listmonk      | listmonk  | cnpg-prod  | listmonk-db-clean      |
+| Application | Database Name | User      | Namespace | Backup Container   |
+| ----------- | ------------- | --------- | --------- | ------------------ |
+| linkding    | linkding      | linkding  | cnpg-prod | linkding-db-clean  |
+| commafeed   | commafeed     | commafeed | cnpg-prod | commafeed-db-clean |
+| wallabag    | wallabag      | wallabag  | cnpg-prod | wallabag-db-clean  |
+| n8n         | n8n           | n8n       | cnpg-prod | n8n-db-clean       |
+| listmonk    | listmonk      | listmonk  | cnpg-prod | listmonk-db-clean  |
 
 ---
 
@@ -453,6 +453,7 @@ echo "Restore test complete for ${APP_NAME}"
 **Cause**: Storage path contamination or existing cluster in recovery state
 
 **Solution**:
+
 ```bash
 # Use fresh `-clean` storage paths
 # Verify destinationPath uses correct container
@@ -466,6 +467,7 @@ kubectl get cluster <name> -n cnpg-prod -o yaml | grep destinationPath
 **Cause**: Invalid Azure credentials or SAS token expired
 
 **Solution**:
+
 ```bash
 # Check external secret sync status
 kubectl describe externalsecret <app>-db-storage -n cnpg-prod
@@ -482,6 +484,7 @@ kubectl rollout restart cluster <app>-db-cnpg-v1 -n cnpg-prod
 **Cause**: Network connectivity, large backup size, or missing WAL files
 
 **Solution**:
+
 ```bash
 # Check restore pod logs
 kubectl logs <app>-db-cnpg-v1-restore-1-full-recovery-* -n cnpg-prod
@@ -499,6 +502,7 @@ kubectl exec <app>-db-cnpg-v1-restore-1 -n cnpg-prod -- \
 **Cause**: Database credentials mismatch or service endpoint incorrect
 
 **Solution**:
+
 ```bash
 # Verify database user exists
 kubectl exec <app>-db-cnpg-v1-restore-1 -n cnpg-prod -- \
@@ -538,12 +542,12 @@ kubectl get backups -n cnpg-prod | grep Failed | awk '{print $1}' | xargs kubect
 
 ## Recovery Time & Point Objectives
 
-| Metric | Target | Typical |
-|--------|--------|---------|
-| **RTO** (Recovery Time Objective) | < 10 min | 3-5 min |
-| **RPO** (Recovery Point Objective) | < 5 min | 1-5 min |
-| **Backup Frequency** | Daily | 01:00 UTC |
-| **WAL Archive Frequency** | Continuous | Every 5 min |
+| Metric                             | Target     | Typical     |
+| ---------------------------------- | ---------- | ----------- |
+| **RTO** (Recovery Time Objective)  | < 10 min   | 3-5 min     |
+| **RPO** (Recovery Point Objective) | < 5 min    | 1-5 min     |
+| **Backup Frequency**               | Daily      | 01:00 UTC   |
+| **WAL Archive Frequency**          | Continuous | Every 5 min |
 
 ---
 

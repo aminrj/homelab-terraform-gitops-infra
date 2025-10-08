@@ -67,3 +67,6 @@ spec:
               value: "8082"
             - name: QUARKUS_HTTP_HOST
               value: "0.0.0.0"
+            - name: COMMAFEED_FEVER_ENABLED
+              value: "true"
+
