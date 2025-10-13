@@ -9,6 +9,7 @@ metadata:
     #TODO: hide the ip like a secret
     # external-dns.alpha.kubernetes.io/target: "90.129.244.3"
     external-dns.alpha.kubernetes.io/hostname: listmonk.lab.aminrj.com
+    external-dns.alpha.kubernetes.io/enabled: "true"
 spec:
   ingressClassName: nginx
   tls:

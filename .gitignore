@@ -18,3 +18,5 @@ environments/dev/.terraform.tfstate.lock.info
 crash.log
 *.tfstate*
 .terraform/
+environments/prod/terraform.tfvars
+environments/shared/terraform.tfvars

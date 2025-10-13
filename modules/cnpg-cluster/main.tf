@@ -18,11 +18,13 @@ terraform {
 
 resource "kubernetes_namespace" "cnpg" {
   metadata {
-    name = "cnpg-dev"
+    name = var.namespace
   }
 }
 
 resource "kubectl_manifest" "cnpg_cluster" {
+  depends_on = [kubernetes_namespace.cnpg]
+
   yaml_body = templatefile("${path.module}/cluster.yaml.tpl", {
     pg_cluster_name        = var.pg_cluster_name
     pg_namespace           = var.namespace

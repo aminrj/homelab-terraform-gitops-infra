@@ -10,6 +10,7 @@ spec:
 
   storage:
     size: 15Gi
+    storageClass: local-path
 
  # Enhanced monitoring configuration
   monitoring:
@@ -64,5 +65,4 @@ spec:
       data:
         compression: gzip
     retentionPolicy: 7d
-
 

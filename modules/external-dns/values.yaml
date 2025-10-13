@@ -6,7 +6,7 @@ env:
     valueFrom:
       secretKeyRef:
         name: cloudflare-api-key
-        key: apiKey
+        key: apiToken
 
 logLevel: debug
 

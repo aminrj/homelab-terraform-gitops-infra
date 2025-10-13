@@ -8,6 +8,7 @@ prometheus:
     storageSpec:
       volumeClaimTemplate:
         spec:
+          storageClassName: local-path
           accessModes: ["ReadWriteOnce"]
           resources:
             requests:
@@ -35,6 +36,7 @@ grafana:
     accessModes:
       - ReadWriteOnce
     size: 10Gi
+    storageClassName: local-path
     
   # Set admin password (change this!)
   adminPassword: your-secure-password-here
@@ -63,7 +65,7 @@ alertmanager:
     storage:
       volumeClaimTemplate:
         spec:
-          storageClassName: microceph-rbd
+          storageClassName: local-path
           accessModes: ["ReadWriteOnce"]
           resources:
             requests:
