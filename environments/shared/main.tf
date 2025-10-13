@@ -46,6 +46,14 @@ module "kubernetes" {
   kubeconfig  = var.kubeconfig
 }
 
+module "priority_classes" {
+  source = "../../modules/priority-classes"
+
+  depends_on = [
+    module.kubernetes
+  ]
+}
+
 # MetalLB for LoadBalancer services - depends on kubernetes being ready
 module "metallb" {
   source                = "../../modules/metallb"
@@ -53,7 +61,8 @@ module "metallb" {
   metallb_address_range = var.metallb_address_range
 
   depends_on = [
-    module.kubernetes
+    module.kubernetes,
+    module.priority_classes
   ]
 }
 
@@ -107,7 +116,8 @@ module "prometheus-stack" {
 
   depends_on = [
     module.kubernetes,
-    module.metallb
+    module.metallb,
+    module.priority_classes
   ]
 }
 
@@ -135,7 +145,8 @@ module "cnpg_operator" {
 
   depends_on = [
     module.kubernetes,
-    module.prometheus-stack
+    module.prometheus-stack,
+    module.priority_classes
   ]
 }
 
@@ -162,4 +173,3 @@ module "argocd_infrastructure" {
     module.argocd
   ]
 }
-

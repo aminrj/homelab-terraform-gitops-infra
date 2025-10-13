@@ -29,3 +29,9 @@ variable "slack_webhook_url" {
   description = "Slack Webhook url for alert manager"
   type        = string
 }
+
+variable "priority_class_name" {
+  description = "PriorityClass to assign to monitoring workloads"
+  type        = string
+  default     = "infra-critical"
+}

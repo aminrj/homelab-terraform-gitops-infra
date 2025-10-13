@@ -1,5 +1,6 @@
 prometheus:
   prometheusSpec:
+    priorityClassName: "${priority_class_name}"
     # CRITICAL: Prevent storage exhaustion with multiple safety limits
     retention: "7d"                    # Time-based retention: 7 days max
     retentionSize: "15GB"              # Size-based retention: 15GB max (75% of 20GB)
@@ -54,6 +55,7 @@ prometheus:
     serviceMonitorSelector: {}
 
 grafana:
+  priorityClassName: "${priority_class_name}"
   service:
     type: LoadBalancer
     loadBalancerIP: "10.0.30.203"
@@ -71,6 +73,7 @@ grafana:
 
 alertmanager:
   alertmanagerSpec:
+    priorityClassName: "${priority_class_name}"
     storage:
       volumeClaimTemplate:
         spec:

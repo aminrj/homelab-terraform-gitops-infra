@@ -4,6 +4,7 @@
 # Prometheus Configuration
 prometheus:
   prometheusSpec:
+    priorityClassName: infra-critical
     # Enable persistent storage for Prometheus
     storageSpec:
       volumeClaimTemplate:
@@ -29,6 +30,7 @@ prometheus:
 
 # Grafana Configuration  
 grafana:
+  priorityClassName: infra-critical
   # Enable persistent storage for Grafana
   persistence:
     type: pvc
@@ -61,6 +63,7 @@ grafana:
 # AlertManager Configuration
 alertmanager:
   alertmanagerSpec:
+    priorityClassName: infra-critical
     # Enable persistent storage for AlertManager
     storage:
       volumeClaimTemplate:

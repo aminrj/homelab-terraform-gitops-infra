@@ -51,6 +51,10 @@ resource "helm_release" "metallb" {
   namespace        = "metallb-system"
   create_namespace = true
   wait             = true
+
+  values = [
+    file("${path.module}/values.yaml")
+  ]
 }
 
 # Wait for MetalLB CRDs to be installed
