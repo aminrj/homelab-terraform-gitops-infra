@@ -45,7 +45,7 @@ Azure Blob Storage
 | linkding    | linkding      | linkding  | cnpg-prod | linkding-db-clean  |
 | commafeed   | commafeed     | commafeed | cnpg-prod | commafeed-db-clean |
 | wallabag    | wallabag      | wallabag  | cnpg-prod | wallabag-db-clean  |
-| n8n         | n8n           | n8n       | cnpg-prod | n8n-db-clean       |
+| n8n         | n8n           | n8n       | cnpg-prod | n8n-db-restore-new |
 | listmonk    | listmonk      | listmonk  | cnpg-prod | listmonk-db-clean  |
 
 ---
@@ -209,6 +209,12 @@ kubectl get pods -n cnpg-prod | grep restore
 # Check restore logs
 kubectl logs {app-name}-db-cnpg-v1-restore-1-full-recovery-* -n cnpg-prod -f
 ```
+
+> ⚠️ **Check the backup container path before restoring**  
+> Look up the current production cluster to confirm the correct `destinationPath`.  
+> For example, `n8n` stores its backups in `https://homelabstorageaccntprod.blob.core.windows.net/n8n-db-restore-new`
+> instead of the default `{app-name}-db-clean`. Run  
+> `kubectl get cluster <cluster-name> -n cnpg-prod -o yaml | grep -n destinationPath` to verify.
 
 #### Step 3: Verify Restore Success
 
@@ -407,6 +413,76 @@ spec:
 EOF
 
 kubectl apply -f restore-commafeed.yaml
+```
+
+### n8n Restore (validated)
+
+```bash
+# n8n database details
+# Database: n8n, User: n8n
+# Production backups live in the n8n-db-restore-new container.
+
+cat > restore-n8n.yaml <<'EOF'
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: n8n-db-cnpg-v1-restore
+  namespace: cnpg-prod
+spec:
+  description: Restore of n8n database
+  imageName: ghcr.io/cloudnative-pg/postgresql:16.6
+  instances: 1
+
+  storage:
+    size: 15Gi
+    storageClass: local-path
+
+  resources:
+    requests:
+      memory: 600Mi
+      cpu: 100m
+    limits:
+      memory: 1Gi
+      cpu: 500m
+
+  bootstrap:
+    recovery:
+      source: clusterBackup
+      database: n8n
+      owner: n8n
+      secret:
+        name: n8n-db-creds
+
+  externalClusters:
+    - name: clusterBackup
+      barmanObjectStore:
+        destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/n8n-db-restore-new
+        endpointURL: https://homelabstorageaccntprod.blob.core.windows.net
+        serverName: n8n-db-cnpg-v3
+        azureCredentials:
+          storageAccount:
+            name: n8n-db-storage
+            key: container-name
+          storageSasToken:
+            name: n8n-db-storage
+            key: blob-sas
+        wal:
+          compression: gzip
+EOF
+
+kubectl apply -f restore-n8n.yaml
+kubectl wait --for=condition=Ready pod -l cnpg.io/cluster=n8n-db-cnpg-v1-restore -n cnpg-prod --timeout=5m
+
+# Validate restored data matches production
+kubectl exec -n cnpg-prod n8n-db-cnpg-v1-restore-1 -- \
+  psql -U postgres -d n8n -c 'SELECT COUNT(*) AS workflows FROM "workflow_entity";'
+kubectl exec -n cnpg-prod n8n-db-cnpg-v1-restore-1 -- \
+  psql -U postgres -d n8n -c 'SELECT COUNT(*) AS credentials FROM "credentials_entity";'
+
+# (Latest test on 2025-10-13 returned 7 workflows and 5 credentials.)
+
+# Clean up when done
+kubectl delete cluster n8n-db-cnpg-v1-restore -n cnpg-prod
 ```
 
 ---
