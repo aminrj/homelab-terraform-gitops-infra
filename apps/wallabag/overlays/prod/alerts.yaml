@@ -1,0 +1,27 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: wallabag-alerts
+  namespace: wallabag-prod
+  labels:
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: wallabag.rules
+      rules:
+        - alert: WallabagDeploymentUnavailable
+          expr: (kube_deployment_spec_replicas{namespace="wallabag-prod",deployment="wallabag"} - kube_deployment_status_replicas_available{namespace="wallabag-prod",deployment="wallabag"}) > 0
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Wallabag deployment has unavailable replicas"
+            description: "Wallabag deployment is missing ready replicas for more than 2 minutes."
+        - alert: WallabagPodCrashLooping
+          expr: increase(kube_pod_container_status_restarts_total{namespace="wallabag-prod",container="wallabag"}[5m]) > 3
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Wallabag container restarting frequently"
+            description: "Container {{ $labels.container }} in pod {{ $labels.pod }} has restarted {{ $value }} times in the last 5 minutes."

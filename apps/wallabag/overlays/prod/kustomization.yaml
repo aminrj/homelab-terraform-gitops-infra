@@ -3,6 +3,7 @@ resources:
   - secrets.yaml
   - ingress.yaml
   - namespace.yaml
+  - alerts.yaml
 
 namespace: wallabag-prod
 

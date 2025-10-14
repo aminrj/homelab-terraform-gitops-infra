@@ -1,0 +1,27 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: n8n-alerts
+  namespace: n8n-prod
+  labels:
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: n8n.rules
+      rules:
+        - alert: N8nDeploymentUnavailable
+          expr: (kube_deployment_spec_replicas{namespace="n8n-prod",deployment="n8n"} - kube_deployment_status_replicas_available{namespace="n8n-prod",deployment="n8n"}) > 0
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "n8n deployment has unavailable replicas"
+            description: "n8n deployment is missing ready replicas for more than 2 minutes."
+        - alert: N8nPodCrashLooping
+          expr: increase(kube_pod_container_status_restarts_total{namespace="n8n-prod",container="n8n"}[5m]) > 3
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "n8n container restarting frequently"
+            description: "Container {{ $labels.container }} in pod {{ $labels.pod }} has restarted {{ $value }} times in the last 5 minutes."

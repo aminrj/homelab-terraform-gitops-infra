@@ -1,0 +1,27 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: listmonk-alerts
+  namespace: listmonk-prod
+  labels:
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: listmonk.rules
+      rules:
+        - alert: ListmonkDeploymentUnavailable
+          expr: (kube_deployment_spec_replicas{namespace="listmonk-prod",deployment="listmonk"} - kube_deployment_status_replicas_available{namespace="listmonk-prod",deployment="listmonk"}) > 0
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Listmonk deployment has unavailable replicas"
+            description: "Listmonk deployment is missing ready replicas for more than 2 minutes."
+        - alert: ListmonkPodCrashLooping
+          expr: increase(kube_pod_container_status_restarts_total{namespace="listmonk-prod",container="listmonk"}[5m]) > 3
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Listmonk container restarting frequently"
+            description: "Container {{ $labels.container }} in pod {{ $labels.pod }} has restarted {{ $value }} times in the last 5 minutes."

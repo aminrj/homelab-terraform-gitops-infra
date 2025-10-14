@@ -1,0 +1,27 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: commafeed-alerts
+  namespace: commafeed-prod
+  labels:
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: commafeed.rules
+      rules:
+        - alert: CommafeedDeploymentUnavailable
+          expr: (kube_deployment_spec_replicas{namespace="commafeed-prod",deployment="commafeed"} - kube_deployment_status_replicas_available{namespace="commafeed-prod",deployment="commafeed"}) > 0
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Commafeed deployment has unavailable replicas"
+            description: "Commafeed pods are not all ready. Desired: {{ $labels.deployment }} has missing replicas for more than 2 minutes."
+        - alert: CommafeedPodCrashLooping
+          expr: increase(kube_pod_container_status_restarts_total{namespace="commafeed-prod",container="commafeed"}[5m]) > 3
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Commafeed container restarting frequently"
+            description: "Container {{ $labels.container }} in pod {{ $labels.pod }} has restarted {{ $value }} times in the last 5 minutes."
