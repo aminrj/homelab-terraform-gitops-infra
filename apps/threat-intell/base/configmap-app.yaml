@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: threat-intel-app-config
+data:
+  DB_HOST: "pg-prod-rw.cnpg-prod.svc.cluster.local"
+  DB_PORT: "5432"
+  DB_NAME: "threatintel"
+  EXPORT_CONTAINER: "threatintel-data"
+  EXPORT_PREFIX: "threat-intel/exports"
+  EXPORT_RETENTION_DAYS: "30"
+  GRAFANA_FOLDER: "Threat Intel"

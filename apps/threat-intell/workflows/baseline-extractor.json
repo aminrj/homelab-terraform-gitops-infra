@@ -1,0 +1,208 @@
+{
+  "name": "Threat Intel Baseline Extractor",
+  "active": false,
+  "nodes": [
+    {
+      "id": "cron",
+      "name": "Nightly 01:30 UTC",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [
+        200,
+        200
+      ],
+      "parameters": {
+        "triggerTimes": [
+          {
+            "hour": 1,
+            "minute": 30
+          }
+        ],
+        "timezone": "UTC"
+      }
+    },
+    {
+      "id": "fetchDocs",
+      "name": "Fetch Fresh Docs",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [
+        400,
+        200
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id, source, title, raw_text\nFROM threatintel.raw_doc rd\nWHERE rd.collected_at > NOW() - INTERVAL '2 days'\n  AND NOT EXISTS (\n    SELECT 1 FROM threatintel.ioc i\n    WHERE i.doc_id = rd.id AND i.extractor = 'baseline'\n  )\nLIMIT 250;"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2",
+          "name": "threat-intel-db"
+        }
+      }
+    },
+    {
+      "id": "splitDocs",
+      "name": "Split Docs",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 1,
+      "position": [
+        600,
+        200
+      ],
+      "parameters": {
+        "batchSize": 1
+      }
+    },
+    {
+      "id": "extractRegex",
+      "name": "Regex Extraction",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        800,
+        200
+      ],
+      "parameters": {
+        "functionCode": "const text = $json.raw_text || \"\";\nconst docId = $json.id;\n\nconst patterns = [\n  { type: \"ip\", regex: /\\b(?:\\d{1,3}\\.){3}\\d{1,3}\\b/g },\n  { type: \"domain\", regex: /\\b[a-z0-9][a-z0-9\\-]{1,253}\\.[a-z]{2,10}\\b/gi },\n  { type: \"url\", regex: /https?:\\/\\/[\\w\\-._~:?#@!$&'()*+,;=%/]+/gi },\n  { type: \"hash\", regex: /\\b[a-f0-9]{32}\\b|\\b[a-f0-9]{40}\\b|\\b[a-f0-9]{64}\\b/gi },\n  { type: \"cve\", regex: /CVE-\\d{4}-\\d{4,7}/gi }\n];\n\nconst matches = [];\nfor (const pattern of patterns) {\n  const seen = new Set();\n  const found = text.match(pattern.regex) || [];\n  for (const value of found) {\n    const normalized = value.trim();\n    if (!seen.has(normalized)) {\n      seen.add(normalized);\n      matches.push({\n        doc_id: docId,\n        extractor: 'baseline',\n        ioc_type: pattern.type,\n        value: normalized,\n        evidence_span: normalized,\n        confidence: pattern.type === 'cve' ? 0.95 : 0.70\n      });\n    }\n  }\n}\n\nreturn matches.map(match => ({ json: match }));"
+      }
+    },
+    {
+      "id": "splitIocs",
+      "name": "Split IOCs",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 1,
+      "position": [
+        1000,
+        200
+      ],
+      "parameters": {
+        "batchSize": 50
+      }
+    },
+    {
+      "id": "insertIoc",
+      "name": "Insert IOC Batch",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        200
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO threatintel.ioc (doc_id, extractor, ioc_type, value, evidence_span, confidence)\nVALUES (:={{$json.doc_id}}, 'baseline', :={{$json.ioc_type}}, :={{$json.value}}, :={{$json.evidence_span}}, :={{$json.confidence}})\nON CONFLICT (value, doc_id, extractor) DO UPDATE SET extracted_at = NOW();",
+        "additionalFields": {
+          "continueOnFail": true
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2",
+          "name": "threat-intel-db"
+        }
+      }
+    },
+    {
+      "id": "metric",
+      "name": "Record Metric",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        1400,
+        200
+      ],
+      "parameters": {
+        "url": "http://threat-intel-metrics.threat-intel.svc.cluster.local:9101/extractor",
+        "method": "POST",
+        "jsonParameters": true,
+        "bodyParametersJson": "{\"extractor\":\"baseline\",\"count\":{{$items().length}}}"
+      }
+    }
+  ],
+  "connections": {
+    "Nightly 01:30 UTC": {
+      "main": [
+        [
+          {
+            "node": "Fetch Fresh Docs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Fresh Docs": {
+      "main": [
+        [
+          {
+            "node": "Split Docs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Docs": {
+      "main": [
+        [
+          {
+            "node": "Regex Extraction",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Split Docs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Regex Extraction": {
+      "main": [
+        [
+          {
+            "node": "Split IOCs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split IOCs": {
+      "main": [
+        [
+          {
+            "node": "Insert IOC Batch",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Split IOCs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert IOC Batch": {
+      "main": [
+        [
+          {
+            "node": "Record Metric",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

@@ -1,0 +1,231 @@
+{
+  "name": "Threat Intel Validator & Export",
+  "active": false,
+  "nodes": [
+    {
+      "id": "cron",
+      "name": "Daily 05:00 UTC",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [
+        200,
+        200
+      ],
+      "parameters": {
+        "triggerTimes": [
+          {
+            "hour": 5,
+            "minute": 0
+          }
+        ],
+        "timezone": "UTC"
+      }
+    },
+    {
+      "id": "score",
+      "name": "Compute Scores",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [
+        400,
+        200
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH enriched AS (\n  SELECT i.id,\n         i.value,\n         i.ioc_type,\n         i.doc_id,\n         COALESCE(AVG(CASE WHEN e.validated THEN COALESCE(e.score, 0.8) ELSE 0.2 END), 0.2) AS composite_score,\n         BOOL_OR(e.validated) AS has_validation,\n         COUNT(DISTINCT e.provider) AS providers\n  FROM threatintel.ioc i\n  LEFT JOIN threatintel.enrichment e ON e.ioc_id = i.id\n  GROUP BY i.id\n)\nSELECT e.id, e.value, e.ioc_type, e.doc_id, e.composite_score, e.has_validation, e.providers\nFROM enriched e\nWHERE e.has_validation IS TRUE;"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2",
+          "name": "threat-intel-db"
+        }
+      }
+    },
+    {
+      "id": "prepareCandidates",
+      "name": "Prepare Candidates",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        600,
+        200
+      ],
+      "parameters": {
+        "functionCode": "return items.map(item => {\n  const score = item.json.composite_score;\n  const status = score >= 0.75 ? 'validated' : (score >= 0.5 ? 'review' : 'discard');\n  return {\n    json: {\n      ioc_id: item.json.id,\n      composite_score: score,\n      status,\n      enrichment_summary: {\n        providers: item.json.providers,\n        score,\n        type: item.json.ioc_type\n      }\n    }\n  };\n});"
+      }
+    },
+    {
+      "id": "upsertFinal",
+      "name": "Upsert Final",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [
+        800,
+        200
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO threatintel.final_candidate (ioc_id, composite_score, status, enrichment_summary)\nVALUES (:={{$json.ioc_id}}, :={{$json.composite_score}}, :={{$json.status}}, :={{JSON.stringify($json.enrichment_summary)}}::jsonb)\nON CONFLICT (ioc_id)\nDO UPDATE SET\n  composite_score = EXCLUDED.composite_score,\n  status = EXCLUDED.status,\n  enrichment_summary = EXCLUDED.enrichment_summary,\n  updated_at = NOW();"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2",
+          "name": "threat-intel-db"
+        }
+      }
+    },
+    {
+      "id": "selectExports",
+      "name": "Select For Export",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [
+        1000,
+        200
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT fc.ioc_id, i.value, i.ioc_type, fc.composite_score, fc.status, fc.updated_at\nFROM threatintel.final_candidate fc\nJOIN threatintel.ioc i ON i.id = fc.ioc_id\nWHERE fc.updated_at > NOW() - INTERVAL '1 day'\nORDER BY fc.composite_score DESC;"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "2",
+          "name": "threat-intel-db"
+        }
+      }
+    },
+    {
+      "id": "toCsv",
+      "name": "To CSV",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        200
+      ],
+      "parameters": {
+        "functionCode": "const header = ['ioc_id','value','type','score','status','updated_at'];\nconst rows = items.map(item => [\n  item.json.ioc_id,\n  item.json.value,\n  item.json.ioc_type,\n  item.json.composite_score,\n  item.json.status,\n  item.json.updated_at\n]);\nconst csv = [header.join(','), ...rows.map(row => row.map(col => `\"${String(col).replace(/\"/g, '\"\"')}\"`).join(','))].join('\\n');\nreturn [{ json: { csv } }];"
+      }
+    },
+    {
+      "id": "export",
+      "name": "Upload Export",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        1400,
+        200
+      ],
+      "parameters": {
+        "url": "http://threat-intel-exporter.threat-intel.svc.cluster.local/v1/export",
+        "method": "POST",
+        "jsonParameters": true,
+        "bodyParametersJson": "{\"filename\":\"validated-iocs-{{$now}}.csv\",\"body\":\"{{$json.csv}}\"}"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "7",
+          "name": "threat-intel-exporter"
+        }
+      }
+    },
+    {
+      "id": "metrics",
+      "name": "Emit Validation Metric",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        1600,
+        200
+      ],
+      "parameters": {
+        "url": "http://threat-intel-metrics.threat-intel.svc.cluster.local:9101/validator",
+        "method": "POST",
+        "jsonParameters": true,
+        "bodyParametersJson": "{\"validated\":{{$items().length}}}"
+      }
+    }
+  ],
+  "connections": {
+    "Daily 05:00 UTC": {
+      "main": [
+        [
+          {
+            "node": "Compute Scores",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compute Scores": {
+      "main": [
+        [
+          {
+            "node": "Prepare Candidates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Candidates": {
+      "main": [
+        [
+          {
+            "node": "Upsert Final",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert Final": {
+      "main": [
+        [
+          {
+            "node": "Select For Export",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select For Export": {
+      "main": [
+        [
+          {
+            "node": "To CSV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "To CSV": {
+      "main": [
+        [
+          {
+            "node": "Upload Export",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Export": {
+      "main": [
+        [
+          {
+            "node": "Emit Validation Metric",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

@@ -17,21 +17,22 @@ provider "kubernetes" {
 }
 
 module "azure_keyvault" {
-  source              = "../../modules/azure-keyvault"
-  app_name            = var.app_name
-  key_vault_name      = var.key_vault_name
-  location            = var.location
-  resource_group_name = var.resource_group_name
+  source               = "../../modules/azure-keyvault"
+  app_name             = var.app_name
+  key_vault_name       = var.key_vault_name
+  location             = var.location
+  resource_group_name  = var.resource_group_name
   storage_account_name = var.storage_account_name
 }
 
 locals {
   apps = {
-    commafeed = { container_name = "commafeed-db-clean" }
-    linkding  = { container_name = "linkding-db-clean" }
-    wallabag  = { container_name = "wallabag-db-clean" }
-    n8n       = { container_name = "n8n-db-clean" }
-    listmonk  = { container_name = "listmonk-db-clean" }
+    commafeed    = { container_name = "commafeed-db-clean" }
+    linkding     = { container_name = "linkding-db-clean" }
+    wallabag     = { container_name = "wallabag-db-clean" }
+    n8n          = { container_name = "n8n-db-clean" }
+    listmonk     = { container_name = "listmonk-db-clean" }
+    threat_intel = { container_name = "threatintel-data" }
   }
 }
 
@@ -66,7 +67,7 @@ module "commafeed_secrets" {
 
   static_secrets = {
     "db-username" = "commafeed"
-    "db-name" = "commafeed"
+    "db-name"     = "commafeed"
   }
 
   random_secrets = [
@@ -87,7 +88,7 @@ module "n8n_secrets" {
 
   static_secrets = {
     "db-username" = "n8n"
-    "db-name" = "n8n"
+    "db-name"     = "n8n"
   }
 
   random_secrets = [
@@ -107,7 +108,7 @@ module "listmonk_secrets" {
 
   static_secrets = {
     "db-username" = "listmonk"
-    "db-name" = "listmonk"
+    "db-name"     = "listmonk"
   }
 
   random_secrets = [
@@ -126,12 +127,37 @@ module "wallabag_secrets" {
 
   static_secrets = {
     "db-username" = "wallabag"
-    "db-name" = "wallabag"
+    "db-name"     = "wallabag"
   }
 
   random_secrets = [
     "db-password",
     # "api-secret"
+  ]
+
+  depends_on = [
+    module.azure_keyvault
+  ]
+}
+
+module "threat_intel_secrets" {
+  source       = "../../modules/azure-secrets"
+  key_vault_id = module.azure_keyvault.key_vault_id
+  app_name     = "threat-intel"
+
+  static_secrets = {
+    "db-username"       = "threatintel"
+    "db-name"           = "threatintel"
+    "vt-api-key"        = ""
+    "shodan-api-key"    = ""
+    "abuseipdb-api-key" = ""
+    "openai-api-key"    = ""
+    "ollama-host"       = "http://ollama-llama3.ollama.svc.cluster.local:11434"
+    "azure-container"   = "threatintel-data"
+  }
+
+  random_secrets = [
+    "db-password"
   ]
 
   depends_on = [

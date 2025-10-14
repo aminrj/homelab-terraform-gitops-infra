@@ -63,6 +63,7 @@ kubectl create secret generic azure-creds -n external-secrets \
 | **wallabag** | Read-it-later service | PostgreSQL | prod |
 | **n8n** | Workflow automation | PostgreSQL | prod |
 | **listmonk** | Newsletter/mailing | PostgreSQL | prod |
+| **threat-intel** | Threat intelligence automation & research pipeline | PostgreSQL | prod |
 
 ### Backup System
 

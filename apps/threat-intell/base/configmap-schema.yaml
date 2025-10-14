@@ -1,0 +1,97 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: threat-intel-schema
+data:
+  schema.sql: |
+    BEGIN;
+
+    CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+    CREATE SCHEMA IF NOT EXISTS threatintel AUTHORIZATION CURRENT_USER;
+
+    CREATE TABLE IF NOT EXISTS threatintel.raw_doc (
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+      source TEXT NOT NULL,
+      url TEXT,
+      title TEXT,
+      raw_text TEXT NOT NULL,
+      content_hash TEXT,
+      collected_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS threatintel.ioc (
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+      doc_id UUID REFERENCES threatintel.raw_doc(id) ON DELETE CASCADE,
+      extractor TEXT NOT NULL,
+      ioc_type TEXT NOT NULL,
+      value TEXT NOT NULL,
+      evidence_span TEXT,
+      confidence NUMERIC(5,2),
+      extracted_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS threatintel.enrichment (
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+      ioc_id UUID REFERENCES threatintel.ioc(id) ON DELETE CASCADE,
+      provider TEXT NOT NULL,
+      result JSONB,
+      validated BOOLEAN DEFAULT FALSE,
+      score NUMERIC(5,2),
+      checked_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS threatintel.labels (
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+      ioc_id UUID REFERENCES threatintel.ioc(id) ON DELETE CASCADE,
+      annotator TEXT NOT NULL,
+      label TEXT NOT NULL,
+      confidence INT CHECK (confidence BETWEEN 0 AND 100),
+      notes TEXT,
+      labeled_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS threatintel.final_candidate (
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+      ioc_id UUID UNIQUE REFERENCES threatintel.ioc(id) ON DELETE CASCADE,
+      composite_score NUMERIC(5,2) NOT NULL,
+      status TEXT DEFAULT 'pending',
+      enrichment_summary JSONB,
+      exported BOOLEAN DEFAULT FALSE,
+      last_reviewed_at TIMESTAMP WITH TIME ZONE,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+      updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    );
+
+    CREATE OR REPLACE FUNCTION threatintel.touch_updated_at()
+    RETURNS TRIGGER AS $$
+    BEGIN
+      NEW.updated_at = NOW();
+      RETURN NEW;
+    END;
+    $$ LANGUAGE plpgsql;
+
+    DO $$
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1
+        FROM pg_trigger
+        WHERE tgname = 'trigger_touch_final_candidate'
+      ) THEN
+        CREATE TRIGGER trigger_touch_final_candidate
+        BEFORE UPDATE ON threatintel.final_candidate
+        FOR EACH ROW
+        EXECUTE FUNCTION threatintel.touch_updated_at();
+      END IF;
+    END;
+    $$;
+
+    CREATE INDEX IF NOT EXISTS idx_threatintel_ioc_value ON threatintel.ioc(value);
+    CREATE INDEX IF NOT EXISTS idx_threatintel_ioc_type ON threatintel.ioc(ioc_type);
+    CREATE INDEX IF NOT EXISTS idx_threatintel_enrichment_provider ON threatintel.enrichment(provider);
+    CREATE INDEX IF NOT EXISTS idx_threatintel_enrichment_validated ON threatintel.enrichment(validated);
+    CREATE INDEX IF NOT EXISTS idx_threatintel_labels_label ON threatintel.labels(label);
+    CREATE INDEX IF NOT EXISTS idx_threatintel_labels_ioc_id ON threatintel.labels(ioc_id);
+    CREATE INDEX IF NOT EXISTS idx_threatintel_raw_doc_source ON threatintel.raw_doc(source);
+
+    COMMIT;

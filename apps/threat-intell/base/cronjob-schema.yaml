@@ -1,0 +1,62 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: threat-intel-schema-reconcile
+spec:
+  schedule: "0 */6 * * *"
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: schema-reconcile
+              image: ghcr.io/cloudnative-pg/postgresql:16.6
+              imagePullPolicy: IfNotPresent
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  echo "[`date`] Ensuring threatintel schema exists";
+                  psql --file /sql/schema.sql
+              env:
+                - name: PGHOST
+                  valueFrom:
+                    configMapKeyRef:
+                      name: threat-intel-app-config
+                      key: DB_HOST
+                - name: PGPORT
+                  valueFrom:
+                    configMapKeyRef:
+                      name: threat-intel-app-config
+                      key: DB_PORT
+                - name: PGDATABASE
+                  valueFrom:
+                    secretKeyRef:
+                      name: threat-intel-db-creds
+                      key: database
+                - name: PGUSER
+                  valueFrom:
+                    secretKeyRef:
+                      name: threat-intel-db-creds
+                      key: username
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: threat-intel-db-creds
+                      key: password
+              volumeMounts:
+                - name: schema
+                  mountPath: /sql
+                  readOnly: true
+          volumes:
+            - name: schema
+              configMap:
+                name: threat-intel-schema
+                items:
+                  - key: schema.sql
+                    path: schema.sql
