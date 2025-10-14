@@ -6,8 +6,7 @@ metadata:
     nginx.ingress.kubernetes.io/rewrite-target: /
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    #TODO: hide the ip like a secret
-    # external-dns.alpha.kubernetes.io/target: "90.129.244.3"
+    external-dns.alpha.kubernetes.io/target: "90.129.244.3"
     external-dns.alpha.kubernetes.io/hostname: wallabag.lab.aminrj.com
     external-dns.alpha.kubernetes.io/enabled: "true"
 spec:
