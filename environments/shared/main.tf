@@ -86,7 +86,7 @@ module "cert-manager" {
   ]
 }
 
-# External DNS - needs cert-manager for TLS and metallb for loadbalancer
+# External DNS - keeps Cloudflare DNS in sync with ingresses
 module "external-dns" {
   source               = "../../modules/external-dns"
   kubeconfig           = var.kubeconfig

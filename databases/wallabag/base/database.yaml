@@ -40,15 +40,10 @@ spec:
       app: wallabag-database
       policy-type: "database"
 
-  # Fixed bootstrap for recovery
-  # bootstrap:
-    # recovery:
-    #   source: "clusterBackup"
-      # recoveryTarget:
-      #   backupID: "20250625T160301"  # The specific backup you want
-
+  # Bootstrap from the latest Barman backup instead of an empty initdb
   bootstrap:
-    initdb:
+    recovery:
+      source: clusterBackup
       database: wallabag
       owner: wallabag
       secret:
@@ -69,3 +64,19 @@ spec:
       data:
         compression: gzip
     retentionPolicy: 7d
+
+  externalClusters:
+    - name: clusterBackup
+      barmanObjectStore:
+        destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/wallabag-db-clean
+        endpointURL: https://homelabstorageaccntprod.blob.core.windows.net
+        serverName: wallabag-db-cnpg-v1
+        azureCredentials:
+          storageAccount:
+            name: wallabag-db-storage
+            key: container-name
+          storageSasToken:
+            name: wallabag-db-storage
+            key: blob-sas
+        wal:
+          compression: gzip

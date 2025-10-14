@@ -40,15 +40,14 @@ spec:
       app: listmonk-database
       policy-type: "database"
 
-  # Fixed bootstrap for recovery
+  # Bootstrap from the latest Barman backup instead of an empty initdb
   bootstrap:
-    initdb:
+    recovery:
+      source: clusterBackup
       database: listmonk
       owner: listmonk
       secret:
         name: listmonk-db-creds
-    # recovery:
-    #   source: "clusterBackup"
 
   backup:
     barmanObjectStore:
@@ -66,3 +65,18 @@ spec:
         compression: gzip
     retentionPolicy: 7d
 
+  externalClusters:
+    - name: clusterBackup
+      barmanObjectStore:
+        destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/listmonk-db-clean
+        endpointURL: https://homelabstorageaccntprod.blob.core.windows.net
+        serverName: listmonk-db-cnpg-v1
+        azureCredentials:
+          storageAccount:
+            name: listmonk-db-storage
+            key: container-name
+          storageSasToken:
+            name: listmonk-db-storage
+            key: blob-sas
+        wal:
+          compression: gzip
