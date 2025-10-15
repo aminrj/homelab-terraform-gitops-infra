@@ -45,6 +45,14 @@ module "app_storage" {
   key_vault_id         = module.azure_keyvault.key_vault_id
 }
 
+module "threat_intel_db_storage" {
+  source               = "../../modules/azure-app-storage"
+  container_name       = "threat-intel-db-clean"
+  storage_account_name = module.azure_keyvault.storage_account_name
+  connection_string    = module.azure_keyvault.storage_connection_string
+  key_vault_id         = module.azure_keyvault.key_vault_id
+}
+
 module "linkding_secrets" {
   source       = "../../modules/azure-secrets"
   key_vault_id = module.azure_keyvault.key_vault_id
@@ -146,16 +154,8 @@ module "threat_intel_secrets" {
   app_name     = "threat-intel"
 
   static_secrets = {
-    "db-username"        = "threatintel"
-    "db-name"            = "threatintel"
-    "vt-api-key"         = ""
-    "shodan-api-key"     = ""
-    "abuseipdb-api-key"  = ""
-    "openai-api-key"     = ""
-    "ollama-host"        = "http://ollama-llama3.ollama.svc.cluster.local:11434"
-    "azure-container"    = "threatintel-data"
-    "superuser-username" = ""
-    "superuser-password" = ""
+    "db-username" = "threatintel"
+    "db-name"     = "threatintel"
   }
 
   random_secrets = [

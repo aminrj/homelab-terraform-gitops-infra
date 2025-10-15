@@ -1,0 +1,10 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: threat-intel-daily-backup
+spec:
+  schedule: "0 3 * * *"
+  backupOwnerReference: cluster
+  cluster:
+    name: threat-intel-db-cnpg-v1
+  suspend: false

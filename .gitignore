@@ -20,3 +20,4 @@ crash.log
 .terraform/
 environments/prod/terraform.tfvars
 environments/shared/terraform.tfvars
+**/.DS_Store

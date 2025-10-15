@@ -1,0 +1,52 @@
+# databases/threat-intell/base/database.yaml
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: threat-intel-db-cnpg-v1
+spec:
+  description: Postgres cluster for the threat intelligence application
+  imageName: ghcr.io/cloudnative-pg/postgresql:16.6
+  instances: 2
+
+  storage:
+    size: 10Gi
+    storageClass: local-path
+
+  monitoring:
+    enablePodMonitor: true
+
+  inheritedMetadata:
+    labels:
+      app: threat-intel-database
+      policy-type: database
+
+  resources:
+    requests:
+      memory: 600Mi
+      cpu: 100m
+    limits:
+      memory: 1Gi
+      cpu: 500m
+
+  bootstrap:
+    initdb:
+      database: threatintel
+      owner: threatintel
+      secret:
+        name: threat-intel-db-creds
+
+  backup:
+    barmanObjectStore:
+      destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/threat-intel-db-clean
+      azureCredentials:
+        storageAccount:
+          name: threat-intel-db-storage
+          key: container-name
+        storageSasToken:
+          name: threat-intel-db-storage
+          key: blob-sas
+      wal:
+        compression: gzip
+      data:
+        compression: gzip
+    retentionPolicy: 7d

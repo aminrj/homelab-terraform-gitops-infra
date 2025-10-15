@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: threat-intel-app-config
 data:
-  DB_HOST: "pg-prod-rw.cnpg-prod.svc.cluster.local"
+  DB_HOST: "threat-intel-db-cnpg-v1-rw.cnpg-prod.svc.cluster.local"
   DB_PORT: "5432"
   DB_NAME: "threatintel"
   EXPORT_CONTAINER: "threatintel-data"
