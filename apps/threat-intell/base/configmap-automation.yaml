@@ -1,0 +1,160 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: threat-intel-automation
+data:
+  server.py: |
+    import json
+    import logging
+    import threading
+    from http.server import BaseHTTPRequestHandler, HTTPServer
+    from urllib.parse import urlparse
+
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+
+    state = {
+        "collector": {},
+        "extractor": {"baseline": 0, "llm": 0},
+        "enrichment": 0,
+        "hallucinations": 0,
+        "exports": 0,
+    }
+    lock = threading.Lock()
+
+    class Handler(BaseHTTPRequestHandler):
+        server_version = "ThreatIntelAutomation/1.0"
+
+        def _set_json(self, code=200):
+            self.send_response(code)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+
+        def _set_text(self, code=200):
+            self.send_response(code)
+            self.send_header("Content-Type", "text/plain; version=0.0.4")
+            self.end_headers()
+
+        def do_POST(self):  # noqa: N802
+            parsed = urlparse(self.path)
+            length = int(self.headers.get("Content-Length", "0") or 0)
+            body = self.rfile.read(length) if length else b"{}"
+            payload = {}
+            if body:
+                try:
+                    payload = json.loads(body)
+                except json.JSONDecodeError:
+                    logging.warning("Invalid JSON received on %s", parsed.path)
+
+            if parsed.path == "/collector":
+                source = payload.get("source", "unknown")
+                with lock:
+                    state["collector"][source] = state["collector"].get(source, 0) + 1
+                logging.info("Collector hit: source=%s", source)
+                self._set_json()
+                self.wfile.write(json.dumps({"ok": True}).encode())
+            elif parsed.path == "/extractor":
+                extractor = payload.get("extractor", "unknown")
+                count = int(payload.get("count", 0))
+                hallucinations = int(payload.get("hallucinations", 0))
+                with lock:
+                    state["extractor"][extractor] = state["extractor"].get(extractor, 0) + count
+                    state["hallucinations"] += hallucinations
+                logging.info(
+                    "Extractor update: extractor=%s count=%s hallucinations=%s",
+                    extractor,
+                    count,
+                    hallucinations,
+                )
+                self._set_json()
+                self.wfile.write(json.dumps({"ok": True}).encode())
+            elif parsed.path == "/enrichment":
+                count = int(payload.get("count", 0))
+                with lock:
+                    state["enrichment"] += count
+                logging.info("Enrichment count incremented by %s", count)
+                self._set_json()
+                self.wfile.write(json.dumps({"ok": True}).encode())
+            elif parsed.path == "/validator":
+                validated = int(payload.get("validated", 0))
+                with lock:
+                    state["exports"] += validated
+                logging.info("Validator exported %s items", validated)
+                self._set_json()
+                self.wfile.write(json.dumps({"ok": True}).encode())
+            elif parsed.path == "/v1/enrich":
+                value = payload.get("inputs", [])
+                results = []
+                for item in value:
+                    results.append(
+                        {
+                            "ioc_id": item.get("id"),
+                            "provider": "placeholder",
+                            "validated": False,
+                            "score": 0.2,
+                            "result": {"message": "stub enrichment"},
+                        }
+                    )
+                self._set_json()
+                self.wfile.write(json.dumps({"results": results}).encode())
+            elif parsed.path == "/v1/export":
+                filename = payload.get("filename", "unknown")
+                logging.info("Received export %s (%s bytes)", filename, len(payload.get("body", "")))
+                self._set_json()
+                self.wfile.write(json.dumps({"ok": True}).encode())
+            else:
+                self._set_json(404)
+                self.wfile.write(json.dumps({"error": "Not found"}).encode())
+
+        def do_GET(self):  # noqa: N802
+            parsed = urlparse(self.path)
+            if parsed.path == "/healthz":
+                self._set_json()
+                self.wfile.write(json.dumps({"status": "ok"}).encode())
+            elif parsed.path == "/metrics":
+                with lock:
+                    lines = [
+                        "# HELP threatintel_collector_total Total documents ingested per source.",
+                        "# TYPE threatintel_collector_total counter",
+                    ]
+                    for source, count in state["collector"].items():
+                        lines.append(f"threatintel_collector_total{{source=\"{source}\"}} {count}")
+                    lines.extend(
+                        [
+                            "# HELP threatintel_extractor_total IOCs extracted per extractor.",
+                            "# TYPE threatintel_extractor_total counter",
+                        ]
+                    )
+                    for extractor, count in state["extractor"].items():
+                        lines.append(f"threatintel_extractor_total{{extractor=\"{extractor}\"}} {count}")
+                    lines.extend(
+                        [
+                            "# HELP threatintel_enrichment_total Successful enrichment calls.",
+                            "# TYPE threatintel_enrichment_total counter",
+                            f"threatintel_enrichment_total {state['enrichment']}",
+                            "# HELP threatintel_hallucinations_total Reported hallucinations from LLM.",
+                            "# TYPE threatintel_hallucinations_total counter",
+                            f"threatintel_hallucinations_total {state['hallucinations']}",
+                            "# HELP threatintel_exports_total Validated exports produced.",
+                            "# TYPE threatintel_exports_total counter",
+                            f"threatintel_exports_total {state['exports']}",
+                        ]
+                    )
+                self._set_text()
+                self.wfile.write("\n".join(lines).encode())
+            else:
+                self._set_json(404)
+                self.wfile.write(json.dumps({"error": "Not found"}).encode())
+
+        def log_message(self, format, *args):  # noqa: A003
+            logging.info("%s - %s", self.address_string(), format % args)
+
+    if __name__ == "__main__":
+        port = 9000
+        server = HTTPServer(("0.0.0.0", port), Handler)
+        logging.info("Starting automation helper on port %s", port)
+        try:
+            server.serve_forever()
+        except KeyboardInterrupt:
+            logging.info("Shutting down automation helper")
+        finally:
+            server.server_close()

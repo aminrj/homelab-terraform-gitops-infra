@@ -8,3 +8,4 @@ resources:
   - namespace.yaml
   - secrets.yaml
   - networkpolicy.yaml
+  - job-bootstrap.yaml

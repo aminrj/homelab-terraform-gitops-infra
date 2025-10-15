@@ -146,14 +146,16 @@ module "threat_intel_secrets" {
   app_name     = "threat-intel"
 
   static_secrets = {
-    "db-username"       = "threatintel"
-    "db-name"           = "threatintel"
-    "vt-api-key"        = ""
-    "shodan-api-key"    = ""
-    "abuseipdb-api-key" = ""
-    "openai-api-key"    = ""
-    "ollama-host"       = "http://ollama-llama3.ollama.svc.cluster.local:11434"
-    "azure-container"   = "threatintel-data"
+    "db-username"        = "threatintel"
+    "db-name"            = "threatintel"
+    "vt-api-key"         = ""
+    "shodan-api-key"     = ""
+    "abuseipdb-api-key"  = ""
+    "openai-api-key"     = ""
+    "ollama-host"        = "http://ollama-llama3.ollama.svc.cluster.local:11434"
+    "azure-container"    = "threatintel-data"
+    "superuser-username" = ""
+    "superuser-password" = ""
   }
 
   random_secrets = [

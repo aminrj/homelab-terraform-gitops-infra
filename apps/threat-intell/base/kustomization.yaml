@@ -5,3 +5,6 @@ resources:
   - configmap-app.yaml
   - configmap-schema.yaml
   - cronjob-schema.yaml
+  - configmap-automation.yaml
+  - deployment-automation.yaml
+  - services-automation.yaml

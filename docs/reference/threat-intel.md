@@ -5,21 +5,20 @@ This document describes how the `threat-intel` namespace ties together CloudNati
 ## Components
 
 - **Kubernetes namespace:** `threat-intel` (managed by ArgoCD via `apps/threat-intell/overlays/prod`).
-- **Schema reconciler:** `CronJob/threat-intel-schema-reconcile` ensures tables under the `threatintel` schema exist.
-- **Secrets:** Sourced from Azure Key Vault through ExternalSecrets (`threat-intel-db-creds`, `threat-intel-api-keys`, `threat-intel-azure-storage`).
+- **Bootstrap job:** `Job/threat-intel-bootstrap` creates the application role/database using the superuser credentials mirrored into the namespace.
+- **Schema reconciler:** `CronJob/threat-intel-schema-reconcile` keeps tables under the `threatintel` schema present.
+- **Secrets:** Sourced from Azure Key Vault through ExternalSecrets (`threat-intel-db-creds`, `threat-intel-api-keys`, `threat-intel-superuser`, `threat-intel-azure-storage`).
 - **Azure storage:** Container `threatintel-data` receives CSV/JSON exports.
 - **n8n workflows:** Five version-controlled exports stored under `apps/threat-intell/workflows/` covering collection, baseline extraction, LLM extraction, enrichment, and export.
+- **Automation helper:** `Deployment/threat-intel-automation` (plus services) accepts workflow callbacks for metrics, enrichment stubs, and export acknowledgements.
 - **Grafana dashboard:** `grafana/dashboard-threatintel.json` visualises extraction/enrichment metrics and exposes a Postgres panel using the read-only datasource `threat-intel-ro`.
 - **Evaluation tooling:** `apps/threat-intell/evaluate.py` computes precision/recall and latency aggregates from labeled data.
 
 ## Required One-Off Steps
 
 1. **Provision database user/schema**
-   - Connect as a superuser to the shared CNPG cluster (`pg-prod`) and run:
-     ```sql
-     CREATE USER threatintel WITH PASSWORD '<from threat-intel-db-password secret>';
-     CREATE DATABASE threatintel OWNER threatintel;
-     ```
+   - Populate Key Vault secrets `threat-intel-superuser-username` / `threat-intel-superuser-password` with credentials that can administer the shared cluster.
+   - Allow ArgoCD to converge; the `Job/threat-intel-bootstrap` pod will create/alter the `threatintel` role and database automatically.
    - Subsequent schema drift is handled by the cron reconciler.
 
 2. **Populate API credentials**
@@ -27,25 +26,27 @@ This document describes how the `threat-intel` namespace ties together CloudNati
    - Optional: add the Ollama internal hostname if using self-hosted LLMs.
 
 3. **Import workflows into n8n**
-   - Each JSON file in `apps/threat-intell/workflows/` can be imported via *n8n → Workflows → Import from File*.
+   - Preferred: run `scripts/threat-intel/import-workflows.sh` after setting `N8N_BASE_URL` + `N8N_API_KEY` (requires `jq` and `curl`).
+   - Alternatively, import each JSON file in `apps/threat-intell/workflows/` via *n8n → Workflows → Import from File*.
    - Adjust credential references inside n8n to point at the newly created database/API keys. All workflow exports expect credentials named:
      - `threat-intel-db` (Postgres)
      - `openai-threat-intel` (HTTP header auth)
      - `threat-intel-api-gateway` / `threat-intel-exporter` (internal services or HTTP auth placeholders)
 
 4. **Create Grafana datasource**
-   - Configure a Grafana Postgres datasource `threat-intel-ro` pointing at the shared cluster with a read-only role.
+   - Run `scripts/threat-intel/provision-grafana-datasource.sh` after exporting `GRAFANA_BASE_URL`, `GRAFANA_API_TOKEN`, `PG_HOST`, `PG_DATABASE`, `PG_USER`, and `PG_PASSWORD`.
    - Import `grafana/dashboard-threatintel.json` and place it in the "Threat Intel" folder.
 
 ## Operations Notes
 
+- The bootstrap job is annotated with a sync wave and `ttlSecondsAfterFinished`; delete it once satisfied or re-run by deleting the Job resource.
 - The schema cron job runs every six hours; it is idempotent and safe to leave in place.
-- n8n workflows assume internal services for enrichment/export metrics (`threat-intel-enrichment`, `threat-intel-exporter`, `threat-intel-metrics`). If these services are not yet deployed, disable or edit the relevant HTTP request nodes to avoid failed executions.
+- `Deployment/threat-intel-automation` provides stub responses plus `/metrics` output for Prometheus scraping. Replace it with real services when production integrations are ready.
 - Use `apps/threat-intell/evaluate.py --json metrics.json` to export evaluation results for reports or dashboards.
 - Azure exports are written to `threatintel-data/threat-intel/exports/…`. Rotate SAS tokens by reapplying Terraform (`environments/prod`) when needed.
 
 ## Future Enhancements
 
-- Replace the placeholder enrichment/export HTTP endpoints with dedicated microservices or n8n webhook workflows.
+- Replace the placeholder automation deployment with dedicated microservices or n8n webhook workflows.
 - Add a read-only service account for Grafana and data science notebooks.
 - Extend evaluation to compute per-provider SLAs and enrichment latency percentiles directly in Prometheus.
