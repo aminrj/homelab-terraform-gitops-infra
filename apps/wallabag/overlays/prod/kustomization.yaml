@@ -33,3 +33,11 @@ patches:
               env:
               - name: SYMFONY__ENV__DATABASE_HOST
                 value: wallabag-db-cnpg-v1-rw.cnpg-prod.svc.cluster.local
+              - name: POPULATE_DATABASE
+                value: "True"
+              - name: SYMFONY__ENV__ADMIN_LOGIN
+                value: "admin"
+              - name: SYMFONY__ENV__ADMIN_PASSWORD
+                value: "changeme"
+              - name: SYMFONY__ENV__ADMIN_EMAIL
+                value: "admin@example.com"
