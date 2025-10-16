@@ -1,0 +1,5 @@
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE SCHEMA IF NOT EXISTS wallabag;
+CREATE TABLE IF NOT EXISTS wallabag.migrations(
+  version INT PRIMARY KEY
+);
