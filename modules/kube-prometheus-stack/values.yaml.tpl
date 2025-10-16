@@ -64,6 +64,8 @@ grafana:
     size: 20Gi
     storageClassName: "${storage_class}"
     accessModes: ["ReadWriteOnce"]
+  initChownData:
+    enabled: false
   sidecar:
     dashboards:
       enabled: true
