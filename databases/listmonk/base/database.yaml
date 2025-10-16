@@ -40,14 +40,15 @@ spec:
       app: listmonk-database
       policy-type: "database"
 
-  # Bootstrap from the latest Barman backup instead of an empty initdb
   bootstrap:
-    recovery:
-      source: clusterBackup
+    initdb:
       database: listmonk
       owner: listmonk
       secret:
         name: listmonk-db-creds
+      postInitApplicationSQL:
+        - CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+        - ALTER SCHEMA public OWNER TO listmonk;
 
   backup:
     barmanObjectStore:
