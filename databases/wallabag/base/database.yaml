@@ -40,10 +40,8 @@ spec:
       app: wallabag-database
       policy-type: "database"
 
-  # Bootstrap from the latest Barman backup instead of an empty initdb
   bootstrap:
-    recovery:
-      source: clusterBackup
+    initdb:
       database: wallabag
       owner: wallabag
       secret:
