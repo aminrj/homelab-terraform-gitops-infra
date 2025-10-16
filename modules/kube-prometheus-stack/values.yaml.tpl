@@ -101,7 +101,7 @@ alertmanager:
     receivers:
       - name: slack-notifications
         slack_configs:
-          - channel: '#alerts'
+          - channel: '#homelab-stuff'
             send_resolved: true
             username: 'prometheus-alertmanager'
             icon_emoji: ':warning:'
