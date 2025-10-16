@@ -1,0 +1,39 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: threat-intel-pod-health
+  namespace: monitoring
+  labels:
+    app: kube-prometheus-stack
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: pod.health.anomalies
+      interval: 1m
+      rules:
+        - alert: PodCreateConfigError
+          expr: |
+            max by(namespace, pod, container) (
+              kube_pod_container_status_waiting_reason{reason="CreateContainerConfigError"}
+            ) == 1
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Pod {{ $labels.pod }} cannot start (CreateContainerConfigError)"
+            description: |
+              Container {{ $labels.container }} in pod {{ $labels.pod }} (namespace {{ $labels.namespace }}) is waiting with reason CreateContainerConfigError.
+              Check the referenced Secret/ConfigMap or container configuration.
+        - alert: PodImagePullError
+          expr: |
+            max by(namespace, pod, container) (
+              kube_pod_container_status_waiting_reason{reason=~"ImagePullBackOff|ErrImagePull"}
+            ) == 1
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod {{ $labels.pod }} failing to pull image"
+            description: |
+              Container {{ $labels.container }} in pod {{ $labels.pod }} (namespace {{ $labels.namespace }}) cannot pull its image.
+              Verify image name, tag, and registry credentials.
