@@ -40,7 +40,7 @@ spec:
             - name: SYMFONY__ENV__DOMAIN_NAME
               value: "https://wallabag.lab.aminrj.com"
             - name: POPULATE_DATABASE
-              value: "True"
+              value: "False"
             # Additional helpful env vars
             - name: SYMFONY__ENV__MAILER_HOST
               value: "127.0.0.1"

@@ -1,0 +1,65 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: wallabag-bootstrap
+  namespace: wallabag-prod
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+    argocd.argoproj.io/sync-wave: "5"
+spec:
+  backoffLimit: 1
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: bootstrap
+          image: ghcr.io/wallabag/docker:2.6.10
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -euo pipefail
+              ./bin/console wallabag:install \
+                --env=prod \
+                --no-interaction \
+                --reset \
+                --username="${SYMFONY__ENV__ADMIN_LOGIN}" \
+                --password="${SYMFONY__ENV__ADMIN_PASSWORD}" \
+                --email="${SYMFONY__ENV__ADMIN_EMAIL}"
+          env:
+            - name: SYMFONY__ENV__DATABASE_HOST
+              value: wallabag-db-cnpg-v1-rw.cnpg-prod.svc.cluster.local
+            - name: SYMFONY__ENV__DATABASE_PORT
+              value: "5432"
+            - name: SYMFONY__ENV__DATABASE_NAME
+              value: wallabag
+            - name: SYMFONY__ENV__DATABASE_DRIVER
+              value: pdo_pgsql
+            - name: SYMFONY__ENV__DATABASE_CHARSET
+              value: utf8
+            - name: SYMFONY__ENV__ADMIN_LOGIN
+              valueFrom:
+                secretKeyRef:
+                  name: wallabag-admin-creds
+                  key: username
+            - name: SYMFONY__ENV__ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: wallabag-admin-creds
+                  key: password
+            - name: SYMFONY__ENV__ADMIN_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: wallabag-admin-creds
+                  key: email
+            - name: SYMFONY__ENV__DATABASE_USER
+              valueFrom:
+                secretKeyRef:
+                  name: wallabag-db-creds
+                  key: username
+            - name: SYMFONY__ENV__DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: wallabag-db-creds
+                  key: password

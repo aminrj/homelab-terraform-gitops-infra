@@ -148,6 +148,25 @@ module "wallabag_secrets" {
   ]
 }
 
+module "wallabag_admin_secrets" {
+  source       = "../../modules/azure-secrets"
+  key_vault_id = module.azure_keyvault.key_vault_id
+  app_name     = "wallabag-admin"
+
+  static_secrets = {
+    "username" = "admin"
+    "email"    = "admin@example.com"
+  }
+
+  random_secrets = [
+    "password"
+  ]
+
+  depends_on = [
+    module.azure_keyvault
+  ]
+}
+
 module "threat_intel_secrets" {
   source       = "../../modules/azure-secrets"
   key_vault_id = module.azure_keyvault.key_vault_id

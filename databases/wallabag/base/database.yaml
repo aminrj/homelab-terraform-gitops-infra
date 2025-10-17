@@ -47,34 +47,4 @@ spec:
       secret:
         name: wallabag-db-creds
 
-  backup:
-    barmanObjectStore:
-      destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/wallabag-db-clean
-      azureCredentials:
-        storageAccount:
-          name: wallabag-db-storage
-          key: container-name
-        storageSasToken:
-          name: wallabag-db-storage
-          key: blob-sas
-      wal:
-        compression: gzip
-      data:
-        compression: gzip
-    retentionPolicy: 7d
-
-  externalClusters:
-    - name: clusterBackup
-      barmanObjectStore:
-        destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/wallabag-db-clean
-        endpointURL: https://homelabstorageaccntprod.blob.core.windows.net
-        serverName: wallabag-db-cnpg-v1
-        azureCredentials:
-          storageAccount:
-            name: wallabag-db-storage
-            key: container-name
-          storageSasToken:
-            name: wallabag-db-storage
-            key: blob-sas
-        wal:
-          compression: gzip
+  backup: {}
