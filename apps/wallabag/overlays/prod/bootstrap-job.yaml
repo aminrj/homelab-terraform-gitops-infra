@@ -26,16 +26,25 @@ spec:
                 --no-interaction \
                 --reset
               if ! ./bin/console fos:user:create \
+                --env=prod \
+                --no-interaction \
+                --super-admin \
+                -- \
                 "${SYMFONY__ENV__ADMIN_LOGIN}" \
                 "${SYMFONY__ENV__ADMIN_EMAIL}" \
-                "${SYMFONY__ENV__ADMIN_PASSWORD}" \
-                --super-admin; then
+                "${SYMFONY__ENV__ADMIN_PASSWORD}"; then
                 ./bin/console fos:user:change-password \
+                  --env=prod \
+                  --no-interaction \
+                  -- \
                   "${SYMFONY__ENV__ADMIN_LOGIN}" \
                   "${SYMFONY__ENV__ADMIN_PASSWORD}"
                 ./bin/console fos:user:promote \
-                  "${SYMFONY__ENV__ADMIN_LOGIN}" \
-                  --super-admin || true
+                  --env=prod \
+                  --no-interaction \
+                  --super-admin \
+                  -- \
+                  "${SYMFONY__ENV__ADMIN_LOGIN}" || true
               fi
           env:
             - name: SYMFONY__ENV__DATABASE_HOST
