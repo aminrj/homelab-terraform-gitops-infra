@@ -1,6 +1,11 @@
+data "azurerm_storage_account" "app" {
+  name                = var.storage_account_name
+  resource_group_name = var.resource_group_name
+}
+
 resource "azurerm_storage_container" "app" {
-  name                  = var.container_name
-  storage_account_name  = var.storage_account_name
+  name              = var.container_name
+  storage_account_id = data.azurerm_storage_account.app.id
   container_access_type = "private"
 }
 
@@ -70,4 +75,3 @@ resource "azurerm_key_vault_secret" "destination_path" {
     ignore_changes = [value]
   }
 }
-

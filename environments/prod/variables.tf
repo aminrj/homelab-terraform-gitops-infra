@@ -104,3 +104,39 @@ variable "subscription_id" {
   type        = string
   description = "subscription id"
 }
+
+variable "metallb_address_range" {
+  type        = string
+  description = "Address range for MetalLB load balancers"
+  default     = ""
+}
+
+variable "kubelet_root_dir" {
+  type        = string
+  description = "Root directory for kubelet on nodes"
+  default     = ""
+}
+
+variable "target_cluster_server" {
+  type        = string
+  description = "API server address for the in-cluster ArgoCD destination"
+  default     = "https://kubernetes.default.svc"
+}
+
+variable "namespace" {
+  type        = string
+  description = "Default namespace used by shared modules"
+  default     = "default"
+}
+
+variable "ui_service_type" {
+  type        = string
+  description = "Service type for UI components (LoadBalancer, ClusterIP, etc.)"
+  default     = "LoadBalancer"
+}
+
+variable "slack_webhook_url" {
+  type        = string
+  description = "Slack webhook used by Alertmanager"
+  default     = ""
+}

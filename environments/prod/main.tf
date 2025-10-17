@@ -41,6 +41,7 @@ module "app_storage" {
   source               = "../../modules/azure-app-storage"
   container_name       = each.value.container_name
   storage_account_name = module.azure_keyvault.storage_account_name
+  resource_group_name  = azurerm_resource_group.main.name
   connection_string    = module.azure_keyvault.storage_connection_string
   key_vault_id         = module.azure_keyvault.key_vault_id
 }
@@ -49,6 +50,7 @@ module "threat_intel_db_storage" {
   source               = "../../modules/azure-app-storage"
   container_name       = "threat-intel-db-clean"
   storage_account_name = module.azure_keyvault.storage_account_name
+  resource_group_name  = azurerm_resource_group.main.name
   connection_string    = module.azure_keyvault.storage_connection_string
   key_vault_id         = module.azure_keyvault.key_vault_id
 }
