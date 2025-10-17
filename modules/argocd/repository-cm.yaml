@@ -5,12 +5,9 @@ metadata:
   namespace: argocd
 data:
   repositories: |
-    - url: https://github.com/aminrj/homelab-terraform-gitops-infra.git
+    - url: git@github.com:aminrj/homelab-terraform-gitops-infra.git
       type: git
       name: homelab-gitops
-      usernameSecret:
-        name: argocd-repo-https
-        key: username
-      passwordSecret:
-        name: argocd-repo-https
-        key: password
+      sshPrivateKeySecret:
+        name: homelab-gitops-repo
+        key: sshPrivateKey

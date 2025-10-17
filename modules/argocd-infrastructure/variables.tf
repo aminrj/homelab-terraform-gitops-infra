@@ -6,7 +6,7 @@ variable "kubeconfig" {
 variable "git_repo_url" {
   description = "Git repository URL for GitOps"
   type        = string
-  default     = "https://github.com/aminrj/homelab-terraform-gitops-infra.git"
+  default     = "git@github.com:aminrj/homelab-terraform-gitops-infra.git"
 }
 
 variable "git_revision" {

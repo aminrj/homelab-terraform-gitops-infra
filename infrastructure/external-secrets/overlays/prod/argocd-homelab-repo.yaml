@@ -1,0 +1,27 @@
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: argocd-homelab-repo
+  namespace: argocd
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: azure-kv-store-prod
+    kind: ClusterSecretStore
+  target:
+    name: homelab-gitops-repo
+    creationPolicy: Owner
+    template:
+      type: Opaque
+      metadata:
+        labels:
+          argocd.argoproj.io/secret-type: repository
+      data:
+        url: git@github.com:aminrj/homelab-terraform-gitops-infra.git
+        name: homelab-gitops
+        sshKnownHosts: |
+          github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI6gbgYUSr2SxuXOJfLZPzNyp7K0I2HOuCfL3h1JXZm
+  data:
+    - secretKey: sshPrivateKey
+      remoteRef:
+        key: argocd-homelab-repo-ssh-key

@@ -6,7 +6,7 @@ metadata:
 spec:
   generators:
     - git:
-        repoURL: https://github.com/aminrj/homelab-terraform-gitops-infra.git
+        repoURL: git@github.com:aminrj/homelab-terraform-gitops-infra.git
         revision: main
         directories:
           - path: databases/*/overlays/prod
@@ -16,7 +16,7 @@ spec:
     spec:
       project: default
       source:
-        repoURL: https://github.com/aminrj/homelab-terraform-gitops-infra.git
+        repoURL: git@github.com:aminrj/homelab-terraform-gitops-infra.git
         targetRevision: main
         path: 'databases/{{path[1]}}/overlays/{{path[3]}}'
       destination:

@@ -22,7 +22,7 @@ metadata:
 spec:
   generators:
     - git:
-        repoURL: https://github.com/aminrj/homelab-terraform-gitops-infra.git
+        repoURL: git@github.com:aminrj/homelab-terraform-gitops-infra.git
         revision: main
         directories:
           - path: infrastructure/*/overlays/prod # Only prod environment
@@ -32,7 +32,7 @@ spec:
     spec:
       project: default
       source:
-        repoURL: https://github.com/aminrj/homelab-terraform-gitops-infra.git
+        repoURL: git@github.com:aminrj/homelab-terraform-gitops-infra.git
         targetRevision: main
         path: 'infrastructure/{{path[1]}}/overlays/{{path[3]}}' # Example: infrastructure/storage-monitoring/overlays/prod
       destination:
@@ -63,7 +63,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/aminrj/homelab-terraform-gitops-infra.git
+    repoURL: git@github.com:aminrj/homelab-terraform-gitops-infra.git
     targetRevision: main
     path: infrastructure/prometheus-safeguards
   destination:

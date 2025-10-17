@@ -1,6 +1,7 @@
 resources:
-  # - ../../base
+  - ../../base
   - cluster-secret-store.yaml
+  - argocd-homelab-repo.yaml
 
 # patchesStrategicMerge:
 #   - cluster-secret-store-patch.yaml
