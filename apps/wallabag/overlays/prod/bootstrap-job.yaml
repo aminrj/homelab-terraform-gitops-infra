@@ -20,6 +20,7 @@ spec:
             - -c
             - |
               set -euo pipefail
+              ./bin/console doctrine:migrations:migrate --env=prod --no-interaction || true
               ./bin/console wallabag:install \
                 --env=prod \
                 --no-interaction \

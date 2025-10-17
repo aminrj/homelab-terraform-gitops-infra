@@ -22,10 +22,10 @@ prometheus:
     resources:
       requests:
         memory: "512Mi"      # Minimal memory requirement
-        cpu: "100m"          # Minimal CPU requirement
+        cpu: "300m"          # Minimal CPU requirement
       limits:
-        memory: "1Gi"        # Conservative memory limit
-        cpu: "500m"          # Conservative CPU limit
+        memory: "2Gi"        # Conservative memory limit
+        cpu: "1000m"          # Conservative CPU limit
 
     # Allow scheduling on control plane when necessary
     tolerations:
@@ -34,8 +34,8 @@ prometheus:
         effect: NoSchedule
 
     # Scraping and evaluation optimization
-    scrapeInterval: "30s"              # Default scrape interval
-    evaluationInterval: "30s"          # Rule evaluation interval
+    scrapeInterval: "60s"              # Default scrape interval
+    evaluationInterval: "60s"          # Rule evaluation interval
 
     # Query optimization
     queryTimeout: "2m"                 # Prevent long-running queries

@@ -46,5 +46,9 @@ spec:
       owner: wallabag
       secret:
         name: wallabag-db-creds
+      postInitApplicationSQL:
+        - ALTER DATABASE wallabag OWNER TO wallabag;
+        - ALTER SCHEMA public OWNER TO wallabag;
+        - GRANT ALL PRIVILEGES ON SCHEMA public TO wallabag;
 
   backup: {}
