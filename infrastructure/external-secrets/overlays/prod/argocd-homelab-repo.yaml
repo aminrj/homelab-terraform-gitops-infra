@@ -20,7 +20,7 @@ spec:
         url: git@github.com:aminrj/homelab-terraform-gitops-infra.git
         name: homelab-gitops
         sshKnownHosts: |
-          github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI6gbgYUSr2SxuXOJfLZPzNyp7K0I2HOuCfL3h1JXZm
+          github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl
   data:
     - secretKey: sshPrivateKey
       remoteRef:
