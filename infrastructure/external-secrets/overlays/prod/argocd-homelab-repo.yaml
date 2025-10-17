@@ -12,6 +12,7 @@ spec:
     name: homelab-gitops-repo
     creationPolicy: Owner
     template:
+      mergePolicy: Merge
       type: Opaque
       metadata:
         labels:
