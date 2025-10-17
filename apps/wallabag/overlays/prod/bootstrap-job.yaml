@@ -24,10 +24,19 @@ spec:
               ./bin/console wallabag:install \
                 --env=prod \
                 --no-interaction \
-                --reset \
-                --username="${SYMFONY__ENV__ADMIN_LOGIN}" \
-                --password="${SYMFONY__ENV__ADMIN_PASSWORD}" \
-                --email="${SYMFONY__ENV__ADMIN_EMAIL}"
+                --reset
+              if ! ./bin/console fos:user:create \
+                "${SYMFONY__ENV__ADMIN_LOGIN}" \
+                "${SYMFONY__ENV__ADMIN_EMAIL}" \
+                "${SYMFONY__ENV__ADMIN_PASSWORD}" \
+                --super-admin; then
+                ./bin/console fos:user:change-password \
+                  "${SYMFONY__ENV__ADMIN_LOGIN}" \
+                  "${SYMFONY__ENV__ADMIN_PASSWORD}"
+                ./bin/console fos:user:promote \
+                  "${SYMFONY__ENV__ADMIN_LOGIN}" \
+                  --super-admin || true
+              fi
           env:
             - name: SYMFONY__ENV__DATABASE_HOST
               value: wallabag-db-cnpg-v1-rw.cnpg-prod.svc.cluster.local

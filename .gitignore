@@ -21,3 +21,4 @@ crash.log
 environments/prod/terraform.tfvars
 environments/shared/terraform.tfvars
 **/.DS_Store
+AGENTS.md
