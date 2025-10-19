@@ -3,11 +3,11 @@
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
-  name: n8n-db-cnpg-v3
+  name: n8n-db-cnpg-v5
 spec:
   storage:
     storageClass: local-path
   # backup:
   #   barmanObjectStore:
-  #     serverName: n8n-db-cnpg-v3
+  #     serverName: n8n-db-cnpg-v5
   #   retentionPolicy: "7d"

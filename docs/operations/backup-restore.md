@@ -458,7 +458,7 @@ spec:
       barmanObjectStore:
         destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/n8n-db-restore-new
         endpointURL: https://homelabstorageaccntprod.blob.core.windows.net
-        serverName: n8n-db-cnpg-v3
+        serverName: n8n-db-cnpg-v5
         azureCredentials:
           storageAccount:
             name: n8n-db-storage

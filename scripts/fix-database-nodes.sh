@@ -13,7 +13,7 @@ echo ""
 DATABASES=(
     "linkding-db-cnpg-v1"
     "wallabag-db-cnpg-v1"
-    "n8n-db-cnpg-v3"
+    "n8n-db-cnpg-v5"
     "listmonk-db-cnpg-v1"
 )
 

@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: n8n
-          image: docker.n8n.io/n8nio/n8n:1.74.1
+          image: docker.n8n.io/n8nio/n8n:1.75.0
           ports:
             - containerPort: 5678
           resources:
@@ -27,7 +27,7 @@ spec:
               cpu: "2000m"
           env:
             - name: DB_POSTGRESDB_HOST
-              value: n8n-db-cnpg-v3-rw.cnpg-prod.svc.cluster.local
+              value: n8n-db-cnpg-v5-rw.cnpg-prod.svc.cluster.local
             - name: DB_TYPE
               value: postgresdb
             - name: DB_POSTGRESDB_DATABASE
@@ -97,7 +97,7 @@ spec:
               value: "*"
 
           volumeMounts:
-            - name: n8n-data
+            - name: n8n-data-v2
               mountPath: /home/node/.n8n
           securityContext:
             runAsUser: 1000
@@ -106,6 +106,6 @@ spec:
       securityContext:
         fsGroup: 1000
       volumes:
-        - name: n8n-data
+        - name: n8n-data-v2
           persistentVolumeClaim:
-            claimName: n8n-data
+            claimName: n8n-data-v2
