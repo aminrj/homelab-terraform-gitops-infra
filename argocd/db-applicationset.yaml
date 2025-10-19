@@ -23,8 +23,5 @@ spec:
         server: https://kubernetes.default.svc
         namespace: 'cnpg-{{path[3]}}'  # cnpg-dev, cnpg-qa, cnpg-prod
       syncPolicy:
-        automated:
-          prune: true
-          selfHeal: true
         syncOptions:
           - CreateNamespace=true

@@ -39,9 +39,6 @@ spec:
         server: https://kubernetes.default.svc
         namespace: 'monitoring' # All infrastructure components go to monitoring namespace
       syncPolicy:
-        automated:
-          prune: true
-          selfHeal: true
         syncOptions:
           - CreateNamespace=true
           - ServerSideApply=true
@@ -70,9 +67,6 @@ spec:
     server: https://kubernetes.default.svc
     namespace: monitoring
   syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
