@@ -98,6 +98,8 @@ spec:
               value: "true"  # Set to false if using HTTP
             - name: N8N_CORS_ORIGIN
               value: "https://n8n.lab.aminrj.com"  # Replace with your actual domain
+            - name: N8N_ENDPOINT_TRUSTED_PROXIES
+              value: "*"
 
           volumeMounts:
             - name: n8n-data
