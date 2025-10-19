@@ -78,12 +78,7 @@ spec:
             - name: N8N_COMMUNITY_NODES_ENABLED
               value: "false"
 
-            - name: LLM_GATEWAY_URL
-              value: "http://llm-gateway-service.llm-gateway.svc.cluster.local"
-            - name: N8N_CUSTOM_EXTENSIONS
-              value: "/opt/custom-nodes"
-            
-              # OAuth and External Access Configuration
+            # OAuth and External Access Configuration
             - name: N8N_HOST
               value: "n8n.lab.aminrj.com"  # Replace with your actual domain
             - name: N8N_PROTOCOL
