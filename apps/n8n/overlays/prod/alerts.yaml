@@ -10,13 +10,29 @@ spec:
     - name: n8n.rules
       rules:
         - alert: N8nDeploymentUnavailable
-          expr: (kube_deployment_spec_replicas{namespace="n8n-prod",deployment="n8n"} - kube_deployment_status_replicas_available{namespace="n8n-prod",deployment="n8n"}) > 0
+          expr: clamp_min(kube_deployment_spec_replicas{namespace="n8n-prod",deployment="n8n"} - kube_deployment_status_replicas_available{namespace="n8n-prod",deployment="n8n"}, 0) > 0
           for: 2m
           labels:
             severity: critical
           annotations:
             summary: "n8n deployment has unavailable replicas"
             description: "n8n deployment is missing ready replicas for more than 2 minutes."
+        - alert: N8nDeploymentMissing
+          expr: absent(kube_deployment_spec_replicas{namespace="n8n-prod",deployment="n8n"})
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "n8n deployment is missing"
+            description: "Prometheus cannot find the n8n deployment in namespace n8n-prod for more than 2 minutes."
+        - alert: N8nDeploymentScaledToZero
+          expr: kube_deployment_spec_replicas{namespace="n8n-prod",deployment="n8n"} < 1
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "n8n deployment scaled to zero replicas"
+            description: "The n8n deployment has zero desired replicas for more than 5 minutes."
         - alert: N8nPodCrashLooping
           expr: increase(kube_pod_container_status_restarts_total{namespace="n8n-prod",container="n8n"}[5m]) > 3
           for: 5m
