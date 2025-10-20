@@ -11,6 +11,8 @@ spec:
         directories:
           - path: infrastructure/microceph-storage/overlays/prod
             exclude: true
+          - path: infrastructure/external-secrets/overlays/prod
+            exclude: true
           - path: infrastructure/*/overlays/prod # Only prod environment
   template:
     metadata:

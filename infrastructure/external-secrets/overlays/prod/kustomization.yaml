@@ -1,5 +1,4 @@
 resources:
-  - ../../base
   - cluster-secret-store.yaml
   - argocd-homelab-repo.yaml
 
