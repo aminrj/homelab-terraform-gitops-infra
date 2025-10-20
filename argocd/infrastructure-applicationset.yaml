@@ -9,6 +9,8 @@ spec:
         repoURL: git@github.com:aminrj/homelab-terraform-gitops-infra.git
         revision: main
         directories:
+          - path: infrastructure/microceph-storage/overlays/prod
+            exclude: true
           - path: infrastructure/*/overlays/prod # Only prod environment
   template:
     metadata:
