@@ -97,6 +97,9 @@ alertmanager:
       receiver: slack-notifications
       routes:
         - match:
+            job: microceph-mgr
+          receiver: silence-microceph
+        - match:
             severity: critical
           receiver: slack-notifications
 
@@ -108,6 +111,7 @@ alertmanager:
             username: 'prometheus-alertmanager'
             icon_emoji: ':warning:'
             api_url: '${slack_webhook_url}'
+      - name: silence-microceph
 
     inhibit_rules:
       - source_match:
@@ -147,3 +151,12 @@ additionalPrometheusRulesMap:
             annotations:
               summary: "Low disk space on {{ $labels.instance }}"
               description: "{{ $labels.instance }} is below 15% disk space on root filesystem."
+
+kubeControllerManager:
+  enabled: false
+
+kubeScheduler:
+  enabled: false
+
+kubeProxy:
+  enabled: false

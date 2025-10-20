@@ -234,9 +234,6 @@ spec:
           serviceAccountName: prometheus-cleanup
           restartPolicy: OnFailure
           securityContext:
-            runAsNonRoot: true
-            runAsUser: 65534
-            runAsGroup: 65534
             fsGroup: 65534
           containers:
           - name: cleanup
@@ -253,10 +250,9 @@ spec:
               chmod +x /scripts/cleanup.sh
               /scripts/cleanup.sh
             securityContext:
+              runAsUser: 0
+              runAsGroup: 0
               allowPrivilegeEscalation: false
-              capabilities:
-                drop:
-                - ALL
               readOnlyRootFilesystem: false  # Need write access for package installation
             resources:
               requests:
