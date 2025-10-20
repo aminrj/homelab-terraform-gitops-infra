@@ -57,6 +57,8 @@ spec:
               value: pdo_pgsql
             - name: SYMFONY__ENV__DATABASE_CHARSET
               value: utf8
+            - name: SYMFONY__ENV__DATABASE_TABLE_PREFIX
+              value: wallabag_
             - name: SYMFONY__ENV__ADMIN_LOGIN
               valueFrom:
                 secretKeyRef:

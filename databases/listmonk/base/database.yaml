@@ -49,6 +49,10 @@ spec:
       postInitApplicationSQL:
         - CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
         - ALTER SCHEMA public OWNER TO listmonk;
+        - GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO listmonk;
+        - GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO listmonk;
+        - ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO listmonk;
+        - ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO listmonk;
 
   backup:
     barmanObjectStore:

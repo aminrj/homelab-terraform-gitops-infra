@@ -9,6 +9,8 @@ spec:
         repoURL: git@github.com:aminrj/homelab-terraform-gitops-infra.git
         revision: main
         directories:
+          - path: apps/wallabag/overlays/prod
+            exclude: true
           - path: apps/*/overlays/prod # Only prod environment
   template:
     metadata:

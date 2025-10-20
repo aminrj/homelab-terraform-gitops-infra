@@ -37,8 +37,14 @@ spec:
                 secretKeyRef:
                   name: wallabag-db-creds
                   key: password
+            - name: SYMFONY__ENV__DATABASE_TABLE_PREFIX
+              value: "wallabag_"
             - name: SYMFONY__ENV__DOMAIN_NAME
               value: "https://wallabag.lab.aminrj.com"
+            - name: SYMFONY__ENV__TRUSTED_PROXIES
+              value: "127.0.0.1,REMOTE_ADDR"
+            - name: SYMFONY__ENV__TRUSTED_HOSTS
+              value: ".*"
             - name: POPULATE_DATABASE
               value: "False"
             # Additional helpful env vars
@@ -50,17 +56,6 @@ spec:
               value: "~"
             - name: SYMFONY__ENV__FROM_EMAIL
               value: "wallabag@lab.aminrj.com"
-            # Add these missing variables that the entrypoint script expects:
-            - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: wallabag-db-creds
-                  key: password
-            - name: POSTGRES_USER
-              valueFrom:
-                secretKeyRef:
-                  name: wallabag-db-creds
-                  key: username
             # Optional but recommended:
             - name: SYMFONY__ENV__DATABASE_CHARSET
               value: "utf8"

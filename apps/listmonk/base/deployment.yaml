@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: listmonk
-          image: listmonk/listmonk:v3.0.0
+          image: listmonk/listmonk:v5.1.0
           ports:
             - containerPort: 9000
           resources:
@@ -67,9 +67,9 @@ spec:
               value: "listmonk"
             - name: LISTMONK_DB__SSL_MODE
               value: "disable"
-            - name: LISTMONK_ADMIN_USER
+            - name: LISTMONK_ADMIN__USERNAME
               value: "admin"
-            - name: LISTMONK_ADMIN_PASSWORD
+            - name: LISTMONK_ADMIN__PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: listmonk-db-creds
