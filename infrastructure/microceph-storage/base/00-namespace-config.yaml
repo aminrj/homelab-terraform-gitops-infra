@@ -22,7 +22,7 @@ metadata:
   name: ceph-secret
   namespace: rook-ceph
 type: "kubernetes.io/rbd"
-data:
+stringData:
   # This will be populated once MicroCeph is running
   # Run: sudo ceph auth get-key client.admin | base64
   key: ""

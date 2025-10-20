@@ -140,3 +140,37 @@ variable "slack_webhook_url" {
   description = "Slack webhook used by Alertmanager"
   default     = ""
 }
+
+variable "threat_intel_vt_api_key" {
+  type        = string
+  description = "VirusTotal API key for threat-intel workload"
+  sensitive   = true
+}
+
+variable "threat_intel_shodan_api_key" {
+  type        = string
+  description = "Shodan API key for threat-intel workload"
+  sensitive   = true
+}
+
+variable "threat_intel_abuseipdb_api_key" {
+  type        = string
+  description = "AbuseIPDB API key for threat-intel workload"
+  sensitive   = true
+}
+
+variable "threat_intel_openai_api_key" {
+  type        = string
+  description = "OpenAI API key for threat-intel workload"
+  sensitive   = true
+}
+
+variable "threat_intel_ollama_host" {
+  type        = string
+  description = "Ollama host endpoint consumed by threat-intel workload"
+}
+
+variable "threat_intel_azure_container" {
+  type        = string
+  description = "Azure storage container identifier for threat-intel workload"
+}

@@ -5,13 +5,13 @@ metadata:
   name: storage-critical-alerts
   labels:
     app: kube-prometheus-stack
-    release: kube-promethues-stack
+    release: kube-prometheus-stack
 spec:
   groups:
   - name: storage.critical.rules
     rules:
     # Node Filesystem Alerts
-    - alert: NodeFilesystemSpaceFillingUp
+    - alert: NodeFilesystemSpaceFillingUpWarning
       expr: |
         (
           node_filesystem_avail_bytes{job="node-exporter",fstype!="",mountpoint!=""} / node_filesystem_size_bytes{job="node-exporter",fstype!="",mountpoint!=""} * 100 < 20
@@ -27,7 +27,7 @@ spec:
         summary: "Filesystem is predicted to run out of space within the next 24 hours"
         description: "Filesystem on {{ $labels.device }} at {{ $labels.instance }} has only {{ printf \"%.2f\" $value }}% available space left and is filling up"
 
-    - alert: NodeFilesystemSpaceFillingUp
+    - alert: NodeFilesystemSpaceFillingUpCritical
       expr: |
         (
           node_filesystem_avail_bytes{job="node-exporter",fstype!="",mountpoint!=""} / node_filesystem_size_bytes{job="node-exporter",fstype!="",mountpoint!=""} * 100 < 10
@@ -90,7 +90,7 @@ spec:
   - name: storage.pvc.rules
     rules:
     # PVC Usage Alerts
-    - alert: PersistentVolumeClaimSpaceFillingUp
+    - alert: PersistentVolumeClaimSpaceFillingUpWarning
       expr: |
         (
           kubelet_volume_stats_available_bytes{job="kubelet",metrics_path="/metrics"} / kubelet_volume_stats_capacity_bytes{job="kubelet",metrics_path="/metrics"} * 100 < 15
@@ -104,7 +104,7 @@ spec:
         summary: "PVC {{ $labels.persistentvolumeclaim }} in {{ $labels.namespace }} is filling up"
         description: "PVC {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} has {{ printf \"%.2f\" $value }}% available space left and is predicted to fill up within 24 hours"
 
-    - alert: PersistentVolumeClaimSpaceFillingUp
+    - alert: PersistentVolumeClaimSpaceFillingUpCritical
       expr: |
         (
           kubelet_volume_stats_available_bytes{job="kubelet",metrics_path="/metrics"} / kubelet_volume_stats_capacity_bytes{job="kubelet",metrics_path="/metrics"} * 100 < 5

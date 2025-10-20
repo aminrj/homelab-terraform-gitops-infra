@@ -175,8 +175,14 @@ module "threat_intel_secrets" {
   app_name     = "threat-intel"
 
   static_secrets = {
-    "db-username" = "threatintel"
-    "db-name"     = "threatintel"
+    "db-username"       = "threatintel"
+    "db-name"           = "threatintel"
+    "vt-api-key"        = var.threat_intel_vt_api_key
+    "shodan-api-key"    = var.threat_intel_shodan_api_key
+    "abuseipdb-api-key" = var.threat_intel_abuseipdb_api_key
+    "openai-api-key"    = var.threat_intel_openai_api_key
+    "ollama-host"       = var.threat_intel_ollama_host
+    "azure-container"   = var.threat_intel_azure_container
   }
 
   random_secrets = [

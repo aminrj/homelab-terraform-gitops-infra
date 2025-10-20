@@ -3,7 +3,7 @@ output "client_id" {
 }
 
 output "client_secret" {
-  value = module.azure_keyvault.client_secret
+  value     = module.azure_keyvault.client_secret
   sensitive = true
 }
 
