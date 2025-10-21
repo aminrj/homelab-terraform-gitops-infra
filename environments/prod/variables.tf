@@ -167,7 +167,7 @@ variable "threat_intel_openai_api_key" {
 
 variable "threat_intel_ollama_host" {
   type        = string
-  description = "Ollama host endpoint consumed by threat-intel workload"
+  description = "Ollama host endpoint consumed by threat-intel workload..."
 }
 
 variable "threat_intel_azure_container" {

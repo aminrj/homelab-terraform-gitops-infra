@@ -23,9 +23,9 @@ resource "azurerm_key_vault_secret" "generated" {
   value        = each.value.result
   key_vault_id = var.key_vault_id
 
-  lifecycle {
-    ignore_changes = [
-      value,
-    ]
-  }
+  # lifecycle {
+  #   ignore_changes = [
+  #     value,
+  #   ]
+  # }
 }

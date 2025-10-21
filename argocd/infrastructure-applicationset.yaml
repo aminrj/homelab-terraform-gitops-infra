@@ -33,6 +33,12 @@ spec:
         syncOptions:
           - CreateNamespace=true
           - ServerSideApply=true
+      ignoreDifferences:
+        - group: monitoring.coreos.com
+          kind: PrometheusRule
+          jsonPointers:
+            - /metadata/annotations/prometheus-operator-input-hash
+            - /metadata/labels/app.kubernetes.io~1managed-by
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
