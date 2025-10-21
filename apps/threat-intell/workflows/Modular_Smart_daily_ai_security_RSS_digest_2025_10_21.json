@@ -1,0 +1,670 @@
+{
+  "name": "Modular-Smart-daily-ai-security-RSS-digest",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "// CommaFeed REST API Processing (Updated for REST API)\nconsole.log('🔗 COMMAFEED ARTICLE PROCESSING');\nconsole.log('='.repeat(80));\n\n// Get inputs from merge\nlet categoryData = null;\nlet articlesData = null;\n\nitems.forEach((item, index) => {\n  console.log(`\\n📦 Input ${index}:`, Object.keys(item.json));\n  \n  // Check for category/feed data (has 'children' array)\n  if (item.json.children && Array.isArray(item.json.children)) {\n    categoryData = item.json;\n    console.log(`✅ Found category data: ${item.json.name}`);\n  }\n  \n  // Check for articles data (has 'entries' array)\n  if (item.json.entries && Array.isArray(item.json.entries)) {\n    articlesData = item.json;\n    console.log(`✅ Found articles data: ${item.json.entries.length} entries`);\n  }\n});\n\n// Validate we have all required data\nif (!categoryData) {\n  throw new Error('Missing category data from merge. Make sure \"Fetch Categories & Feeds\" node is connected.');\n}\n\nif (!articlesData?.entries) {\n  throw new Error('Missing articles data from merge. Make sure \"Fetch Articles\" node is connected and returns entries.');\n}\n\nconsole.log(`\\n📊 Processing ${articlesData.entries.length} articles from ${categoryData.children?.length || 0} categories`);\n\n// Calculate 3 days ago timestamp\nconst threeDaysAgo = new Date();\nthreeDaysAgo.setDate(threeDaysAgo.getDate() - 3);\nconst cutoffTimestamp = threeDaysAgo.getTime();\n\nconsole.log(`📅 Filtering articles from: ${threeDaysAgo.toISOString()}`);\n\n// Build feed-to-category mapping from nested structure\nconst feedToCategoryMap = {};\nconst feedInfoMap = {};\n\nfunction processCategory(category, parentName = null) {\n  const categoryName = parentName ? `${parentName}/${category.name}` : category.name;\n  \n  // Map feeds in this category\n  if (category.feeds && Array.isArray(category.feeds)) {\n    category.feeds.forEach(feed => {\n      feedToCategoryMap[feed.id] = categoryName;\n      feedInfoMap[feed.id] = {\n        name: feed.name,\n        url: feed.feedUrl,\n        siteUrl: feed.feedLink\n      };\n      console.log(`   📡 Feed ${feed.id}: \"${feed.name}\" → ${categoryName}`);\n    });\n  }\n  \n  // Process child categories recursively\n  if (category.children && Array.isArray(category.children)) {\n    category.children.forEach(child => processCategory(child, categoryName));\n  }\n}\n\n// Process all categories\nconsole.log('\\n🔗 Building feed-to-category mapping:');\nif (categoryData.children) {\n  categoryData.children.forEach(category => processCategory(category));\n}\n\nconsole.log(`\\n✅ Mapped ${Object.keys(feedToCategoryMap).length} feeds to categories`);\n\n// Enhanced relevance scoring\nfunction getRelevanceScore(title, content, category) {\n  const text = (title + ' ' + (content || '')).toLowerCase();\n  let score = 1; // Base score\n  \n  // Category-based scoring\n  switch (category) {\n    case 'AI Security & Research':\n      score += 4;\n      break;\n    case 'Cybersecurity':\n      score += 3;\n      break;\n    case 'Kubernetes & Cloud Native':\n      score += 3;\n      break;\n    case 'Threat Intelligence & Research':\n      score += 3;\n      break;\n    case 'Industry & Compliance':\n      score += 2;\n      break;\n    default:\n      score += 1;\n  }\n  \n  // AI keywords\n  const aiKeywords = ['ai', 'artificial intelligence', 'machine learning', 'llm', 'large language model', 'gpt', 'neural network', 'deep learning', 'generative ai'];\n  aiKeywords.forEach(keyword => {\n    if (text.includes(keyword)) {\n      score += category.includes('AI') ? 3 : 2;\n    }\n  });\n  \n  // Security keywords\n  const securityKeywords = ['security', 'vulnerability', 'exploit', 'threat', 'malware', 'breach', 'attack', 'cyber', 'risk', 'ransomware', 'phishing', 'zero-day', 'cve'];\n  securityKeywords.forEach(keyword => {\n    if (text.includes(keyword)) {\n      score += 2;\n    }\n  });\n  \n  // Cloud/K8s keywords\n  const cloudKeywords = ['kubernetes', 'k8s', 'container', 'docker', 'cloud', 'aws', 'azure', 'gcp'];\n  cloudKeywords.forEach(keyword => {\n    if (text.includes(keyword)) {\n      score += category.includes('Cloud') || category.includes('Kubernetes') ? 2 : 1;\n    }\n  });\n  \n  // Urgency indicators\n  if (text.includes('breaking') || text.includes('urgent') || text.includes('critical')) score += 2;\n  if (text.includes('zero-day') || text.includes('0-day')) score += 3;\n  \n  return Math.min(score, 10);\n}\n\n// Clean HTML content\nfunction cleanHtml(html) {\n  if (!html) return '';\n  \n  return html\n    .replace(/<[^>]*>/g, ' ')\n    .replace(/&nbsp;/g, ' ')\n    .replace(/&amp;/g, '&')\n    .replace(/&lt;/g, '<')\n    .replace(/&gt;/g, '>')\n    .replace(/&quot;/g, '\"')\n    .replace(/&#39;/g, \"'\")\n    .replace(/\\s+/g, ' ')\n    .trim()\n    .substring(0, 500);\n}\n\n// Process articles\nconst entries = articlesData.entries || [];\nconst processedArticles = [];\nconst categoryStats = {};\n\nentries.forEach((entry, index) => {\n  const feedId = entry.feedId;\n  const category = feedToCategoryMap[feedId] || 'Uncategorized';\n  const feedInfo = feedInfoMap[feedId] || {\n    name: entry.feedName || 'Unknown Feed',\n    url: entry.feedUrl || '',\n    siteUrl: entry.feedLink || ''\n  };\n  \n  // Filter by date (last 3 days)\n  const articleDate = entry.insertedDate || entry.date;\n  if (articleDate < cutoffTimestamp) {\n    return; // Skip old articles\n  }\n  \n  // Count by category\n  categoryStats[category] = (categoryStats[category] || 0) + 1;\n  \n  const cleanedContent = cleanHtml(entry.content);\n  const relevanceScore = getRelevanceScore(entry.title, cleanedContent, category);\n  \n  const processedArticle = {\n    id: entry.id,\n    feed_id: feedId,\n    title: entry.title || 'No Title',\n    author: entry.author || 'Unknown',\n    url: entry.url,\n    category: category,\n    feed_name: feedInfo.name,\n    feed_url: feedInfo.url,\n    feed_site_url: feedInfo.siteUrl,\n    content_clean: cleanedContent,\n    published_date: new Date(entry.date).toISOString(),\n    inserted_date: new Date(entry.insertedDate).toISOString(),\n    relevance_score: relevanceScore,\n    read: entry.read,\n    starred: entry.starred,\n    \n    // AI-ready content\n    ai_prompt_content: `Title: ${entry.title}\nCategory: ${category}\nSource: ${feedInfo.name}\nAuthor: ${entry.author || 'Unknown'}\nContent: ${cleanedContent || 'No content available'}\nURL: ${entry.url}`\n  };\n  \n  processedArticles.push(processedArticle);\n  \n  // Log first few for verification\n  if (index < 5) {\n    console.log(`\\n📰 Article ${index + 1}:`);\n    console.log(`   Title: ${entry.title?.substring(0, 60)}...`);\n    console.log(`   Category: ${category}`);\n    console.log(`   Score: ${relevanceScore}`);\n  }\n});\n\n// Display category distribution\nconsole.log('\\n📊 ARTICLE DISTRIBUTION BY CATEGORY (Last 3 Days):');\nObject.entries(categoryStats)\n  .sort((a, b) => b[1] - a[1])\n  .forEach(([category, count]) => {\n    const percentage = Math.round((count / processedArticles.length) * 100);\n    console.log(`   ${category}: ${count} articles (${percentage}%)`);\n  });\n\n// Filter quality articles (score >= 3)\nconst qualityArticles = processedArticles\n  .filter(article => article.relevance_score >= 3)\n  .sort((a, b) => b.relevance_score - a.relevance_score);\n\nconsole.log(`\\n✅ Filtered to ${qualityArticles.length} quality articles (score ≥ 3)`);\n\n// Show top articles by category\nconsole.log('\\n🏆 TOP ARTICLES BY CATEGORY:');\nObject.keys(categoryStats).forEach(category => {\n  const topArticles = qualityArticles\n    .filter(article => article.category === category)\n    .slice(0, 3);\n    \n  if (topArticles.length > 0) {\n    console.log(`\\n📂 ${category}:`);\n    topArticles.forEach((article, i) => {\n      console.log(`   ${i + 1}. ${article.title.substring(0, 70)} (Score: ${article.relevance_score})`);\n    });\n  }\n});\n\nconsole.log('\\n' + '='.repeat(80));\nconsole.log(`✅ PROCESSING COMPLETE`);\nconsole.log(`📊 Total: ${processedArticles.length} articles from last 3 days`);\nconsole.log(`⭐ Quality: ${qualityArticles.length} articles with score ≥ 3`);\nconsole.log('='.repeat(80));\n\n// Return quality articles\nreturn qualityArticles.map(article => ({ json: article }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1808,
+        672
+      ],
+      "id": "f3c985b1-bfaf-4387-a251-a33148b477c4",
+      "name": "Combine feeds"
+    },
+    {
+      "parameters": {
+        "url": "https://commafeed.lab.aminrj.com/rest/category/get",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "options": {}
+      },
+      "name": "Fetch categories",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        -2288,
+        640
+      ],
+      "id": "a63adac7-a2b9-4e51-9f64-b1e01f889538",
+      "executeOnce": false,
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "VEQWXcLepFa5ZX73",
+          "name": "commafeed  credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ===============================================\n// 📊 CONFIGURATION SECTION - EASY TO MODIFY\n// ===============================================\n\n// Category limits - adjust these numbers as needed\nconst CATEGORY_LIMITS = {\n  'AI Security & Research': 4,\n  'Cybersecurity': 3,\n  'Threat Intelligence & Research': 3,  // Added this category!\n  'Kubernetes & Cloud Native': 3,\n  'Industry & Compliance': 2\n};\n\n// Quality thresholds - tweak these values\nconst QUALITY_CONFIG = {\n  minContentLength: 50,              // Lowered from 100 since many have short content\n  minPreliminaryScore: 3,            // Lowered from 5\n  maxTheoryScore: 7,\n  estimatedCostPerArticle: 0.015\n};\n\n// Keywords for different content types\nconst KEYWORDS = {\n  actionable: [\n    'how to', 'guide', 'tutorial', 'step-by-step', 'implementation',\n    'practical', 'tool', 'framework', 'vulnerability', 'attack',\n    'exploit', 'defense', 'mitigation', 'solution', 'fix',\n    'secure', 'protect', 'prevent', 'detect', 'monitor',\n    'best practices', 'checklist', 'configuration', 'setup'\n  ],\n  \n  theoretical: [\n    'arxiv:', 'abstract:', 'theorem', 'proof', 'we propose',\n    'theoretical analysis', 'mathematical model', 'simulation results',\n    'formal verification', 'complexity analysis', 'algorithmic'\n  ],\n  \n  practical: [\n    'implementation', 'practical', 'real-world', 'case study',\n    'production', 'deployment', 'enterprise', 'industry',\n    'hands-on', 'walkthrough', 'example', 'demo'\n  ],\n  \n  highValueSecurity: [\n    'zero-day', 'cve', 'critical vulnerability', 'remote code execution',\n    'privilege escalation', 'authentication bypass', 'data breach',\n    'incident response', 'threat hunting', 'malware analysis',\n    'ransomware', 'supply chain'\n  ],\n  \n  aiSpecific: [\n    'machine learning', 'deep learning', 'neural network', 'llm',\n    'large language model', 'gpt', 'transformer', 'adversarial',\n    'model poisoning', 'prompt injection', 'ai safety', 'genai'\n  ]\n};\n\n// Scoring weights\nconst SCORING_WEIGHTS = {\n  actionableBonus: 3,\n  practicalBonus: 2,\n  highValueSecurityBonus: 4,\n  aiSpecificBonus: 2,\n  theoreticalPenalty: -2,\n  recentArticleBonus: 1,\n  categoryBonuses: {\n    'AI Security & Research': 2,\n    'Cybersecurity': 1,\n    'Threat Intelligence & Research': 1,\n    'Kubernetes & Cloud Native': 1,\n    'Industry & Compliance': 0\n  }\n};\n\n// ===============================================\n// 🔧 PROCESSING LOGIC\n// ===============================================\n\nconsole.log('=== CONFIGURABLE ADVANCED FILTERING ===');\nconsole.log(`📥 Received ${items.length} articles for advanced filtering`);\nconsole.log('📊 Category limits:', CATEGORY_LIMITS);\nconsole.log('⚙️ Quality config:', QUALITY_CONFIG);\n\n// Helper function to check for keywords in content\nfunction hasKeywords(article, keywordList) {\n  const content = (article.content_clean || '').toLowerCase();\n  const title = (article.title || '').toLowerCase();\n  const combinedText = content + ' ' + title;\n  \n  return keywordList.some(keyword => combinedText.includes(keyword.toLowerCase()));\n}\n\n// Enhanced content analysis\nfunction analyzeContent(article) {\n  const analysis = {\n    isActionable: hasKeywords(article, KEYWORDS.actionable),\n    isTheoretical: hasKeywords(article, KEYWORDS.theoretical),\n    isPractical: hasKeywords(article, KEYWORDS.practical),\n    hasHighValueSecurity: hasKeywords(article, KEYWORDS.highValueSecurity),\n    hasAIContent: hasKeywords(article, KEYWORDS.aiSpecific)\n  };\n  \n  if (analysis.isPractical) {\n    analysis.isTheoretical = false;\n  }\n  \n  return analysis;\n}\n\n// Enhanced quality scoring\nfunction calculateQualityScore(article) {\n  let score = 0;\n  const analysis = analyzeContent(article);\n  const category = article.category || 'Uncategorized';\n  \n  // Content length scoring (adjusted for short content)\n  const length = (article.content_clean || '').length;\n  if (length >= 50 && length <= 500) score += 2;\n  else if (length > 500) score += 1;\n  else if (length === 0) score += 0; // No penalty for empty content if title is good\n  \n  // Keyword-based scoring\n  if (analysis.isActionable) score += SCORING_WEIGHTS.actionableBonus;\n  if (analysis.isPractical) score += SCORING_WEIGHTS.practicalBonus;\n  if (analysis.hasHighValueSecurity) score += SCORING_WEIGHTS.highValueSecurityBonus;\n  if (analysis.hasAIContent && category.includes('AI')) {\n    score += SCORING_WEIGHTS.aiSpecificBonus;\n  }\n  if (analysis.isTheoretical) score += SCORING_WEIGHTS.theoreticalPenalty;\n  \n  // Category bonus\n  score += SCORING_WEIGHTS.categoryBonuses[category] || 0;\n  \n  // Recency bonus\n  const publishedDate = new Date(article.published_date);\n  const daysSincePublished = (Date.now() - publishedDate.getTime()) / (1000 * 60 * 60 * 24);\n  if (daysSincePublished <= 1) score += SCORING_WEIGHTS.recentArticleBonus;\n  \n  return { score, analysis };\n}\n\n// Apply quality filters\nconst categorizedArticles = {};\nconst stats = {\n  tooShort: 0,\n  lowScore: 0,\n  theoretical: 0,\n  categoryNotConfigured: 0,\n  passed: 0\n};\n\nitems.forEach(item => {\n  const article = item.json;\n  const category = article.category || 'Uncategorized';\n  \n  // FIXED: Use relevance_score instead of preliminary_score\n  const articleScore = article.relevance_score || 0;\n  \n  let skipReason = null;\n  \n  // Relaxed content length check - allow articles with good titles\n  const contentLength = (article.content_clean || '').length;\n  const hasGoodTitle = (article.title || '').length > 20;\n  \n  if (contentLength === 0 && !hasGoodTitle) {\n    skipReason = `No content and short title`;\n    stats.tooShort++;\n  } else if (articleScore < QUALITY_CONFIG.minPreliminaryScore) {\n    skipReason = `Low relevance score (${articleScore})`;\n    stats.lowScore++;\n  } else if (!CATEGORY_LIMITS[category]) {\n    skipReason = `Category not configured (${category})`;\n    stats.categoryNotConfigured++;\n  } else {\n    const { score, analysis } = calculateQualityScore(article);\n    \n    // Skip theoretical papers with low scores\n    if (analysis.isTheoretical && articleScore < QUALITY_CONFIG.maxTheoryScore) {\n      skipReason = `Theoretical paper with low score (${articleScore})`;\n      stats.theoretical++;\n    } else {\n      // Article passed - enhance it\n      article.quality_score = score;\n      article.content_analysis = analysis;\n      article.preliminary_score = articleScore; // Keep both for compatibility\n      \n      if (!categorizedArticles[category]) categorizedArticles[category] = [];\n      categorizedArticles[category].push(article);\n      stats.passed++;\n    }\n  }\n  \n  if (skipReason) {\n    console.log(`⏭️ Skipping: ${article.title?.substring(0, 50)}... - ${skipReason}`);\n  }\n});\n\n// Stats summary\nconsole.log('\\n📊 Quality Filter Stats:');\nObject.entries(stats).forEach(([key, value]) => {\n  console.log(`   ${key}: ${value}`);\n});\n\n// Select best articles from each category\nconst selectedArticles = [];\nconst categoryStats = {};\n\nObject.entries(CATEGORY_LIMITS).forEach(([category, maxAllowed]) => {\n  const articles = categorizedArticles[category] || [];\n  \n  if (articles.length === 0) {\n    console.log(`\\n📂 ${category}: No articles available`);\n    categoryStats[category] = 0;\n    return;\n  }\n  \n  // FIXED: Use relevance_score in sorting\n  const sorted = articles.sort((a, b) => {\n    const scoreA = (a.relevance_score || 0) + a.quality_score;\n    const scoreB = (b.relevance_score || 0) + b.quality_score;\n    \n    if (scoreB !== scoreA) return scoreB - scoreA;\n    if (a.content_analysis.isActionable !== b.content_analysis.isActionable) {\n      return b.content_analysis.isActionable - a.content_analysis.isActionable;\n    }\n    return new Date(b.published_date) - new Date(a.published_date);\n  });\n  \n  const selected = sorted.slice(0, maxAllowed);\n  \n  console.log(`\\n📂 ${category}: Selected ${selected.length}/${articles.length} articles`);\n  selected.forEach((article, i) => {\n    const totalScore = (article.relevance_score || 0) + article.quality_score;\n    const indicators = [];\n    if (article.content_analysis.isActionable) indicators.push('✅');\n    if (article.content_analysis.hasHighValueSecurity) indicators.push('🔥');\n    if (article.content_analysis.hasAIContent) indicators.push('🤖');\n    if (article.content_analysis.isTheoretical) indicators.push('📚');\n    \n    console.log(`   ${i + 1}. ${article.title.substring(0, 60)} (${totalScore}) ${indicators.join('')}`);\n  });\n  \n  selectedArticles.push(...selected);\n  categoryStats[category] = selected.length;\n});\n\n// Final results\nconst finalArticles = selectedArticles\n  .sort((a, b) => {\n    const scoreA = (a.relevance_score || 0) + a.quality_score;\n    const scoreB = (b.relevance_score || 0) + b.quality_score;\n    return scoreB - scoreA;\n  })\n  .map((article, index) => ({\n    ...article,\n    filter_rank: index + 1,\n    total_score: (article.relevance_score || 0) + article.quality_score,\n    selected_for_ai: true\n  }));\n\nconsole.log('\\n=== RESULTS ===');\nconsole.log('📊 Selected by category:', categoryStats);\nconsole.log(`🎯 Total for AI: ${finalArticles.length}`);\nconsole.log(`💰 Estimated cost: $${(finalArticles.length * QUALITY_CONFIG.estimatedCostPerArticle).toFixed(3)}`);\n\nconsole.log('\\n📋 Final Selection:');\nfinalArticles.forEach((article, i) => {\n  const indicators = [];\n  if (article.content_analysis.isActionable) indicators.push('✅');\n  if (article.content_analysis.hasHighValueSecurity) indicators.push('🔥');\n  if (article.content_analysis.hasAIContent) indicators.push('🤖');\n  \n  console.log(`${i + 1}. [${article.category}] ${article.title.substring(0, 70)} (${article.total_score}) ${indicators.join('')}`);\n});\n\nreturn finalArticles.map(article => ({ json: article }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1472,
+        752
+      ],
+      "id": "2209c4be-c5c0-40ff-bbd9-1ee280e3bd39",
+      "name": "Advanced Filter"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ===============================================\n// 📊 CONFIGURATION SECTION - EASY TO MODIFY\n// ===============================================\n\n// Category limits - adjust these numbers as needed\nconst CATEGORY_LIMITS = {\n  'AI Security & Research': 4,\n  'Cybersecurity': 3,\n  'Threat Intelligence & Research': 3,\n  'Kubernetes & Cloud Native': 3,\n  'Industry & Compliance': 2\n};\n\n// Quality thresholds - tweak these values\nconst QUALITY_CONFIG = {\n  minContentLength: 50,\n  minPreliminaryScore: 3,\n  maxTheoryScore: 7,\n  estimatedCostPerArticle: 0.015\n};\n\n// Keywords for different content types\nconst KEYWORDS = {\n  actionable: [\n    'how to', 'guide', 'tutorial', 'step-by-step', 'implementation',\n    'practical', 'tool', 'framework', 'vulnerability', 'attack',\n    'exploit', 'defense', 'mitigation', 'solution', 'fix',\n    'secure', 'protect', 'prevent', 'detect', 'monitor',\n    'best practices', 'checklist', 'configuration', 'setup'\n  ],\n  \n  theoretical: [\n    'arxiv:', 'abstract:', 'theorem', 'proof', 'we propose',\n    'theoretical analysis', 'mathematical model', 'simulation results',\n    'formal verification', 'complexity analysis', 'algorithmic'\n  ],\n  \n  practical: [\n    'implementation', 'practical', 'real-world', 'case study',\n    'production', 'deployment', 'enterprise', 'industry',\n    'hands-on', 'walkthrough', 'example', 'demo'\n  ],\n  \n  highValueSecurity: [\n    'zero-day', 'cve', 'critical vulnerability', 'remote code execution',\n    'privilege escalation', 'authentication bypass', 'data breach',\n    'incident response', 'threat hunting', 'malware analysis',\n    'ransomware', 'supply chain'\n  ],\n  \n  aiSpecific: [\n    'machine learning', 'deep learning', 'neural network', 'llm',\n    'large language model', 'gpt', 'transformer', 'adversarial',\n    'model poisoning', 'prompt injection', 'ai safety', 'genai'\n  ]\n};\n\n// Scoring weights\nconst SCORING_WEIGHTS = {\n  actionableBonus: 3,\n  practicalBonus: 2,\n  highValueSecurityBonus: 4,\n  aiSpecificBonus: 2,\n  theoreticalPenalty: -2,\n  recentArticleBonus: 1,\n  categoryBonuses: {\n    'AI Security & Research': 2,\n    'Cybersecurity': 1,\n    'Threat Intelligence & Research': 1,\n    'Kubernetes & Cloud Native': 1,\n    'Industry & Compliance': 0\n  }\n};\n\n// ===============================================\n// 🔧 PROCESSING LOGIC - DEFENSIVE VERSION\n// ===============================================\n\nconsole.log('=== CONFIGURABLE ADVANCED FILTERING ===');\nconsole.log(`📥 Received ${items.length} articles for advanced filtering`);\n\n// Validate input\nif (!items || items.length === 0) {\n  console.log('❌ No items to process');\n  return [];\n}\n\n// Helper function to safely check for keywords\nfunction hasKeywords(article, keywordList) {\n  if (!article || !keywordList || !Array.isArray(keywordList)) return false;\n  \n  const content = String(article.content_clean || '').toLowerCase();\n  const title = String(article.title || '').toLowerCase();\n  const combinedText = content + ' ' + title;\n  \n  return keywordList.some(keyword => {\n    if (!keyword) return false;\n    return combinedText.includes(String(keyword).toLowerCase());\n  });\n}\n\n// Enhanced content analysis\nfunction analyzeContent(article) {\n  if (!article) {\n    return {\n      isActionable: false,\n      isTheoretical: false,\n      isPractical: false,\n      hasHighValueSecurity: false,\n      hasAIContent: false\n    };\n  }\n  \n  const analysis = {\n    isActionable: hasKeywords(article, KEYWORDS.actionable),\n    isTheoretical: hasKeywords(article, KEYWORDS.theoretical),\n    isPractical: hasKeywords(article, KEYWORDS.practical),\n    hasHighValueSecurity: hasKeywords(article, KEYWORDS.highValueSecurity),\n    hasAIContent: hasKeywords(article, KEYWORDS.aiSpecific)\n  };\n  \n  if (analysis.isPractical) {\n    analysis.isTheoretical = false;\n  }\n  \n  return analysis;\n}\n\n// Enhanced quality scoring with defensive checks\nfunction calculateQualityScore(article) {\n  if (!article) return { score: 0, analysis: analyzeContent(null) };\n  \n  let score = 0;\n  const analysis = analyzeContent(article);\n  const category = String(article.category || 'Uncategorized');\n  \n  // Content length scoring\n  const length = String(article.content_clean || '').length;\n  if (length >= 50 && length <= 500) score += 2;\n  else if (length > 500) score += 1;\n  \n  // Keyword-based scoring\n  if (analysis.isActionable) score += SCORING_WEIGHTS.actionableBonus;\n  if (analysis.isPractical) score += SCORING_WEIGHTS.practicalBonus;\n  if (analysis.hasHighValueSecurity) score += SCORING_WEIGHTS.highValueSecurityBonus;\n  \n  // AI-specific bonus - FIXED: defensive check\n  if (analysis.hasAIContent && category && typeof category === 'string' && category.includes('AI')) {\n    score += SCORING_WEIGHTS.aiSpecificBonus;\n  }\n  \n  if (analysis.isTheoretical) score += SCORING_WEIGHTS.theoreticalPenalty;\n  \n  // Category bonus\n  score += SCORING_WEIGHTS.categoryBonuses[category] || 0;\n  \n  // Recency bonus\n  try {\n    const publishedDate = new Date(article.published_date);\n    if (!isNaN(publishedDate.getTime())) {\n      const daysSincePublished = (Date.now() - publishedDate.getTime()) / (1000 * 60 * 60 * 24);\n      if (daysSincePublished <= 1) score += SCORING_WEIGHTS.recentArticleBonus;\n    }\n  } catch (e) {\n    console.log(`⚠️ Could not parse date for article: ${article.title}`);\n  }\n  \n  return { score, analysis };\n}\n\n// Apply quality filters\nconst categorizedArticles = {};\nconst stats = {\n  tooShort: 0,\n  lowScore: 0,\n  theoretical: 0,\n  categoryNotConfigured: 0,\n  passed: 0,\n  invalidArticle: 0\n};\n\nitems.forEach((item, idx) => {\n  // Defensive check\n  if (!item || !item.json) {\n    console.log(`⚠️ Invalid item at index ${idx}`);\n    stats.invalidArticle++;\n    return;\n  }\n  \n  const article = item.json;\n  const category = String(article.category || 'Uncategorized');\n  const articleScore = Number(article.relevance_score || 0);\n  \n  let skipReason = null;\n  \n  // Relaxed content length check\n  const contentLength = String(article.content_clean || '').length;\n  const titleLength = String(article.title || '').length;\n  const hasGoodTitle = titleLength > 20;\n  \n  if (contentLength === 0 && !hasGoodTitle) {\n    skipReason = `No content and short title`;\n    stats.tooShort++;\n  } else if (articleScore < QUALITY_CONFIG.minPreliminaryScore) {\n    skipReason = `Low relevance score (${articleScore})`;\n    stats.lowScore++;\n  } else if (!CATEGORY_LIMITS[category]) {\n    skipReason = `Category not configured (${category})`;\n    stats.categoryNotConfigured++;\n  } else {\n    const { score, analysis } = calculateQualityScore(article);\n    \n    // Skip theoretical papers with low scores\n    if (analysis.isTheoretical && articleScore < QUALITY_CONFIG.maxTheoryScore) {\n      skipReason = `Theoretical paper with low score (${articleScore})`;\n      stats.theoretical++;\n    } else {\n      // Article passed - enhance it\n      article.quality_score = score;\n      article.content_analysis = analysis;\n      article.preliminary_score = articleScore;\n      \n      if (!categorizedArticles[category]) categorizedArticles[category] = [];\n      categorizedArticles[category].push(article);\n      stats.passed++;\n    }\n  }\n  \n  if (skipReason) {\n    const title = String(article.title || 'No title').substring(0, 50);\n    console.log(`⏭️ Skipping: ${title}... - ${skipReason}`);\n  }\n});\n\n// Stats summary\nconsole.log('\\n📊 Quality Filter Stats:');\nObject.entries(stats).forEach(([key, value]) => {\n  console.log(`   ${key}: ${value}`);\n});\n\n// Select best articles from each category\nconst selectedArticles = [];\nconst categoryStats = {};\n\nObject.entries(CATEGORY_LIMITS).forEach(([category, maxAllowed]) => {\n  const articles = categorizedArticles[category] || [];\n  \n  if (articles.length === 0) {\n    console.log(`\\n📂 ${category}: No articles available`);\n    categoryStats[category] = 0;\n    return;\n  }\n  \n  // Sort with defensive checks\n  const sorted = articles.sort((a, b) => {\n    const scoreA = (Number(a.relevance_score) || 0) + (Number(a.quality_score) || 0);\n    const scoreB = (Number(b.relevance_score) || 0) + (Number(b.quality_score) || 0);\n    \n    if (scoreB !== scoreA) return scoreB - scoreA;\n    \n    const aActionable = a.content_analysis?.isActionable || false;\n    const bActionable = b.content_analysis?.isActionable || false;\n    if (aActionable !== bActionable) {\n      return bActionable - aActionable;\n    }\n    \n    try {\n      return new Date(b.published_date) - new Date(a.published_date);\n    } catch (e) {\n      return 0;\n    }\n  });\n  \n  const selected = sorted.slice(0, maxAllowed);\n  \n  console.log(`\\n📂 ${category}: Selected ${selected.length}/${articles.length} articles`);\n  selected.forEach((article, i) => {\n    const totalScore = (Number(article.relevance_score) || 0) + (Number(article.quality_score) || 0);\n    const indicators = [];\n    if (article.content_analysis?.isActionable) indicators.push('✅');\n    if (article.content_analysis?.hasHighValueSecurity) indicators.push('🔥');\n    if (article.content_analysis?.hasAIContent) indicators.push('🤖');\n    if (article.content_analysis?.isTheoretical) indicators.push('📚');\n    \n    const title = String(article.title || 'No title').substring(0, 60);\n    console.log(`   ${i + 1}. ${title} (${totalScore.toFixed(1)}) ${indicators.join('')}`);\n  });\n  \n  selectedArticles.push(...selected);\n  categoryStats[category] = selected.length;\n});\n\n// Final results with defensive checks\nconst finalArticles = selectedArticles\n  .sort((a, b) => {\n    const scoreA = (Number(a.relevance_score) || 0) + (Number(a.quality_score) || 0);\n    const scoreB = (Number(b.relevance_score) || 0) + (Number(b.quality_score) || 0);\n    return scoreB - scoreA;\n  })\n  .map((article, index) => ({\n    ...article,\n    filter_rank: index + 1,\n    total_score: (Number(article.relevance_score) || 0) + (Number(article.quality_score) || 0),\n    selected_for_ai: true\n  }));\n\nconsole.log('\\n=== RESULTS ===');\nconsole.log('📊 Selected by category:', categoryStats);\nconsole.log(`🎯 Total for AI: ${finalArticles.length}`);\nconsole.log(`💰 Estimated cost: $${(finalArticles.length * QUALITY_CONFIG.estimatedCostPerArticle).toFixed(3)}`);\n\nconsole.log('\\n📋 Final Selection:');\nfinalArticles.forEach((article, i) => {\n  const indicators = [];\n  if (article.content_analysis?.isActionable) indicators.push('✅');\n  if (article.content_analysis?.hasHighValueSecurity) indicators.push('🔥');\n  if (article.content_analysis?.hasAIContent) indicators.push('🤖');\n  \n  const title = String(article.title || 'No title').substring(0, 70);\n  const category = String(article.category || 'Unknown');\n  const score = Number(article.total_score || 0).toFixed(1);\n  \n  console.log(`${i + 1}. [${category}] ${title} (${score}) ${indicators.join('')}`);\n});\n\n//return finalArticles.map(article => ({ json: article }));\n// Return single item with articles array\nreturn [{\n  json: {\n    articles: finalArticles,\n    metadata: {\n      total_articles: finalArticles.length,\n      categories: categoryStats,\n      estimated_cost: (finalArticles.length * QUALITY_CONFIG.estimatedCostPerArticle).toFixed(3)\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1260,
+        820
+      ],
+      "id": "cc74144c-aae9-464d-9c6c-ddd0c9fef20e",
+      "name": "Format for AI"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Simple Google Sheets Memory Preparation\nconsole.log('📊 Preparing for Google Sheets...');\n\n// Get input data\nconst inputItems = items;\nconsole.log(`📥 Input items: ${inputItems.length}`);\n\n// Process each article\nconst results = [];\n\nfor (let i = 0; i < inputItems.length; i++) {\n  const article = inputItems[i].json;\n  \n  const row = {\n    article_id: `${article.id}_${article.url}`,\n    title: article.title,\n    url: article.url,\n    category: article.category,\n    processed_date: new Date().toISOString().split('T')[0],\n    feed_id: article.feed_id,\n    feed_title: article.feed_title,\n    score: article.total_score || article.preliminary_score\n  };\n  \n  results.push({ json: row });\n  \n  console.log(`${i + 1}. ${article.title?.substring(0, 30)}...`);\n}\n\nconsole.log(`✅ Created ${results.length} rows for Google Sheets`);\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1104,
+        352
+      ],
+      "id": "38f03ce2-d73d-4c96-a9fb-c616b6f8d0e9",
+      "name": "Prepare Memory Update"
+    },
+    {
+      "parameters": {
+        "content": "## Memory System about processed articles\n",
+        "height": 240,
+        "width": 1600
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2352,
+        240
+      ],
+      "id": "fef481fe-8b4b-4b03-bfa8-901a76408e5b",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## CommaFeed RSS\n",
+        "height": 560,
+        "width": 780,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2368,
+        576
+      ],
+      "id": "eb027164-f6b3-4028-beb7-8695c9210628",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "output",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -672,
+        800
+      ],
+      "id": "5afada75-cbdc-4681-942a-cc94137923b8",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 4
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -2608,
+        640
+      ],
+      "id": "908f3d1a-1522-4cdc-9437-d3de2696f149",
+      "name": "Daily 4am"
+    },
+    {
+      "parameters": {
+        "url": "https://commafeed.lab.aminrj.com/rest/category/entries",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "id",
+              "value": "all"
+            },
+            {
+              "name": "readType",
+              "value": "unread"
+            },
+            {
+              "name": "offset",
+              "value": "0"
+            },
+            {
+              "name": "limit",
+              "value": "100"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "options": {}
+      },
+      "name": "Fetch Articles",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        -2280,
+        880
+      ],
+      "id": "d71d724c-6438-4302-9136-c7010022b6a6",
+      "executeOnce": false,
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "VEQWXcLepFa5ZX73",
+          "name": "commafeed  credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "console.log('🔍 Starting memory-based duplicate filtering...');\n\n// Get ALL inputs to this node\nconst allInputs = $input.all();\nconsole.log(`📥 Total inputs received: ${allInputs.length}`);\n\n// Separate the inputs by examining their structure\nlet feedArticles = [];\nlet memoryRows = [];\n\nallInputs.forEach((input, index) => {\n  const data = input.json;\n  \n  // Check if this input looks like a memory row (has article_id field)\n  if (data.article_id) {\n    memoryRows.push(input);\n    console.log(`📚 Input ${index}: Memory row (article_id: ${data.article_id})`);\n  }\n  // Check if this input looks like a CommaFeed article (has feed_id, category, etc.)\n  else if (data.feed_id && data.category) {\n    feedArticles.push(input);\n    if (feedArticles.length <= 3) { // Log first few\n      console.log(`📰 Input ${index}: CommaFeed article (${data.title?.substring(0, 30)}...)`);\n    }\n  }\n  // Unknown input type\n  else {\n    console.log(`❓ Input ${index}: Unknown type`, Object.keys(data));\n  }\n});\n\nconsole.log(`📰 CommaFeed articles found: ${feedArticles.length}`);\nconsole.log(`📚 Memory rows found: ${memoryRows.length}`);\n\n// Extract known article IDs from memory rows\nlet knownArticleIds = [];\nif (memoryRows.length === 0) {\n  console.log('ℹ️ No memory rows - first run! Processing all articles as new');\n} else {\n  knownArticleIds = memoryRows\n    .map(row => row.json.article_id)\n    .filter(id => id && \n            id !== 'article_id' && \n            id.trim() !== '' && \n            typeof id === 'string');\n    \n  console.log(`🆔 Known article IDs loaded from memory: ${knownArticleIds.length}`);\n  \n  if (knownArticleIds.length > 0) {\n    console.log(`🆔 Memory sample: ${knownArticleIds.slice(0, 3).join(', ')}`);\n  }\n}\n\nconsole.log(`\\n🔍 DUPLICATE CHECK STARTING:`);\nconsole.log(`   📥 CommaFeed articles to check: ${feedArticles.length}`);\nconsole.log(`   🧠 Known articles in memory: ${knownArticleIds.length}`);\n\n// STRICT duplicate filtering\nlet filteredCount = 0;\nconst duplicateCheck = {};\nconst newArticles = [];\n\nfeedArticles.forEach((item, index) => {\n  const article = item.json;\n  \n  // Create the EXACT same ID format used when saving to memory\n  const articleId = `${article.id}_${article.url}`;\n  \n  // Check if this ID is already in our memory\n  const isInMemory = knownArticleIds.includes(articleId);\n  \n  // Also check for duplicates within the current batch\n  const isDuplicateInBatch = duplicateCheck[articleId];\n  \n  if (isInMemory) {\n    filteredCount++;\n    console.log(`⏭️ DUPLICATE ${filteredCount}: Skipping memory article: ${article.title?.substring(0, 40)}...`);\n    console.log(`   🆔 ID: ${articleId}`);\n  } else if (isDuplicateInBatch) {\n    console.log(`⏭️ BATCH DUPLICATE: Skipping duplicate in current batch: ${article.title?.substring(0, 40)}...`);\n  } else {\n    // Article is NEW - add it to results\n    duplicateCheck[articleId] = true;\n    newArticles.push(item);\n    \n    if (newArticles.length <= 5) { // Log first few new articles\n      console.log(`✅ NEW ${newArticles.length}: ${article.title?.substring(0, 40)}... (ID: ${articleId})`);\n    }\n  }\n});\n\nconsole.log(`\\n✅ FILTERING COMPLETE:`);\nconsole.log(`   📥 Input articles: ${feedArticles.length}`);\nconsole.log(`   🧠 Articles in memory: ${knownArticleIds.length}`);\nconsole.log(`   ⏭️ Duplicates filtered out: ${filteredCount}`);\nconsole.log(`   📤 NEW articles for LLM: ${newArticles.length}`);\n\n// VERIFICATION: Double-check no memory articles got through\nconst outputIds = newArticles.map(item => `${item.json.id}_${item.json.url}`);\nconst memoryLeaks = outputIds.filter(id => knownArticleIds.includes(id));\n\nif (memoryLeaks.length > 0) {\n  console.log(`🚨 ERROR: ${memoryLeaks.length} memory articles leaked through!`);\n  memoryLeaks.forEach(id => console.log(`   🚨 Leaked ID: ${id}`));\n} else {\n  console.log(`🔒 VERIFIED: Zero memory articles will be sent to LLM`);\n}\n\n// Final safety check\nif (newArticles.length === 0) {\n  console.log(`ℹ️ No new articles - LLM will not run (saving costs)`);\n} else {\n  console.log(`🎯 ${newArticles.length} articles ready for LLM processing`);\n}\n\nreturn newArticles;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1400,
+        360
+      ],
+      "id": "c6545964-6f8f-4877-aa95-eb7b900f0ee8",
+      "name": "Filter New Articles"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Email formatter for AI Security Digest\nconsole.log('📧 Formatting digest for email distribution');\n\n// Get the AI response\nconst aiResponse = $input.first().json.output;\n\n// Clean up the content\nlet emailContent = aiResponse\n  // Remove any introductory sentences\n  .replace(/^I'll create.*?requirements\\.\\s*/i, '')\n  .replace(/^.*?comprehensive analysis.*?\\n\\n/i, '')\n  // Clean up any artifacts\n  .replace(/^Based on.*?provided articles.*?\\n\\n/i, '')\n  // Ensure proper markdown formatting\n  .trim();\n\n// Add email-specific formatting\nconst emailHeader = `<!DOCTYPE html>\n<html>\n<head>\n    <meta charset=\"utf-8\">\n    <style>\n        body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }\n        h1 { color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 10px; }\n        h2 { color: #34495e; margin-top: 30px; }\n        h3 { color: #7f8c8d; }\n        a { color: #3498db; text-decoration: none; }\n        a:hover { text-decoration: underline; }\n        .highlight { background-color: #f8f9fa; padding: 15px; border-left: 4px solid #3498db; margin: 15px 0; }\n        .priority { background-color: #fff3cd; padding: 10px; border-radius: 5px; }\n        ul, ol { padding-left: 25px; }\n        .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; font-size: 0.9em; color: #666; }\n    </style>\n</head>\n<body>`;\n\nconst emailFooter = `\n<div class=\"footer\">\n    <p><strong>AI Security Intelligence Digest</strong> | Daily insights for security professionals</p>\n    <p>Curated by AI from leading security sources | <a href=\"#\">Unsubscribe</a> | <a href=\"#\">Archive</a></p>\n    <p><em>This digest was automatically generated from curated security sources. Always verify critical information independently.</em></p>\n</div>\n</body>\n</html>`;\n\n// Convert markdown to HTML for email\nlet htmlContent = emailContent\n  // Convert headers\n  .replace(/^# (.*$)/gm, '<h1>$1</h1>')\n  .replace(/^## (.*$)/gm, '<h2>$1</h2>')\n  .replace(/^### (.*$)/gm, '<h3>$1</h3>')\n  // Convert bold\n  .replace(/\\*\\*(.*?)\\*\\*/g, '<strong>$1</strong>')\n  // Convert links\n  .replace(/\\[([^\\]]+)\\]\\(([^)]+)\\)/g, '<a href=\"$2\">$1</a>')\n  // Convert bullet points\n  .replace(/^- (.*$)/gm, '<li>$1</li>')\n  .replace(/(<li>.*<\\/li>)/s, '<ul>$1</ul>')\n  // Convert numbered lists\n  .replace(/^\\d+\\. (.*$)/gm, '<li>$1</li>')\n  // Convert line breaks\n  .replace(/\\n\\n/g, '</p><p>')\n  .replace(/^(?!<[h|u|l])(.+)$/gm, '<p>$1</p>')\n  // Clean up empty paragraphs\n  .replace(/<p><\\/p>/g, '')\n  .replace(/<p>(<h[1-6])/g, '$1')\n  .replace(/(<\\/h[1-6]>)<\\/p>/g, '$1');\n\n// Combine everything\nconst fullEmailContent = emailHeader + htmlContent + emailFooter;\n\n// Create both HTML and plain text versions\nconst plainTextContent = emailContent\n  .replace(/\\*\\*(.*?)\\*\\*/g, '$1')  // Remove bold\n  .replace(/\\[([^\\]]+)\\]\\([^)]+\\)/g, '$1'); // Convert links to plain text\n\n// Output for Listmonk\nconst listmonkData = {\n  subject: `AI Security Intelligence Digest - ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`,\n  body_html: fullEmailContent,\n  body_text: plainTextContent,\n  template_id: 1, // Adjust based on your Listmonk template\n  list_ids: [1], // Adjust based on your subscriber list\n  messenger: 'email',\n  type: 'campaign',\n  tags: ['ai-security', 'weekly-digest', 'automated']\n};\n\nconsole.log('✅ Email formatted successfully');\nconsole.log(`📊 Content length: ${fullEmailContent.length} characters`);\nconsole.log(`📧 Subject: ${listmonkData.subject}`);\n\nreturn [{\n  json: {\n    email_html: fullEmailContent,\n    email_text: plainTextContent,\n    listmonk_payload: listmonkData,\n    subject: listmonkData.subject,\n    word_count: emailContent.split(' ').length\n  }\n}];"
+      },
+      "id": "6c5b24e1-5718-4241-82af-774117335e2e",
+      "name": "Email formatting",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -400,
+        432
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "molntek0@gmail.com",
+        "subject": "={{ $json.subject }}",
+        "message": "={{ $json.email_html }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "6f0a96cd-c44a-4e43-8022-fe3f1112b106",
+      "name": "Send Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -140,
+        440
+      ],
+      "webhookId": "1df7b1b9-966f-4ab0-9fbd-eb4b16aa4a41",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "kPvIbZLMG0kkem1o",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1aguZcevhSBvSG0Lps_PKXtbclacBtYxIpr_Yoo4YQCI",
+          "mode": "list",
+          "cachedResultName": "n8n-memory",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aguZcevhSBvSG0Lps_PKXtbclacBtYxIpr_Yoo4YQCI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aguZcevhSBvSG0Lps_PKXtbclacBtYxIpr_Yoo4YQCI/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -2200,
+        300
+      ],
+      "id": "0312082c-e166-43d3-909c-cde519218563",
+      "name": "Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ho3Sr1fFuQUmcd4L",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        -1620,
+        340
+      ],
+      "id": "d8027d11-e6c2-441f-9369-4544444dbfc7",
+      "name": "Merge2"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1aguZcevhSBvSG0Lps_PKXtbclacBtYxIpr_Yoo4YQCI",
+          "mode": "list",
+          "cachedResultName": "n8n-memory",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aguZcevhSBvSG0Lps_PKXtbclacBtYxIpr_Yoo4YQCI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aguZcevhSBvSG0Lps_PKXtbclacBtYxIpr_Yoo4YQCI/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "article_id": "={{ $json.article_id }}",
+            "title": "={{ $json.title }}",
+            "processed_date": "={{ $json.processed_date }}",
+            "url": "={{ $json.url }}",
+            "category": "={{ $json.category }}",
+            "feed_id": "={{ $json.feed_id }}",
+            "score": "={{ $json.score }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "article_id",
+              "displayName": "article_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "processed_date",
+              "displayName": "processed_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "feed_id",
+              "displayName": "feed_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "feed_title",
+              "displayName": "feed_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "score",
+              "displayName": "score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -900,
+        300
+      ],
+      "id": "1914ce46-0d85-4f6c-a959-1340ff7243e0",
+      "name": "Google Sheets1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ho3Sr1fFuQUmcd4L",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        -2020,
+        680
+      ],
+      "id": "ea483835-c103-4b7f-b1b8-4198b2ff0b65",
+      "name": "Merge3"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=# 🧠 AI Security Intelligence Digest\n\nCreate a **daily AI Security Intelligence Digest** for **{{ formatDate($now, \"yyyy-MM-dd\") }}**.\n\nBelow is the list of relevant articles in JSON format:\n\n\n{{ JSON.stringify($json.articles, null, 2) }}\n\n---\n\n## 🧾 Output Format\n\n**📊 Executive Summary** (3–4 sentences)\n- Key AI security developments and their broader implications  \n- Overall risk level (**HIGH / MEDIUM / LOW**) with reasoning  \n- Relation to the current global threat landscape  \n\n**🎯 Top Highlights** (4–5 items)  \nFor each highlight:\n- **[Development Title](URL)** — hyperlink title and key terms  \n- **Impact**: Why this matters for security professionals  \n- **Action**: What to do within 24h  \n- **Timeline**: When to act (immediate / 24h / weekly)\n\n**📂 Category Analysis**\n\n### 🤖 AI Security & Research\n- Key research findings (with [sources](URL))  \n- Threat evolution & emerging AI risks  \n- Defense innovations & implementation guidance  \n- Enterprise impact  \n\n### 🛡️ Cybersecurity\n- Major incidents (context + [source links](URL))  \n- Emerging techniques & mitigations  \n- Threat actor activity & adaptation  \n- Industry/community response  \n\n### ☁️ Kubernetes & Cloud Native Security\n- Platform security updates with [documentation links](URL)  \n- New best practices & patterns  \n- Ecosystem tool updates and effectiveness  \n\n### 📋 Industry & Compliance\n- Regulatory or policy changes ([reference](URL))  \n- Market & adoption trends  \n- Government and industry updates  \n\n**⚡ Strategic Intelligence**\n- 5–6 bullet points connecting multiple developments  \n- Include metrics, trend data, and [source links](URL)  \n- Explain implications for SMBs, large enterprises, and public sector  \n\n**🔮 Forward-Looking Analysis**\n- Emerging cross-category trends  \n- Security team focus for next week  \n- Predicted threat evolution  \n- Recommended proactive measures  \n\n**📚 Essential Reading**\nTop 3–4 articles with:\n- **[Article Title](URL)** — include reading time  \n- **Why it matters**: relevance and impact  \n- **Key takeaways**: concise insights  \n- **Action items**: next steps  \n\n**🎯 Security Priorities**\nRank top 3–5 action items by urgency and impact with supporting [resource links](URL)\n\n---\n\n## ✍️ Writing Guidelines\n\n- **Tone**: Expert yet concise, targeting CISOs / senior security leaders  \n- **Length**: 800–1000 words  \n- **Context**: Always explain *why* developments matter  \n- **Hyperlinks**: Make all articles, tools, and resources clickable  \n- **Actionability**: Always tie insights to practical security outcomes  \n\n---\n\n## 🧩 Critical Requirements\n\n1. **Hyperlink everything** (titles, tools, sources, etc.)  \n2. **Add rich context** (why each development matters)  \n3. **Connect the dots** across articles and domains  \n4. **Be practical** — include concrete next steps  \n5. **Be strategic** — show threat landscape evolution and implications  \n\n---\n\n**Target audience:**  \nSecurity executives and analysts who need concise, actionable, and strategic intelligence.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -1060,
+        780
+      ],
+      "id": "d807842a-3ca1-4089-a902-403e521fa72b",
+      "name": "RSS analysis AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.2,
+      "position": [
+        -1160,
+        1020
+      ],
+      "id": "fea9031d-965c-4aa8-a0fa-ef491d09f42a",
+      "name": "Anthropic Chat Model",
+      "credentials": {
+        "anthropicApi": {
+          "id": "uDXi6ycFchCQ20g9",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## LLM Creates Digest\n",
+        "height": 440,
+        "width": 740,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1500,
+        680
+      ],
+      "id": "c735380a-ca3f-4ee3-b72b-5b37813be1af",
+      "name": "Sticky Note2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Combine feeds": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Fetch categories": {
+      "main": [
+        [
+          {
+            "node": "Merge3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Advanced Filter": {
+      "main": [
+        [
+          {
+            "node": "Format for AI",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Prepare Memory Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format for AI": {
+      "main": [
+        [
+          {
+            "node": "RSS analysis AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Memory Update": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Email formatting",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Daily 4am": {
+      "main": [
+        [
+          {
+            "node": "Fetch categories",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fetch Articles",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Articles": {
+      "main": [
+        [
+          {
+            "node": "Merge3",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Filter New Articles": {
+      "main": [
+        [
+          {
+            "node": "Advanced Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email formatting": {
+      "main": [
+        [
+          {
+            "node": "Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge2": {
+      "main": [
+        [
+          {
+            "node": "Filter New Articles",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge3": {
+      "main": [
+        [
+          {
+            "node": "Combine feeds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "RSS analysis AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS analysis AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "993efef8-6c6a-4340-ab88-9b8982e6d80f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8254e8e6943cb90e4a281207cef8f302c36af220610a9f82a9bee960c55a1841"
+  },
+  "id": "EPEVOVgfsvtjkCeF",
+  "tags": []
+}

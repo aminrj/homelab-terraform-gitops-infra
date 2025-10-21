@@ -1,145 +1,140 @@
-{
-  "name": "Feed Summarizer via Ollama",
-  "nodes": [
-    {
-      "id": "cron",
-      "name": "Every 12 Hours",
-      "type": "n8n-nodes-base.cron",
-      "typeVersion": 1,
-      "position": [
-        200,
-        100
-      ],
-      "parameters": {
-        "triggerTimes": [
-          {
-            "hour": 8,
-            "minute": 0
-          }
+[
+  {
+    "name": "Feed Summarizer via Ollama",
+    "nodes": [
+      {
+        "name": "Manual Trigger",
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          200,
+          100
         ],
-        "timezone": "Europe/Stockholm"
-      }
-    },
-    {
-      "id": "rss",
-      "name": "Fetch RSS Feed",
-      "type": "n8n-nodes-base.rssFeedRead",
-      "typeVersion": 1,
-      "position": [
-        400,
-        100
-      ],
-      "parameters": {
-        "url": "https://news.ycombinator.com/rss",
-        "options": {
-          "count": 3
-        }
-      }
-    },
-    {
-      "id": "format",
-      "name": "Format for Summary",
-      "type": "n8n-nodes-base.function",
-      "typeVersion": 1,
-      "position": [
-        600,
-        100
-      ],
-      "parameters": {
-        "functionCode": "const itemsFormatted = items.map(item => `Title: ${item.json.title}\\nLink: ${item.json.link}\\nSummary: ${item.json.contentSnippet}`);\nreturn [{ json: { combinedFeed: itemsFormatted.join(\"\\n\\n\") } }];"
-      }
-    },
-    {
-      "id": "ollama",
-      "name": "Send to Ollama",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 1,
-      "position": [
-        800,
-        100
-      ],
-      "parameters": {
-        "url": "http://ollama-llama3.ollama.svc.cluster.local:11434/api/generate",
-        "method": "POST",
-        "jsonParameters": true,
-        "options": {},
-        "bodyParametersJson": "{\"model\": \"llama3\", \"prompt\": \"Summarize the following articles:\\n\\n{{$json[\"combinedFeed\"]}}\", \"stream\": false}",
-        "headers": [
-          {
-            "name": "Content-Type",
-            "value": "application/json"
+        "parameters": {}
+      },
+      {
+        "name": "Fetch RSS Feed",
+        "type": "n8n-nodes-base.rssFeedRead",
+        "typeVersion": 1,
+        "position": [
+          400,
+          100
+        ],
+        "parameters": {
+          "url": "https://news.ycombinator.com/rss",
+          "options": {
+            "count": 3
           }
-        ]
-      }
-    },
-    {
-      "id": "telegram",
-      "name": "Send to Telegram",
-      "type": "n8n-nodes-base.telegram",
-      "typeVersion": 1,
-      "position": [
-        1000,
-        100
-      ],
-      "credentials": {
-        "telegramApi": {
-          "id": "1",
-          "name": "Telegram Bot"
         }
       },
-      "parameters": {
-        "operation": "sendMessage",
-        "chatId": "YOUR_CHAT_ID",
-        "text": "🧠 Summary:\n\n{{$json.response}}",
-        "additionalFields": {}
+      {
+        "name": "Format for Summary",
+        "type": "n8n-nodes-base.function",
+        "typeVersion": 1,
+        "position": [
+          600,
+          100
+        ],
+        "parameters": {
+          "functionCode": "const itemsFormatted = items.map(item => `Title: ${item.json.title}\\nLink: ${item.json.link}\\nSummary: ${item.json.contentSnippet}`);\nreturn [{ json: { combinedFeed: itemsFormatted.join(\"\\n\\n\") } }];"
+        }
+      },
+      {
+        "name": "Send to Ollama",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 5,
+        "position": [
+          800,
+          100
+        ],
+        "parameters": {
+          "url": "http://ollama-llama3.ollama.svc.cluster.local:11434/api/generate",
+          "method": "POST",
+          "jsonParameters": true,
+          "sendBody": true,
+          "sendHeaders": true,
+          "bodyParametersJson": "{\"model\":\"llama3\",\"prompt\":\"Summarize the following articles:\\n\\n{{$json[\\\"combinedFeed\\\"]}}\",\"stream\":false}",
+          "headerParametersUi": {
+            "parameter": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "options": {}
+        }
+      },
+      {
+        "name": "Send to Telegram",
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1,
+        "position": [
+          1000,
+          100
+        ],
+        "credentials": {
+          "telegramApi": {
+            "id": "1",
+            "name": "Telegram Bot"
+          }
+        },
+        "parameters": {
+          "operation": "sendMessage",
+          "chatId": "YOUR_CHAT_ID",
+          "text": "\ud83e\udde0 Summary:\n\n{{$json.response}}",
+          "additionalFields": {}
+        }
       }
-    }
-  ],
-  "connections": {
-    "Every 12 Hours": {
-      "main": [
-        [
-          {
-            "node": "Fetch RSS Feed",
-            "type": "main",
-            "index": 0
-          }
+    ],
+    "connections": {
+      "Fetch RSS Feed": {
+        "main": [
+          [
+            {
+              "node": "Format for Summary",
+              "type": "main",
+              "index": 0
+            }
+          ]
         ]
-      ]
+      },
+      "Format for Summary": {
+        "main": [
+          [
+            {
+              "node": "Send to Ollama",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Send to Ollama": {
+        "main": [
+          [
+            {
+              "node": "Send to Telegram",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Manual Trigger": {
+        "main": [
+          [
+            {
+              "node": "Fetch RSS Feed",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
     },
-    "Fetch RSS Feed": {
-      "main": [
-        [
-          {
-            "node": "Format for Summary",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Format for Summary": {
-      "main": [
-        [
-          {
-            "node": "Send to Ollama",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Send to Ollama": {
-      "main": [
-        [
-          {
-            "node": "Send to Telegram",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    }
-  },
-  "active": false
-}
+    "active": false,
+    "id": null,
+    "tags": []
+  }
+]

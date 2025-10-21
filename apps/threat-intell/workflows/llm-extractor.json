@@ -1,278 +1,258 @@
-{
-  "name": "Threat Intel LLM Extractor",
-  "active": false,
-  "nodes": [
-    {
-      "id": "cron",
-      "name": "Hourly Trigger",
-      "type": "n8n-nodes-base.cron",
-      "typeVersion": 1,
-      "position": [
-        200,
-        200
-      ],
-      "parameters": {
-        "triggerTimes": [
-          {
-            "mode": "everyX",
-            "unit": "hours",
-            "value": 1
-          }
+[
+  {
+    "name": "Threat Intel LLM Extractor",
+    "active": false,
+    "nodes": [
+      {
+        "name": "Manual Trigger",
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          200,
+          200
         ],
-        "timezone": "UTC"
-      }
-    },
-    {
-      "id": "selectDocs",
-      "name": "Select Pending Docs",
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 1,
-      "position": [
-        400,
-        200
-      ],
-      "parameters": {
-        "operation": "executeQuery",
-        "query": "SELECT rd.id, rd.source, rd.title, rd.raw_text\nFROM threatintel.raw_doc rd\nWHERE rd.collected_at > NOW() - INTERVAL '7 days'\n  AND NOT EXISTS (\n    SELECT 1 FROM threatintel.ioc i\n    WHERE i.doc_id = rd.id AND i.extractor = 'llm'\n  )\nORDER BY rd.collected_at DESC\nLIMIT 50;"
+        "parameters": {}
       },
-      "credentials": {
-        "postgres": {
-          "id": "2",
-          "name": "threat-intel-db"
+      {
+        "name": "Select Pending Docs",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 1,
+        "position": [
+          400,
+          200
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "SELECT rd.id, rd.source, rd.title, rd.raw_text\nFROM threatintel.raw_doc rd\nWHERE rd.collected_at > NOW() - INTERVAL '7 days'\n  AND NOT EXISTS (\n    SELECT 1 FROM threatintel.ioc i\n    WHERE i.doc_id = rd.id AND i.extractor = 'llm'\n  )\nORDER BY rd.collected_at DESC\nLIMIT 50;"
+        },
+        "credentials": {
+          "postgres": {
+            "id": "2",
+            "name": "threat-intel-db"
+          }
+        }
+      },
+      {
+        "name": "Split Documents",
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 1,
+        "position": [
+          600,
+          200
+        ],
+        "parameters": {
+          "batchSize": 1
+        }
+      },
+      {
+        "name": "Build Prompt",
+        "type": "n8n-nodes-base.function",
+        "typeVersion": 1,
+        "position": [
+          800,
+          200
+        ],
+        "parameters": {
+          "functionCode": "return items.map(item => {\n  const rawText = item.json.raw_text ?? \"\";\n  return {\n    json: {\n      doc_id: item.json.id,\n      document: rawText,\n      prompt: `You are a cybersecurity analyst who extracts Indicators of Compromise (IOCs) from reports. Only output valid JSON: [{\"type\":\"<ip|domain|url|hash|cve>\",\"value\":\"<ioc>\",\"evidence\":\"<quote from text>\",\"confidence\":<0-1>}]. If unsure, set low confidence. Never invent data.\\nDocument:\\n<<<\\n${rawText}\\n>>>\\nExtract IOCs and evidence from the above text.`\n    }\n  };\n});"
+        }
+      },
+      {
+        "name": "Call LLM API",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 5,
+        "position": [
+          1000,
+          200
+        ],
+        "parameters": {
+          "url": "={{$env.OPENAI_API_BASE || \"https://api.openai.com/v1/chat/completions\"}}",
+          "method": "POST",
+          "authentication": "predefinedCredentialType",
+          "responseFormat": "json",
+          "jsonParameters": true,
+          "sendBody": true,
+          "sendHeaders": true,
+          "options": {
+            "timeout": 60000
+          },
+          "bodyParametersJson": "{\"model\":\"gpt-4o-mini\",\"temperature\":0.1,\"messages\":[{\"role\":\"system\",\"content\":\"You are a cybersecurity analyst who extracts Indicators of Compromise (IOCs) from reports. Only output valid JSON: [{\\\\\"type\\\\\":\\\\\"<ip|domain|url|hash|cve>\\\\\",\\\\\"value\\\\\":\\\\\"<ioc>\\\\\",\\\\\"evidence\\\\\":\\\\\"<quote from text>\\\\\",\\\\\"confidence\\\\\":<0-1>}]. If unsure, set low confidence. Never invent data.\"},{\"role\":\"user\",\"content\":\"Document:\\n<<<\\n{{$json.document}}\\n>>>\\nExtract IOCs and evidence from the above text.\"}]}",
+          "headerParametersUi": {
+            "parameter": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "5",
+            "name": "openai-threat-intel"
+          }
+        }
+      },
+      {
+        "name": "Parse LLM Output",
+        "type": "n8n-nodes-base.function",
+        "typeVersion": 1,
+        "position": [
+          1200,
+          200
+        ],
+        "parameters": {
+          "functionCode": "const docId = $json.doc_id;\nlet payload = items[0].json;\n\nlet raw = payload.choices?.[0]?.message?.content || payload.response;\nif (typeof raw !== 'string') {\n  raw = JSON.stringify(raw);\n}\n\nlet parsed;\ntry {\n  parsed = JSON.parse(raw);\n} catch (error) {\n  // Attempt to extract JSON substring\n  const match = raw.match(/\\[.*\\]/s);\n  parsed = match ? JSON.parse(match[0]) : [];\n}\n\nif (!Array.isArray(parsed)) {\n  parsed = [];\n}\n\nreturn parsed.map(entry => ({\n  json: {\n    doc_id: docId,\n    extractor: 'llm',\n    ioc_type: entry.type,\n    value: entry.value,\n    evidence_span: entry.evidence,\n    confidence: entry.confidence ?? 0.5\n  }\n}));"
+        }
+      },
+      {
+        "name": "Insert LLM IOC",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 1,
+        "position": [
+          1400,
+          200
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "INSERT INTO threatintel.ioc (doc_id, extractor, ioc_type, value, evidence_span, confidence)\nVALUES (:={{$json.doc_id}}, 'llm', :={{$json.ioc_type}}, :={{$json.value}}, :={{$json.evidence_span}}, :={{$json.confidence}})\nON CONFLICT (value, doc_id, extractor) DO UPDATE SET extracted_at = NOW(), evidence_span = EXCLUDED.evidence_span, confidence = EXCLUDED.confidence;"
+        },
+        "credentials": {
+          "postgres": {
+            "id": "2",
+            "name": "threat-intel-db"
+          }
+        }
+      },
+      {
+        "name": "Compute Hallucination",
+        "type": "n8n-nodes-base.function",
+        "typeVersion": 1,
+        "position": [
+          1600,
+          200
+        ],
+        "parameters": {
+          "functionCode": "const inference = items.map(item => item.json);\nconst missingEvidence = inference.filter(entry => !entry.evidence_span).length;\nreturn [{ json: { total: inference.length, missingEvidence } }];"
+        }
+      },
+      {
+        "name": "Emit LLM Metric",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 3,
+        "position": [
+          1800,
+          200
+        ],
+        "parameters": {
+          "url": "http://threat-intel-metrics.threat-intel.svc.cluster.local:9101/extractor",
+          "method": "POST",
+          "jsonParameters": true,
+          "sendBody": true,
+          "bodyParametersJson": "{\"extractor\":\"llm\",\"count\":{{$json.total}},\"hallucinations\":{{$json.missingEvidence}}}"
         }
       }
-    },
-    {
-      "id": "splitDocs",
-      "name": "Split Documents",
-      "type": "n8n-nodes-base.splitInBatches",
-      "typeVersion": 1,
-      "position": [
-        600,
-        200
-      ],
-      "parameters": {
-        "batchSize": 1
-      }
-    },
-    {
-      "id": "preparePrompt",
-      "name": "Build Prompt",
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 2,
-      "position": [
-        800,
-        200
-      ],
-      "parameters": {
-        "keepOnlySet": true,
-        "values": {
-          "string": [
+    ],
+    "connections": {
+      "Select Pending Docs": {
+        "main": [
+          [
             {
-              "name": "doc_id",
-              "value": "={{$json.id}}"
-            },
-            {
-              "name": "document",
-              "value": "={{$json.raw_text}}"
-            },
-            {
-              "name": "prompt",
-              "value": "You are a cybersecurity analyst who extracts Indicators of Compromise (IOCs) from reports. Only output valid JSON: [{\"type\":\"<ip|domain|url|hash|cve>\",\"value\":\"<ioc>\",\"evidence\":\"<quote from text>\",\"confidence\":<0-1>}]. If unsure, set low confidence. Never invent data.\\nDocument:\\n<<<\\n{{$json.raw_text}}\\n>>>\\nExtract IOCs and evidence from the above text."
+              "node": "Split Documents",
+              "type": "main",
+              "index": 0
             }
           ]
-        }
-      }
-    },
-    {
-      "id": "callLLM",
-      "name": "Call LLM API",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 3,
-      "position": [
-        1000,
-        200
-      ],
-      "parameters": {
-        "url": "={{$env.OPENAI_API_BASE || \"https://api.openai.com/v1/chat/completions\"}}",
-        "method": "POST",
-        "authentication": "predefinedCredentialType",
-        "responseFormat": "json",
-        "jsonParameters": true,
-        "options": {
-          "timeout": 60000
-        },
-        "bodyParametersJson": "{\"model\":\"gpt-4o-mini\",\"temperature\":0.1,\"messages\":[{\"role\":\"system\",\"content\":\"You are a cybersecurity analyst who extracts Indicators of Compromise (IOCs) from reports. Only output valid JSON: [{\\\\\"type\\\\\":\\\\\"<ip|domain|url|hash|cve>\\\\\",\\\\\"value\\\\\":\\\\\"<ioc>\\\\\",\\\\\"evidence\\\\\":\\\\\"<quote from text>\\\\\",\\\\\"confidence\\\\\":<0-1>}]. If unsure, set low confidence. Never invent data.\"},{\"role\":\"user\",\"content\":\"Document:\\n<<<\\n{{$json.document}}\\n>>>\\nExtract IOCs and evidence from the above text.\"}]}",
-        "headerParametersJson": "{\"Content-Type\":\"application/json\"}"
+        ]
       },
-      "credentials": {
-        "httpHeaderAuth": {
-          "id": "5",
-          "name": "openai-threat-intel"
-        }
-      }
-    },
-    {
-      "id": "parseResponse",
-      "name": "Parse LLM Output",
-      "type": "n8n-nodes-base.function",
-      "typeVersion": 1,
-      "position": [
-        1200,
-        200
-      ],
-      "parameters": {
-        "functionCode": "const docId = $json.doc_id;\nlet payload = items[0].json;\n\nlet raw = payload.choices?.[0]?.message?.content || payload.response;\nif (typeof raw !== 'string') {\n  raw = JSON.stringify(raw);\n}\n\nlet parsed;\ntry {\n  parsed = JSON.parse(raw);\n} catch (error) {\n  // Attempt to extract JSON substring\n  const match = raw.match(/\\[.*\\]/s);\n  parsed = match ? JSON.parse(match[0]) : [];\n}\n\nif (!Array.isArray(parsed)) {\n  parsed = [];\n}\n\nreturn parsed.map(entry => ({\n  json: {\n    doc_id: docId,\n    extractor: 'llm',\n    ioc_type: entry.type,\n    value: entry.value,\n    evidence_span: entry.evidence,\n    confidence: entry.confidence ?? 0.5\n  }\n}));"
-      }
-    },
-    {
-      "id": "insertIoc",
-      "name": "Insert LLM IOC",
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 1,
-      "position": [
-        1400,
-        200
-      ],
-      "parameters": {
-        "operation": "executeQuery",
-        "query": "INSERT INTO threatintel.ioc (doc_id, extractor, ioc_type, value, evidence_span, confidence)\nVALUES (:={{$json.doc_id}}, 'llm', :={{$json.ioc_type}}, :={{$json.value}}, :={{$json.evidence_span}}, :={{$json.confidence}})\nON CONFLICT (value, doc_id, extractor) DO UPDATE SET extracted_at = NOW(), evidence_span = EXCLUDED.evidence_span, confidence = EXCLUDED.confidence;"
+      "Split Documents": {
+        "main": [
+          [
+            {
+              "node": "Build Prompt",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Split Documents",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
       },
-      "credentials": {
-        "postgres": {
-          "id": "2",
-          "name": "threat-intel-db"
-        }
+      "Build Prompt": {
+        "main": [
+          [
+            {
+              "node": "Call LLM API",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Call LLM API": {
+        "main": [
+          [
+            {
+              "node": "Parse LLM Output",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse LLM Output": {
+        "main": [
+          [
+            {
+              "node": "Insert LLM IOC",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Insert LLM IOC": {
+        "main": [
+          [
+            {
+              "node": "Compute Hallucination",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Compute Hallucination": {
+        "main": [
+          [
+            {
+              "node": "Emit LLM Metric",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Manual Trigger": {
+        "main": [
+          [
+            {
+              "node": "Select Pending Docs",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
       }
     },
-    {
-      "id": "hallucinationCheck",
-      "name": "Compute Hallucination",
-      "type": "n8n-nodes-base.function",
-      "typeVersion": 1,
-      "position": [
-        1600,
-        200
-      ],
-      "parameters": {
-        "functionCode": "const inference = items.map(item => item.json);\nconst missingEvidence = inference.filter(entry => !entry.evidence_span).length;\nreturn [{ json: { total: inference.length, missingEvidence } }];"
-      }
+    "settings": {
+      "executionOrder": "v1"
     },
-    {
-      "id": "metric",
-      "name": "Emit LLM Metric",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 3,
-      "position": [
-        1800,
-        200
-      ],
-      "parameters": {
-        "url": "http://threat-intel-metrics.threat-intel.svc.cluster.local:9101/extractor",
-        "method": "POST",
-        "jsonParameters": true,
-        "bodyParametersJson": "{\"extractor\":\"llm\",\"count\":{{$json.total}},\"hallucinations\":{{$json.missingEvidence}}}"
-      }
-    }
-  ],
-  "connections": {
-    "Hourly Trigger": {
-      "main": [
-        [
-          {
-            "node": "Select Pending Docs",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Select Pending Docs": {
-      "main": [
-        [
-          {
-            "node": "Split Documents",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Split Documents": {
-      "main": [
-        [
-          {
-            "node": "Build Prompt",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Split Documents",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Build Prompt": {
-      "main": [
-        [
-          {
-            "node": "Call LLM API",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Call LLM API": {
-      "main": [
-        [
-          {
-            "node": "Parse LLM Output",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Parse LLM Output": {
-      "main": [
-        [
-          {
-            "node": "Insert LLM IOC",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Insert LLM IOC": {
-      "main": [
-        [
-          {
-            "node": "Compute Hallucination",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Compute Hallucination": {
-      "main": [
-        [
-          {
-            "node": "Emit LLM Metric",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    }
-  },
-  "settings": {
-    "executionOrder": "v1"
+    "id": null,
+    "tags": []
   }
-}
+]

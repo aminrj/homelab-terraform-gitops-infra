@@ -22,3 +22,6 @@ environments/prod/terraform.tfvars
 environments/shared/terraform.tfvars
 **/.DS_Store
 AGENTS.md
+.DS_Store
+n8n-backup-20251021-1400.tar.gz
+workflows.tar

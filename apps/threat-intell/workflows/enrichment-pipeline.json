@@ -1,205 +1,195 @@
-{
-  "name": "Threat Intel Enrichment Pipeline",
-  "active": false,
-  "nodes": [
-    {
-      "id": "cron",
-      "name": "Enrich Every 2h",
-      "type": "n8n-nodes-base.cron",
-      "typeVersion": 1,
-      "position": [
-        200,
-        200
-      ],
-      "parameters": {
-        "triggerTimes": [
-          {
-            "mode": "everyX",
-            "unit": "hours",
-            "value": 2
-          }
+[
+  {
+    "name": "Threat Intel Enrichment Pipeline",
+    "active": false,
+    "nodes": [
+      {
+        "name": "Manual Trigger",
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          200,
+          200
         ],
-        "timezone": "UTC"
-      }
-    },
-    {
-      "id": "selectIocs",
-      "name": "Select Pending IOCs",
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 1,
-      "position": [
-        400,
-        200
-      ],
-      "parameters": {
-        "operation": "executeQuery",
-        "query": "SELECT i.id, i.value, i.ioc_type, i.extractor, i.extracted_at\nFROM threatintel.ioc i\nLEFT JOIN threatintel.enrichment e ON e.ioc_id = i.id\nWHERE (e.checked_at IS NULL OR e.checked_at < NOW() - INTERVAL '3 days')\nORDER BY i.extracted_at DESC\nLIMIT 200;"
+        "parameters": {}
       },
-      "credentials": {
-        "postgres": {
-          "id": "2",
-          "name": "threat-intel-db"
-        }
-      }
-    },
-    {
-      "id": "buildPayload",
-      "name": "Build Payload",
-      "type": "n8n-nodes-base.function",
-      "typeVersion": 1,
-      "position": [
-        600,
-        200
-      ],
-      "parameters": {
-        "functionCode": "const providers = ['virustotal', 'shodan', 'abuseipdb', 'rdap'];\nreturn [{ json: { inputs: items.map(item => ({\n  id: item.json.id,\n  value: item.json.value,\n  type: item.json.ioc_type,\n  providers\n})) } }];"
-      }
-    },
-    {
-      "id": "callGateway",
-      "name": "Call Enrichment Gateway",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 3,
-      "position": [
-        800,
-        200
-      ],
-      "parameters": {
-        "url": "http://threat-intel-enrichment.threat-intel.svc.cluster.local/v1/enrich",
-        "method": "POST",
-        "jsonParameters": true,
-        "responseFormat": "json",
-        "options": {
-          "timeout": 90000
+      {
+        "name": "Select Pending IOCs",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 1,
+        "position": [
+          400,
+          200
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "SELECT i.id, i.value, i.ioc_type, i.extractor, i.extracted_at\nFROM threatintel.ioc i\nLEFT JOIN threatintel.enrichment e ON e.ioc_id = i.id\nWHERE (e.checked_at IS NULL OR e.checked_at < NOW() - INTERVAL '3 days')\nORDER BY i.extracted_at DESC\nLIMIT 200;"
         },
-        "bodyParametersJson": "={{$json}}"
+        "credentials": {
+          "postgres": {
+            "id": "2",
+            "name": "threat-intel-db"
+          }
+        }
       },
-      "credentials": {
-        "httpHeaderAuth": {
-          "id": "6",
-          "name": "threat-intel-api-gateway"
+      {
+        "name": "Build Payload",
+        "type": "n8n-nodes-base.function",
+        "typeVersion": 1,
+        "position": [
+          600,
+          200
+        ],
+        "parameters": {
+          "functionCode": "const providers = ['virustotal', 'shodan', 'abuseipdb', 'rdap'];\nreturn [{ json: { inputs: items.map(item => ({\n  id: item.json.id,\n  value: item.json.value,\n  type: item.json.ioc_type,\n  providers\n})) } }];"
+        }
+      },
+      {
+        "name": "Call Enrichment Gateway",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 3,
+        "position": [
+          800,
+          200
+        ],
+        "parameters": {
+          "url": "http://threat-intel-enrichment.threat-intel.svc.cluster.local/v1/enrich",
+          "method": "POST",
+          "jsonParameters": true,
+          "sendBody": true,
+          "responseFormat": "json",
+          "options": {
+            "timeout": 90000
+          },
+          "bodyParametersJson": "={{$json}}"
+        },
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "6",
+            "name": "threat-intel-api-gateway"
+          }
+        }
+      },
+      {
+        "name": "Flatten Results",
+        "type": "n8n-nodes-base.function",
+        "typeVersion": 1,
+        "position": [
+          1000,
+          200
+        ],
+        "parameters": {
+          "functionCode": "const results = items[0].json.results || [];\nreturn results.map(entry => ({\n  json: {\n    ioc_id: entry.ioc_id,\n    provider: entry.provider,\n    validated: entry.validated ?? false,\n    score: entry.score ?? null,\n    result: entry.result || {}\n  }\n}));"
+        }
+      },
+      {
+        "name": "Insert Enrichment",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 1,
+        "position": [
+          1200,
+          200
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "INSERT INTO threatintel.enrichment (ioc_id, provider, validated, score, result)\nVALUES (:={{$json.ioc_id}}, :={{$json.provider}}, :={{$json.validated}}, :={{$json.score}}, :={{JSON.stringify($json.result)}}::jsonb)\nON CONFLICT (ioc_id, provider) DO UPDATE SET\n  validated = EXCLUDED.validated,\n  score = EXCLUDED.score,\n  result = EXCLUDED.result,\n  checked_at = NOW();"
+        },
+        "credentials": {
+          "postgres": {
+            "id": "2",
+            "name": "threat-intel-db"
+          }
+        }
+      },
+      {
+        "name": "Emit Enrichment Metric",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 3,
+        "position": [
+          1400,
+          200
+        ],
+        "parameters": {
+          "url": "http://threat-intel-metrics.threat-intel.svc.cluster.local:9101/enrichment",
+          "method": "POST",
+          "jsonParameters": true,
+          "sendBody": true,
+          "bodyParametersJson": "{\"count\":{{$items().length}}}"
         }
       }
-    },
-    {
-      "id": "flatten",
-      "name": "Flatten Results",
-      "type": "n8n-nodes-base.function",
-      "typeVersion": 1,
-      "position": [
-        1000,
-        200
-      ],
-      "parameters": {
-        "functionCode": "const results = items[0].json.results || [];\nreturn results.map(entry => ({\n  json: {\n    ioc_id: entry.ioc_id,\n    provider: entry.provider,\n    validated: entry.validated ?? false,\n    score: entry.score ?? null,\n    result: entry.result || {}\n  }\n}));"
-      }
-    },
-    {
-      "id": "insertEnrichment",
-      "name": "Insert Enrichment",
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 1,
-      "position": [
-        1200,
-        200
-      ],
-      "parameters": {
-        "operation": "executeQuery",
-        "query": "INSERT INTO threatintel.enrichment (ioc_id, provider, validated, score, result)\nVALUES (:={{$json.ioc_id}}, :={{$json.provider}}, :={{$json.validated}}, :={{$json.score}}, :={{JSON.stringify($json.result)}}::jsonb)\nON CONFLICT (ioc_id, provider) DO UPDATE SET\n  validated = EXCLUDED.validated,\n  score = EXCLUDED.score,\n  result = EXCLUDED.result,\n  checked_at = NOW();"
+    ],
+    "connections": {
+      "Select Pending IOCs": {
+        "main": [
+          [
+            {
+              "node": "Build Payload",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
       },
-      "credentials": {
-        "postgres": {
-          "id": "2",
-          "name": "threat-intel-db"
-        }
+      "Build Payload": {
+        "main": [
+          [
+            {
+              "node": "Call Enrichment Gateway",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Call Enrichment Gateway": {
+        "main": [
+          [
+            {
+              "node": "Flatten Results",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Flatten Results": {
+        "main": [
+          [
+            {
+              "node": "Insert Enrichment",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Insert Enrichment": {
+        "main": [
+          [
+            {
+              "node": "Emit Enrichment Metric",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Manual Trigger": {
+        "main": [
+          [
+            {
+              "node": "Select Pending IOCs",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
       }
     },
-    {
-      "id": "metric",
-      "name": "Emit Enrichment Metric",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 3,
-      "position": [
-        1400,
-        200
-      ],
-      "parameters": {
-        "url": "http://threat-intel-metrics.threat-intel.svc.cluster.local:9101/enrichment",
-        "method": "POST",
-        "jsonParameters": true,
-        "bodyParametersJson": "{\"count\":{{$items().length}}}"
-      }
-    }
-  ],
-  "connections": {
-    "Enrich Every 2h": {
-      "main": [
-        [
-          {
-            "node": "Select Pending IOCs",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+    "settings": {
+      "executionOrder": "v1"
     },
-    "Select Pending IOCs": {
-      "main": [
-        [
-          {
-            "node": "Build Payload",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Build Payload": {
-      "main": [
-        [
-          {
-            "node": "Call Enrichment Gateway",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Call Enrichment Gateway": {
-      "main": [
-        [
-          {
-            "node": "Flatten Results",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Flatten Results": {
-      "main": [
-        [
-          {
-            "node": "Insert Enrichment",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Insert Enrichment": {
-      "main": [
-        [
-          {
-            "node": "Emit Enrichment Metric",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    }
-  },
-  "settings": {
-    "executionOrder": "v1"
+    "id": null,
+    "tags": []
   }
-}
+]
