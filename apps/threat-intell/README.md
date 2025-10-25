@@ -2,17 +2,23 @@
 
 ## Details about existing workflows
 
-- apps/threat-intell/workflows/collector-open-source.json: every 3 h hits CISA KEV, AlienVault OTX, CERT-EU, normalizes entries, stores them
+- apps/threat-intell/workflows/collector-open-source.json:
+  every 3 h hits CISA KEV, AlienVault OTX, CERT-EU, normalizes entries, stores them
   in threatintel.raw_doc, and posts a collector metric.
-- apps/threat-intell/workflows/baseline-extractor.json: nightly regex extractor over recent docs; writes baseline IOCs to threatintel.ioc
+- apps/threat-intell/workflows/baseline-extractor.json:
+  nightly regex extractor over recent docs; writes baseline IOCs to threatintel.ioc
   and reports extractor counts.
-- apps/threat-intell/workflows/llm-extractor.json: hourly LLM pass using gpt-4o-mini; parses structured IOC JSON, upserts into
+- apps/threat-intell/workflows/llm-extractor.json:
+  hourly LLM pass using gpt-4o-mini; parses structured IOC JSON, upserts into
   threatintel.ioc, and tracks hallucination stats.
-- apps/threat-intell/workflows/enrichment-pipeline.json: every 2 h batches pending IOCs, calls the internal enrichment gateway, upserts
+- apps/threat-intell/workflows/enrichment-pipeline.json:
+  every 2 h batches pending IOCs, calls the internal enrichment gateway, upserts
   provider results into threatintel.enrichment, and emits enrichment metrics.
-- apps/threat-intell/workflows/validator-export.json: daily 05:00 UTC scoring/exporter; composes final candidate scores, uploads the
+- apps/threat-intell/workflows/validator-export.json:
+  daily 05:00 UTC scoring/exporter; composes final candidate scores, uploads the
   validated CSV, and reports validator metrics.
-- apps/n8n/workflows/feed-summarizer-via-ollama.json: twice-daily Hacker News RSS summary via Ollama and Telegram push (not part of threat-
+- apps/n8n/workflows/feed-summarizer-via-ollama.json:
+  twice-daily Hacker News RSS summary via Ollama and Telegram push (not part of threat-
   intell but useful for ops updates).
 
 ## Importing the n8n workflows

@@ -177,16 +177,23 @@ module "threat_intel_secrets" {
   static_secrets = {
     "db-username"       = "threatintel"
     "db-name"           = "threatintel"
+    "db-host"           = "threat-intel-db-rw.threat-intel.svc.cluster.local"
     "vt-api-key"        = var.threat_intel_vt_api_key
     "shodan-api-key"    = var.threat_intel_shodan_api_key
     "abuseipdb-api-key" = var.threat_intel_abuseipdb_api_key
     "openai-api-key"    = var.threat_intel_openai_api_key
     "ollama-host"       = var.threat_intel_ollama_host
     "azure-container"   = var.threat_intel_azure_container
+    "n8n-db-host"       = "threat-intel-db-rw.threat-intel.svc.cluster.local"
+    "n8n-db-name"       = "threatintel"
+    "n8n-db-username"   = "n8n_collector"
+    "n8n-db-port"       = "5432"
   }
 
   random_secrets = [
-    "db-password"
+    "db-password",
+    "n8n-user-password",
+    "n8n-db-password"
   ]
 
   depends_on = [
