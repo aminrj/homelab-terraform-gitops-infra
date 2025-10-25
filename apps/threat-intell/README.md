@@ -5,6 +5,39 @@
 - apps/threat-intell/workflows/collector-open-source.json:
   every 3 h hits CISA KEV, AlienVault OTX, CERT-EU, normalizes entries, stores them
   in threatintel.raw_doc, and posts a collector metric.
+
+  - Postgres insert uses positional parameters with JSON casting:
+
+    ```sql
+    INSERT INTO threatintel.raw_doc
+      (source, source_key, url, title, raw_text, content_hash, metadata)
+    VALUES ($1, $2, $3, $4, $5, $6, $7:json)
+    ON CONFLICT (source, source_key)
+    DO UPDATE SET
+      raw_text     = EXCLUDED.raw_text,
+      content_hash = EXCLUDED.content_hash,
+      metadata     = EXCLUDED.metadata,
+      collected_at = NOW();
+    ```
+
+    Query Parameters expression:
+
+    ```javascript
+    {
+      {
+        [
+          $json.source,
+          $json.source_key,
+          $json.url ?? "",
+          $json.title ?? "",
+          $json.raw_text,
+          $json.content_hash,
+          $json.metadata ?? {},
+        ];
+      }
+    }
+    ```
+
 - apps/threat-intell/workflows/baseline-extractor.json:
   nightly regex extractor over recent docs; writes baseline IOCs to threatintel.ioc
   and reports extractor counts.
@@ -20,6 +53,31 @@
 - apps/n8n/workflows/feed-summarizer-via-ollama.json:
   twice-daily Hacker News RSS summary via Ollama and Telegram push (not part of threat-
   intell but useful for ops updates).
+
+## More details about the workflows
+
+1. Collector (CISA KEV feed)
+   - CISA publishes the “Known Exploited Vulnerability” catalog: a JSON list of CVEs, vendor/project, description, dates, etc.
+   - The collector-open-source workflow fetches that feed, normalizes each entry into a document, and writes it into threatintel.raw_doc (one row per CVE).
+   - Think of this as your raw threat intelligence feed—no indicators yet, just structured reports.
+2. Extractors (Baseline + LLM)
+   - The Baseline extractor combs the raw document for obvious indicators (IPs, domains, etc.) using regex, and writes them into threatintel.ioc.
+   - The LLM extractor does a smarter pass: it queries an LLM, extracts potential IOCs with context, and also writes them into ioc.
+   - After these workflows run, threatintel.ioc contains a list of indicators (value, type, source doc, extractor) that you can track.
+3. Enrichment pipeline
+   - Each IOC by itself isn’t that helpful—you want supporting context (score, reputation, provider verdicts).
+   - The enrichment workflow picks IOCs from threatintel.ioc that haven’t been checked recently (or ever), calls your enrichment microservice (threat-intel-
+     enrichment), and stores the results in threatintel.enrichment.
+   - The enrichment service can combine external APIs (VirusTotal, Shodan, AbuseIPDB, RDAP, etc.) to enrich the IOC with additional metadata and confidence.
+4. Validator & Exporter
+   - Separately, the validator workflow aggregates enriched IOCs, scores them, selects the worthy ones, and exports them.
+   - That gives you a final feed of vetted indicators (e.g., for sharing, alerts, or blocking rules).
+5. Metrics & Grafana
+   - Every workflow posts a small metric (collector/enrichment/extractor/validator), which you graph in Grafana to monitor the pipeline.
+
+In short: CISA gives raw vulnerability reports, extractors turn those into concrete indicators, enrichment adds supporting evidence from external intel services,
+and the validator/exporter prepares final outputs. To get the enrichment pipeline working you need IOCs first, so run the extractor workflow(s) next. Once there
+are entries in threatintel.ioc, the enrichment query will start returning results.
 
 ## Importing the n8n workflows
 
@@ -56,11 +114,14 @@ format). Save and enable once the test run succeeds.
 ## Provisioning the threat-intel database credentials
 
 1. **Create the `n8n_collector` role in CNPG**
+
    ```bash
    kubectl -n threat-intel port-forward svc/threat-intel-db-rw 5432:5432
    PGPASSWORD=<admin_password> psql -h 127.0.0.1 -p 5432 -U <admin_user> threatintel
    ```
+
    Inside `psql`:
+
    ```sql
    CREATE USER n8n_collector WITH PASSWORD '<strong password>';
    GRANT USAGE ON SCHEMA threatintel TO n8n_collector;
@@ -75,25 +136,31 @@ format). Save and enable once the test run succeeds.
    ```
 
 2. **Apply Terraform (prod environment)**
+
    - Adds the `threat-intel-n8n-db-*` secrets to Key Vault
    - Generates `threat-intel-n8n-db-password`
+
    ```bash
    cd environments/prod
    terraform init
    terraform apply
    ```
+
    Update the database user to use the generated password:
+
    ```sql
    ALTER USER n8n_collector WITH PASSWORD '<value of threat-intel-n8n-db-password>';
    ```
 
 3. **Deploy the n8n ExternalSecret and refresh the pod**
+
    ```bash
    kubectl apply -k apps/n8n/overlays/prod
    kubectl -n n8n-prod rollout restart deployment/n8n
    ```
 
 4. **Create the Postgres credential in n8n**
+
    - Host: `={{ $env('N8N_TI_DB_HOST') }}`
    - Database: `={{ $env('N8N_TI_DB_NAME') }}`
    - User: `={{ $env('N8N_TI_DB_USER') }}`
