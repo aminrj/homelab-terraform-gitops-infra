@@ -52,3 +52,52 @@ Repeat the copy/import pairing for:
 After each import, open the workflow in the UI, map credentials, and replace the temporary Manual
 Trigger with the desired Cron schedule (the editor now serialises the node in the correct 1.75
 format). Save and enable once the test run succeeds.
+
+## Provisioning the threat-intel database credentials
+
+1. **Create the `n8n_collector` role in CNPG**
+   ```bash
+   kubectl -n threat-intel port-forward svc/threat-intel-db-rw 5432:5432
+   PGPASSWORD=<admin_password> psql -h 127.0.0.1 -p 5432 -U <admin_user> threatintel
+   ```
+   Inside `psql`:
+   ```sql
+   CREATE USER n8n_collector WITH PASSWORD '<strong password>';
+   GRANT USAGE ON SCHEMA threatintel TO n8n_collector;
+   GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA threatintel TO n8n_collector;
+   GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA threatintel TO n8n_collector;
+   GRANT CREATE ON SCHEMA threatintel TO n8n_collector;
+   ALTER DEFAULT PRIVILEGES IN SCHEMA threatintel
+     GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO n8n_collector;
+   ALTER DEFAULT PRIVILEGES IN SCHEMA threatintel
+     GRANT USAGE, SELECT ON SEQUENCES TO n8n_collector;
+   \q
+   ```
+
+2. **Apply Terraform (prod environment)**
+   - Adds the `threat-intel-n8n-db-*` secrets to Key Vault
+   - Generates `threat-intel-n8n-db-password`
+   ```bash
+   cd environments/prod
+   terraform init
+   terraform apply
+   ```
+   Update the database user to use the generated password:
+   ```sql
+   ALTER USER n8n_collector WITH PASSWORD '<value of threat-intel-n8n-db-password>';
+   ```
+
+3. **Deploy the n8n ExternalSecret and refresh the pod**
+   ```bash
+   kubectl apply -k apps/n8n/overlays/prod
+   kubectl -n n8n-prod rollout restart deployment/n8n
+   ```
+
+4. **Create the Postgres credential in n8n**
+   - Host: `={{ $env('N8N_TI_DB_HOST') }}`
+   - Database: `={{ $env('N8N_TI_DB_NAME') }}`
+   - User: `={{ $env('N8N_TI_DB_USER') }}`
+   - Password: `={{ $env('N8N_TI_DB_PASS') }}`
+   - Port: `5432`
+
+5. **Wire the credential into the collector workflow** (Postgres node with the upsert query).

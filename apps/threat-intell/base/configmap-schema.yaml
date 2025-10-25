@@ -13,12 +13,20 @@ data:
     CREATE TABLE IF NOT EXISTS threatintel.raw_doc (
       id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
       source TEXT NOT NULL,
+      source_key TEXT,
       url TEXT,
       title TEXT,
       raw_text TEXT NOT NULL,
       content_hash TEXT,
+      metadata JSONB DEFAULT '{}'::jsonb,
       collected_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
     );
+
+    ALTER TABLE threatintel.raw_doc
+      ADD COLUMN IF NOT EXISTS source_key TEXT;
+
+    ALTER TABLE threatintel.raw_doc
+      ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb;
 
     CREATE TABLE IF NOT EXISTS threatintel.ioc (
       id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -93,5 +101,8 @@ data:
     CREATE INDEX IF NOT EXISTS idx_threatintel_labels_label ON threatintel.labels(label);
     CREATE INDEX IF NOT EXISTS idx_threatintel_labels_ioc_id ON threatintel.labels(ioc_id);
     CREATE INDEX IF NOT EXISTS idx_threatintel_raw_doc_source ON threatintel.raw_doc(source);
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_threatintel_raw_doc_source_key
+      ON threatintel.raw_doc(source, source_key)
+      WHERE source_key IS NOT NULL;
 
     COMMIT;
