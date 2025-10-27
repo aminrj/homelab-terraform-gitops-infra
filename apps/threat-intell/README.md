@@ -23,19 +23,15 @@
     Query Parameters expression:
 
     ```javascript
-    {
-      {
-        [
-          $json.source,
-          $json.source_key,
-          $json.url ?? "",
-          $json.title ?? "",
-          $json.raw_text,
-          $json.content_hash,
-          $json.metadata ?? {},
-        ];
-      }
-    }
+    {{ [
+      $json.source,
+      $json.source_key,
+      $json.url ?? '',
+      $json.title ?? '',
+      $json.raw_text,
+      $json.content_hash,
+      $json.metadata ?? {}
+    ] }}
     ```
 
 - apps/threat-intell/workflows/baseline-extractor.json:
@@ -168,3 +164,17 @@ format). Save and enable once the test run succeeds.
    - Port: `5432`
 
 5. **Wire the credential into the collector workflow** (Postgres node with the upsert query).
+
+## Current pipeline status (Oct 27 2025)
+
+- Collector (CISA KEV) inserts 1 449 documents into `threatintel.raw_doc`.
+- Baseline extractor runs via n8n, emitting 487 IOCs into `threatintel.ioc`; metrics POSTs to `/extractor` (`extractor: baseline`, `count: …`).
+- Enrichment workflow runs manually against stub enrichment service; upserts 200 rows into `threatintel.enrichment`; HTTP node posts to `/enrichment`.
+  - Insert SQL uses positional parameters and a unique index on `(ioc_id, provider)` (`idx_threatintel_enrichment_ioc_provider`).
+- Metrics service reachable after adding `NetworkPolicy` `threat-intel-allow-metrics-from-n8n` (ingress allow from `n8n-prod` on port 9000).
+- Grafana dashboard currently empty because Prometheus scrape still pending (need ServiceMonitor) and enrichment API returns placeholder data only.
+- Next tasks:
+  1. Replace stub enrichment (`server.py` `/v1/enrich`) with real VT/Shodan/AbuseIPDB calls using existing secrets.
+  2. Deploy ServiceMonitor for `threat-intel-metrics` to populate Grafana.
+  3. Switch enrichment workflow back to Cron (every 2 h) once real enrichment service is ready.
+  4. Update LLM extractor and validator/export workflows to use positional-parameter queries and activate their schedules.
