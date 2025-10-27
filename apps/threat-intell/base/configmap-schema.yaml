@@ -96,6 +96,8 @@ data:
 
     CREATE INDEX IF NOT EXISTS idx_threatintel_ioc_value ON threatintel.ioc(value);
     CREATE INDEX IF NOT EXISTS idx_threatintel_ioc_type ON threatintel.ioc(ioc_type);
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_threatintel_ioc_value_doc_extractor
+      ON threatintel.ioc(value, doc_id, extractor);
     CREATE INDEX IF NOT EXISTS idx_threatintel_enrichment_provider ON threatintel.enrichment(provider);
     CREATE INDEX IF NOT EXISTS idx_threatintel_enrichment_validated ON threatintel.enrichment(validated);
     CREATE INDEX IF NOT EXISTS idx_threatintel_labels_label ON threatintel.labels(label);
