@@ -10,7 +10,7 @@ data:
     from http.server import BaseHTTPRequestHandler, HTTPServer
     from urllib.parse import urlparse
 
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s", flush=True)
 
     state = {
         "collector": {},

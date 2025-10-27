@@ -106,5 +106,7 @@ data:
     CREATE UNIQUE INDEX IF NOT EXISTS idx_threatintel_raw_doc_source_key
       ON threatintel.raw_doc(source, source_key)
       WHERE source_key IS NOT NULL;
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_threatintel_enrichment_ioc_provider
+      ON threatintel.enrichment(ioc_id, provider);
 
     COMMIT;
