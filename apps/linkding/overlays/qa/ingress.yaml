@@ -6,7 +6,7 @@ metadata:
     nginx.ingress.kubernetes.io/rewrite-target: /
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     cert-manager.io/cluster-issuer: "letsencrypt-staging"
-    external-dns.alpha.kubernetes.io/target: "90.129.244.3"
+    external-dns.alpha.kubernetes.io/target: "188.151.43.194"
     external-dns.alpha.kubernetes.io/hostname: linkding-qa.lab.aminrj.com
     # external-dns.alpha.kubernetes.io/enabled: "true"
 spec:
