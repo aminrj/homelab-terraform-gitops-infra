@@ -33,6 +33,7 @@ locals {
     n8n          = { container_name = "n8n-db-clean" }
     listmonk     = { container_name = "listmonk-db-clean" }
     threat_intel = { container_name = "threatintel-data" }
+    gitea        = { container_name = "gitea-db-clean" }
   }
 }
 
@@ -194,6 +195,27 @@ module "threat_intel_secrets" {
     "db-password",
     "n8n-user-password",
     "n8n-db-password"
+  ]
+
+  depends_on = [
+    module.azure_keyvault
+  ]
+}
+
+module "gitea_secrets" {
+  source       = "../../modules/azure-secrets"
+  key_vault_id = module.azure_keyvault.key_vault_id
+  app_name     = "gitea"
+
+  static_secrets = {
+    "db-username" = "gitea"
+    "db-name"     = "gitea"
+  }
+
+  random_secrets = [
+    "db-password",
+    "secret-key",
+    "internal-token"
   ]
 
   depends_on = [

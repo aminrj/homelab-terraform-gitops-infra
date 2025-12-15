@@ -1,0 +1,49 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: gitea-db-cnpg-v1
+spec:
+  description: PostgreSQL cluster for Gitea Git service
+  imageName: quay.io/enterprisedb/postgresql:16.1
+  instances: 2
+
+  storage:
+    size: 20Gi
+
+  bootstrap:
+    initdb:
+      database: gitea
+      owner: gitea
+      secret:
+        name: gitea-db-creds
+
+  monitoring:
+    enablePodMonitor: true
+
+  resources:
+    requests:
+      memory: 512Mi
+      cpu: 100m
+    limits:
+      memory: 1Gi
+      cpu: 500m
+
+  backup:
+    barmanObjectStore:
+      destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/gitea-db-clean
+      serverName: gitea-db-cnpg-v1
+      azureCredentials:
+        storageAccount:
+          name: gitea-db-storage
+          key: container-name
+        storageSasToken:
+          name: gitea-db-storage
+          key: blob-sas
+      data:
+        compression: gzip
+      wal:
+        compression: gzip
+    retentionPolicy: 7d
+
+  enableSuperuserAccess: false
+  primaryUpdateStrategy: unsupervised

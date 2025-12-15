@@ -1,0 +1,23 @@
+resources:
+  - ../../base
+  - secrets.yaml
+  - ingress.yaml
+  - namespace.yaml
+
+namespace: gitea-prod
+
+patches:
+  - target:
+      kind: Deployment
+      name: gitea
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/env/1/value
+        value: gitea-db-cnpg-v1-rw.cnpg-prod.svc.cluster.local:5432
+  - target:
+      kind: PersistentVolumeClaim
+      name: gitea-data
+    patch: |-
+      - op: add
+        path: /spec/storageClassName
+        value: local-path

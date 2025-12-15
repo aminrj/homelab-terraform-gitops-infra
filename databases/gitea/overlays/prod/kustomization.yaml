@@ -1,0 +1,9 @@
+namespace: cnpg-prod
+
+resources:
+  - ../../base
+  - scheduled-backup.yaml
+  - secrets.yaml
+
+patches:
+  - path: destination-path-patch.yaml

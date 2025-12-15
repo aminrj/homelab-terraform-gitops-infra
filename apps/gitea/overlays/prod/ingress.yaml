@@ -1,0 +1,30 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gitea-ingress-prod
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    external-dns.alpha.kubernetes.io/target: "188.151.43.194"
+    external-dns.alpha.kubernetes.io/hostname: gitea.lab.aminrj.com
+    external-dns.alpha.kubernetes.io/enabled: "true"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - gitea.lab.aminrj.com
+      secretName: gitea-tls
+  rules:
+    - host: gitea.lab.aminrj.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gitea-http
+                port:
+                  number: 80

@@ -1,0 +1,3 @@
+- op: replace
+  path: /spec/backup/barmanObjectStore/destinationPath
+  value: https://homelabstorageaccntprod.blob.core.windows.net/gitea-db-clean

@@ -1,0 +1,10 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: gitea-daily-backup
+spec:
+  schedule: "0 1 * * *"  # Daily at 1 AM UTC
+  backupOwnerReference: cluster
+  cluster:
+    name: gitea-db-cnpg-v1
+  suspend: false
