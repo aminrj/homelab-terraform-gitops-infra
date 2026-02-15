@@ -7,7 +7,7 @@ metadata:
     nginx.ingress.kubernetes.io/rewrite-target: /
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    external-dns.alpha.kubernetes.io/target: "188.151.43.194"
+    external-dns.alpha.kubernetes.io/target: "188.148.187.53"
     external-dns.alpha.kubernetes.io/hostname: n8n.lab.aminrj.com
     external-dns.alpha.kubernetes.io/enabled: "true"
 spec:
