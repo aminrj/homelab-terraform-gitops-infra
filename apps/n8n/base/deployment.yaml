@@ -91,10 +91,12 @@ spec:
             # Security Configuration
             - name: N8N_SECURE_COOKIE
               value: "true"  # Set to false if using HTTP
-            - name: N8N_CORS_ORIGIN
-              value: "https://n8n.lab.aminrj.com"  # Replace with your actual domain
             - name: N8N_ENDPOINT_TRUSTED_PROXIES
               value: "*"
+            - name: N8N_CORS_ENABLED
+              value: "true"
+            - name: N8N_CORS_ORIGIN
+              value: "https://aminrj.com,https://molntek.com"
 
           volumeMounts:
             - name: n8n-data-v2
