@@ -1,27 +1,22 @@
-.terraform/providers/registry.terraform.io/hashicorp/helm/2.17.0
-.terraform/providers/registry.terraform.io/hashicorp/kubernetes/2.36.0
-environments/dev/.terraform
-environments/dev/.terraform.lock.hcl
-terraform.tfstate
-.terraform.lock.hcl
-environments/dev/terraform.tfstate.1741669873.backup
-environments/dev/terraform.tfstate.backup
-.terraform/providers/registry.terraform.io/gavinbunney/kubectl/1.19.0/darwin_arm64
-modules/external-dns/terraform.tfvars
-environments/qa/.terraform
-.terraform/providers/registry.terraform.io/hashicorp
-environments/dev/.terraform.tfstate.lock.info
-# Terraform state
+# Terraform state & working dirs
 *.tfstate
 *.tfstate.*
 .terraform/
+.terraform.lock.hcl
 crash.log
-*.tfstate*
-.terraform/
-environments/prod/terraform.tfvars
-environments/shared/terraform.tfvars
+
+# Terraform variable files may contain secrets — ignore by default,
+# allow-list the non-secret env files that are intentionally tracked.
+*.tfvars
+!environments/dev/terraform.tfvars
+!environments/qa/terraform.tfvars
+
+# OS / editor cruft
 **/.DS_Store
-AGENTS.md
 .DS_Store
-n8n-backup-20251021-1400.tar.gz
-workflows.tar
+*_backup
+
+# Local-only docs & backup artifacts
+AGENTS.md
+*.tar
+*.tar.gz
