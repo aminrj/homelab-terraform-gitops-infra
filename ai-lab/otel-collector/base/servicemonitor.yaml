@@ -1,0 +1,20 @@
+# ai-lab/otel-collector/base/servicemonitor.yaml
+# Lets kube-prometheus-stack scrape the collector's :8889 GenAI metrics.
+# TODO(amine): verify Prometheus is configured to select ServiceMonitors in the
+# ai-lab namespace (serviceMonitorNamespaceSelector / serviceMonitorSelector).
+# Your values set serviceMonitorSelector: {} — confirm namespace selection too.
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: otel-collector
+  namespace: ai-lab
+  labels:
+    app: otel-collector
+    release: kube-prometheus-stack # TODO(amine): confirm the prometheus release label your operator selects on
+spec:
+  selector:
+    matchLabels:
+      app: otel-collector
+  endpoints:
+    - port: metrics
+      interval: 30s

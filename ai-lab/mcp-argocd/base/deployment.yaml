@@ -1,0 +1,54 @@
+# ai-lab/mcp-argocd/base/deployment.yaml
+# argoproj-labs/mcp-for-argocd, read-only: holmes-readonly RBAC AND MCP_READ_ONLY=true.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: argocd-mcp
+  namespace: ai-lab
+  labels:
+    app: argocd-mcp
+    mcp-server: "true"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: argocd-mcp
+  template:
+    metadata:
+      labels:
+        app: argocd-mcp
+        mcp-server: "true"
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: argocd-mcp
+          image: ghcr.io/argoproj-labs/argocd-mcp:latest # TODO(amine): pin to a digest
+          args: ["http"]
+          env:
+            - name: ARGOCD_BASE_URL
+              value: "https://argocd-server.argocd.svc.cluster.local"
+            - name: ARGOCD_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: argocd-mcp-token
+                  key: argocd-token
+            - name: MCP_READ_ONLY
+              value: "true"     # disables create/update/delete/sync/run-action tools
+            - name: PORT
+              value: "8000"
+            - name: NODE_TLS_REJECT_UNAUTHORIZED
+              value: "0"        # in-cluster self-signed Argo CD cert; prefer a real CA later
+          ports:
+            - containerPort: 8000
+          securityContext:
+            runAsNonRoot: true
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              memory: 256Mi

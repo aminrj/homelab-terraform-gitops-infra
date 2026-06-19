@@ -1,0 +1,21 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: ai-lab
+
+# Support manifests for Holmes (the chart itself is deployed by the standalone
+# Application ai-lab-holmes-chart). holmes-values.yaml is NOT a resource here — it
+# is a Helm values file consumed by that Application via the $values ref.
+resources:
+  - external-secret.yaml
+  - networkpolicy.yaml
+  - skills-configmap.yaml
+  - resourcequota.yaml
+  - role.yaml
+  - rolebinding.yaml
+
+labels:
+  - includeSelectors: false
+    pairs:
+      app.kubernetes.io/part-of: ai-lab
+      app.kubernetes.io/component: holmes

@@ -1,0 +1,48 @@
+{
+  "__comment": "ai-lab agent observability dashboard. Decision D=1: import this MANUALLY into Grafana (Dashboards > Import), or move it into the monitoring namespace as a labelled ConfigMap to auto-provision. It is intentionally NOT referenced by any kustomization. Built from OTel GenAI metric names emitted by LiteLLM via the otel-collector. TODO(amine): confirm exact metric names against your collector output.",
+  "title": "AI-Lab — HolmesGPT Agent Observability",
+  "tags": ["ai-lab", "holmes", "genai", "homelab"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "panels": [
+    {
+      "id": 1,
+      "title": "Token usage over time (cost proxy)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        { "expr": "sum by (gen_ai_response_model) (rate(gen_ai_client_token_usage_sum[5m]))", "legendFormat": "{{gen_ai_response_model}}" }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Investigation latency p50/p95",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum by (le) (rate(gen_ai_client_operation_duration_seconds_bucket[5m])))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, sum by (le) (rate(gen_ai_client_operation_duration_seconds_bucket[5m])))", "legendFormat": "p95" }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Tool-call count by MCP server",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "targets": [
+        { "expr": "sum by (server) (rate(gen_ai_client_operation_duration_seconds_count[5m]))", "legendFormat": "{{server}}" }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Error rate",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "targets": [
+        { "expr": "sum(rate(gen_ai_client_operation_duration_seconds_count{error_type!=\"\"}[5m]))", "legendFormat": "errors" }
+      ]
+    }
+  ]
+}

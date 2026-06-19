@@ -77,6 +77,37 @@ YAML
   ]
 }
 
+# --- AI-lab track (HolmesGPT agent + MCP servers) ---
+# Bootstrapped here (decision A) since this repo has no app-of-apps that auto-applies
+# argocd/*.yaml. Manifests are version-controlled as files and loaded via file().
+
+# AI-lab AppProject (trust boundary) — must exist before the ApplicationSet/Application.
+resource "kubectl_manifest" "ai_lab_appproject" {
+  yaml_body = file("${path.module}/../../argocd/ai-lab-appproject.yaml")
+
+  depends_on = [
+    kubernetes_namespace.argocd
+  ]
+}
+
+# AI-lab ApplicationSet (discovers ai-lab/*/overlays/prod).
+resource "kubectl_manifest" "ai_lab_applicationset" {
+  yaml_body = file("${path.module}/../../argocd/ai-lab-applicationset.yaml")
+
+  depends_on = [
+    kubectl_manifest.ai_lab_appproject
+  ]
+}
+
+# HolmesGPT Helm chart Application (standalone, decision B option 1).
+resource "kubectl_manifest" "ai_lab_holmes_application" {
+  yaml_body = file("${path.module}/../../argocd/ai-lab-holmes-application.yaml")
+
+  depends_on = [
+    kubectl_manifest.ai_lab_appproject
+  ]
+}
+
 # Ensure ArgoCD namespace exists
 resource "kubernetes_namespace" "argocd" {
   metadata {

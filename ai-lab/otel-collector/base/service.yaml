@@ -1,0 +1,18 @@
+# ai-lab/otel-collector/base/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: otel-collector
+  namespace: ai-lab
+  labels:
+    app: otel-collector
+spec:
+  selector:
+    app: otel-collector
+  ports:
+    - name: otlp-grpc
+      port: 4317
+      targetPort: 4317
+    - name: metrics
+      port: 8889
+      targetPort: 8889

@@ -1,0 +1,17 @@
+# ai-lab/holmes/base/rolebinding.yaml
+# Binds the read-only Role to the Holmes chart's ServiceAccount.
+# TODO(amine): confirm the SA name the holmes chart creates (commonly "holmes").
+# Set the chart to NOT create a ClusterRole and to use this SA (see holmes-values.yaml).
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: holmes-readonly
+  namespace: ai-lab
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: holmes-readonly
+subjects:
+  - kind: ServiceAccount
+    name: holmes        # TODO(amine): confirm chart ServiceAccount name
+    namespace: ai-lab

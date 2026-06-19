@@ -1,0 +1,14 @@
+# ai-lab/holmes/base/resourcequota.yaml
+# Blast-radius cap: a runaway agent loop cannot starve production CNPG pods.
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: ai-lab-quota
+  namespace: ai-lab
+spec:
+  hard:
+    requests.cpu: "1"        # TODO(amine): tune for your node headroom
+    requests.memory: 3Gi
+    limits.cpu: "2"
+    limits.memory: 5Gi
+    pods: "12"

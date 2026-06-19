@@ -1,0 +1,37 @@
+# argocd/ai-lab-applicationset.yaml
+# Discovers ai-lab/*/overlays/prod and binds each to the ai-lab AppProject.
+# Mirrors the repo's existing (non-goTemplate) ApplicationSet style.
+# NOTE: this generates ai-lab-holmes (Holmes SUPPORT manifests: secret, netpol,
+# skills, quota, RBAC). The Holmes Helm chart itself is a SEPARATE Application
+# (argocd/ai-lab-holmes-application.yaml, name ai-lab-holmes-chart) to avoid a
+# name collision and because a Helm release can't ride path-based discovery.
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: ai-lab
+  namespace: argocd
+spec:
+  generators:
+    - git:
+        repoURL: git@github.com:aminrj/homelab-terraform-gitops-infra.git
+        revision: main
+        directories:
+          - path: ai-lab/*/overlays/prod
+  template:
+    metadata:
+      name: 'ai-lab-{{path[1]}}' # example: ai-lab-mcp-grafana
+    spec:
+      project: ai-lab
+      source:
+        repoURL: git@github.com:aminrj/homelab-terraform-gitops-infra.git
+        targetRevision: main
+        path: 'ai-lab/{{path[1]}}/overlays/{{path[3]}}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: ai-lab
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true

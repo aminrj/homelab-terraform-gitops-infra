@@ -1,0 +1,46 @@
+# ai-lab/otel-collector/base/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: otel-collector
+  namespace: ai-lab
+  labels:
+    app: otel-collector
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: otel-collector
+  template:
+    metadata:
+      labels:
+        app: otel-collector
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: otel-collector
+          image: otel/opentelemetry-collector-contrib:latest # TODO(amine): pin to a digest
+          args: ["--config=/etc/otel/collector.yaml"]
+          ports:
+            - containerPort: 4317   # OTLP gRPC receiver
+            - containerPort: 8889   # Prometheus metrics exporter
+          volumeMounts:
+            - name: config
+              mountPath: /etc/otel
+              readOnly: true
+          securityContext:
+            runAsNonRoot: true
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              memory: 256Mi
+      volumes:
+        - name: config
+          configMap:
+            name: otel-collector-config

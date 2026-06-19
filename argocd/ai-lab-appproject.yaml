@@ -1,0 +1,34 @@
+# argocd/ai-lab-appproject.yaml
+# Trust boundary for the AI-lab track. Committed/applied before everything else.
+# Empty clusterResourceWhitelist => the agent track can NEVER create cluster-scoped
+# resources (ClusterRole/ClusterRoleBinding/CRDs). Holmes gets namespaced RBAC only.
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: ai-lab
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  description: AI-lab agents and MCP servers — isolated trust zone
+  sourceRepos:
+    - git@github.com:aminrj/homelab-terraform-gitops-infra.git
+  destinations:
+    - namespace: ai-lab
+      server: https://kubernetes.default.svc
+  # No cluster-scoped resources at all.
+  clusterResourceWhitelist: []
+  namespaceResourceBlacklist:
+    - group: "rbac.authorization.k8s.io"
+      kind: ClusterRoleBinding
+    - group: "rbac.authorization.k8s.io"
+      kind: ClusterRole
+  # Permit only namespaced kinds (the track only ever targets the ai-lab namespace).
+  namespaceResourceWhitelist:
+    - group: "*"
+      kind: "*"
+  roles:
+    - name: read-only
+      description: Read-only view of ai-lab applications
+      policies:
+        - p, proj:ai-lab:read-only, applications, get, ai-lab/*, allow

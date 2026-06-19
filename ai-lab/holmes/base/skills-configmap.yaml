@@ -1,0 +1,52 @@
+# ai-lab/holmes/base/skills-configmap.yaml
+# SKILL.md files mounted into Holmes (customSkillPaths). They encode how THIS
+# cluster works and reinforce the read-only, GitOps-native posture.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: holmes-skills
+  namespace: ai-lab
+data:
+  cnpg-databases.md: |
+    # Skill: Investigating CloudNativePG databases
+
+    ## When to use
+    Use this skill whenever an investigation involves a database, Postgres,
+    replication, or anything in the `cnpg-prod` namespace.
+
+    ## What you need to know about this cluster
+    - All application databases run as CloudNativePG `Cluster` resources in the
+      `cnpg-prod` namespace, one Cluster per app.
+    - Storage is node-local (local-path provisioner), NOT replicated. A node loss
+      therefore affects the primary's data directory.
+    - gitea, n8n, listmonk, threat-intell run 2 instances; commafeed and linkding
+      run 1.
+
+    ## Investigation steps
+    1. Identify the affected Cluster and its instances.
+    2. Check replication lag via the Grafana MCP — query `cnpg_pg_replication_lag`.
+    3. Check whether a pod was recently rescheduled to a different node (local-path
+       means the PVC is pinned to a node).
+    4. If the primary is down and storage is node-local, recovery is a restore from
+       the Barman/Azure Blob backup, NOT a simple reschedule. Flag this clearly.
+
+    ## What NOT to do
+    - Do not suggest `kubectl` commands. This cluster is GitOps-managed; all changes
+      go through Git and Argo CD.
+
+  argocd-sync.md: |
+    # Skill: Diagnosing a stuck or degraded Argo CD application
+
+    ## When to use
+    Any investigation where an app is out of sync, degraded, or a recent deploy
+    preceded the incident.
+
+    ## Investigation steps
+    1. Use the Argo CD MCP to get the application's sync + health status.
+    2. Correlate the last sync time with the incident start using the Grafana MCP.
+    3. If sync is Degraded, identify which resource is unhealthy and why.
+    4. Report the Git revision that introduced the change so a human can revert in Git.
+
+    ## Remember
+    Remediation is human-driven via Git. Your job is to explain what broke and point
+    to the offending revision — not to fix it.

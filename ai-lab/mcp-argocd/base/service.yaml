@@ -1,0 +1,14 @@
+# ai-lab/mcp-argocd/base/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: argocd-mcp
+  namespace: ai-lab
+  labels:
+    app: argocd-mcp
+spec:
+  selector:
+    app: argocd-mcp
+  ports:
+    - port: 8000
+      targetPort: 8000

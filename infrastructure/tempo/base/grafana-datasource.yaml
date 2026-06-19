@@ -1,0 +1,20 @@
+# infrastructure/tempo/base/grafana-datasource.yaml
+# Picked up by the Grafana sidecar (datasources enabled; default label
+# grafana_datasource). Adds Tempo as a traces datasource.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tempo-datasource
+  namespace: monitoring
+  labels:
+    grafana_datasource: "1"
+data:
+  tempo-datasource.yaml: |
+    apiVersion: 1
+    datasources:
+      - name: Tempo
+        type: tempo
+        access: proxy
+        url: http://tempo.monitoring.svc.cluster.local:3200
+        uid: tempo
+        isDefault: false

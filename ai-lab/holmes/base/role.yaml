@@ -1,0 +1,22 @@
+# ai-lab/holmes/base/role.yaml
+# Namespaced read-only Role for the Holmes ServiceAccount, scoped to ai-lab ONLY.
+# The AppProject forbids cluster-scoped resources and restricts destinations to
+# the ai-lab namespace, so Holmes cannot be granted RBAC in cnpg-prod/monitoring
+# from this track. Cross-namespace VISIBILITY is provided via the Grafana and
+# Argo CD MCP servers instead (see skills). If you later want direct K8s reads of
+# other namespaces, create RoleBindings there by hand (outside the ai-lab project).
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: holmes-readonly
+  namespace: ai-lab
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "pods/log", "services", "endpoints", "events", "configmaps", "persistentvolumeclaims"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["apps"]
+    resources: ["deployments", "replicasets", "statefulsets", "daemonsets"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["batch"]
+    resources: ["jobs", "cronjobs"]
+    verbs: ["get", "list", "watch"]

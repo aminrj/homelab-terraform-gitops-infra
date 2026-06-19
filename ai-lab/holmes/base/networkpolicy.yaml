@@ -1,0 +1,148 @@
+# ai-lab/holmes/base/networkpolicy.yaml
+# Containment layer. Default-deny, then explicit allows. NO rule to cnpg-prod:
+# the agent reads database *metrics* via Grafana, never the databases directly.
+# NOTE: the doc's example omitted ingress allows; intra-namespace traffic needs
+# them under a default-deny, so they are added here (holmes->MCP, holmes->otel,
+# prometheus->otel) plus an egress rule to Tempo (decision C: Tempo deployed).
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ai-lab-default-deny
+  namespace: ai-lab
+spec:
+  podSelector: {}
+  policyTypes: [Ingress, Egress]
+---
+# DNS egress for all pods in the namespace.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ai-lab-allow-dns
+  namespace: ai-lab
+spec:
+  podSelector: {}
+  policyTypes: [Egress]
+  egress:
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - { protocol: UDP, port: 53 }
+        - { protocol: TCP, port: 53 }
+---
+# Holmes egress.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ai-lab-holmes-egress
+  namespace: ai-lab
+spec:
+  podSelector:
+    matchLabels: { app: holmes }
+  policyTypes: [Egress]
+  egress:
+    # In-cluster MCP servers (same namespace)
+    - to:
+        - podSelector: { matchLabels: { mcp-server: "true" } }
+      ports:
+        - { protocol: TCP, port: 8000 }
+    # OTel collector (same namespace) for telemetry export
+    - to:
+        - podSelector: { matchLabels: { app: otel-collector } }
+      ports:
+        - { protocol: TCP, port: 4317 }
+    # Argo CD API (argocd namespace)
+    - to:
+        - namespaceSelector:
+            matchLabels: { kubernetes.io/metadata.name: argocd }
+      ports:
+        - { protocol: TCP, port: 443 }
+    # Kubernetes API (read-only K8s toolset)
+    - to:
+        - ipBlock: { cidr: 10.152.183.1/32 } # TODO(amine): confirm MicroK8s kube-apiserver ClusterIP
+      ports:
+        - { protocol: TCP, port: 443 }
+    # External LLM provider (HTTPS), excluding RFC1918 so this can't reach internal services.
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except: ["10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"]
+      ports:
+        - { protocol: TCP, port: 443 }
+---
+# MCP servers egress: reach Grafana (monitoring) and Argo CD (argocd).
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ai-lab-mcp-egress
+  namespace: ai-lab
+spec:
+  podSelector:
+    matchLabels: { mcp-server: "true" }
+  policyTypes: [Egress]
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels: { kubernetes.io/metadata.name: monitoring }
+      ports:
+        - { protocol: TCP, port: 80 }
+        - { protocol: TCP, port: 3000 }
+    - to:
+        - namespaceSelector:
+            matchLabels: { kubernetes.io/metadata.name: argocd }
+      ports:
+        - { protocol: TCP, port: 443 }
+---
+# OTel collector egress: ship traces to Tempo in monitoring.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ai-lab-otel-egress
+  namespace: ai-lab
+spec:
+  podSelector:
+    matchLabels: { app: otel-collector }
+  policyTypes: [Egress]
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels: { kubernetes.io/metadata.name: monitoring }
+      ports:
+        - { protocol: TCP, port: 4317 } # Tempo OTLP gRPC
+---
+# MCP servers ingress: only from Holmes.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ai-lab-mcp-ingress
+  namespace: ai-lab
+spec:
+  podSelector:
+    matchLabels: { mcp-server: "true" }
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector: { matchLabels: { app: holmes } }
+      ports:
+        - { protocol: TCP, port: 8000 }
+---
+# OTel collector ingress: OTLP from Holmes, and Prometheus scrape from monitoring.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ai-lab-otel-ingress
+  namespace: ai-lab
+spec:
+  podSelector:
+    matchLabels: { app: otel-collector }
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector: { matchLabels: { app: holmes } }
+      ports:
+        - { protocol: TCP, port: 4317 }
+    - from:
+        - namespaceSelector:
+            matchLabels: { kubernetes.io/metadata.name: monitoring }
+      ports:
+        - { protocol: TCP, port: 8889 } # Prometheus scrape of collector metrics

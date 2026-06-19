@@ -1,0 +1,99 @@
+# ai-lab/holmes/overlays/prod/holmes-values.yaml
+# HolmesGPT Helm values — consumed by the standalone Application ai-lab-holmes-chart
+# (argocd/ai-lab-holmes-application.yaml) via the $values ref. NOT a Kustomize resource.
+#
+# TODO(amine): value keys below follow the robusta/holmes chart but vary by chart
+# version — reconcile every key against `helm show values robusta/holmes --version <v>`
+# before first sync.
+logLevel: INFO
+enableTelemetry: false   # disable Sentry; we use OTel instead
+
+# --- IMPORTANT: keep RBAC namespaced (AppProject forbids ClusterRoles) ---
+# TODO(amine): confirm the chart's keys to (a) NOT create a ClusterRole/Binding and
+# (b) reuse our ServiceAccount. If the chart hard-creates a ClusterRole, the ai-lab
+# AppProject (empty clusterResourceWhitelist) will REJECT the sync. Common shapes:
+#   rbac:
+#     create: false           # do not create cluster-scoped RBAC
+#   serviceAccount:
+#     create: true
+#     name: holmes            # must match rolebinding.yaml subject
+rbac:
+  create: false
+serviceAccount:
+  create: true
+  name: holmes
+
+# --- Model (Anthropic). Swap api_base for a local endpoint if desired. ---
+additionalEnvVars:
+  - name: ANTHROPIC_API_KEY
+    valueFrom:
+      secretKeyRef:
+        name: holmes-llm-secret
+        key: anthropic-api-key
+  - name: OTEL_EXPORTER_OTLP_ENDPOINT
+    value: "http://otel-collector.ai-lab.svc.cluster.local:4317"
+  - name: OTEL_SERVICE_NAME
+    value: "holmes-agent"
+  - name: LITELLM_OTEL_V2
+    value: "true"
+
+modelList:
+  claude-sonnet:
+    api_key: "{{ env.ANTHROPIC_API_KEY }}"
+    model: anthropic/claude-sonnet-4-5  # TODO(amine): confirm model id (current: claude-sonnet-4-6 / claude-opus-4-8)
+    temperature: 0
+
+# --- Built-in toolsets: read-only only ---
+toolsets:
+  kubernetes/core:
+    enabled: true
+  kubernetes/logs:
+    enabled: true
+  prometheus/metrics:
+    enabled: false   # use the Grafana MCP for a single metrics path
+  internet:
+    enabled: true
+  skills:
+    enabled: true
+  bash:
+    enabled: false   # no shell — minimal surface
+
+customSkillPaths:
+  - /etc/holmes/skills
+
+additionalVolumes:
+  - name: skills
+    configMap:
+      name: holmes-skills
+additionalVolumeMounts:
+  - name: skills
+    mountPath: /etc/holmes/skills
+
+# --- Remote MCP servers ---
+mcp_servers:
+  grafana:
+    description: "Grafana metrics, logs, and dashboards (read-only)"
+    config:
+      url: "http://grafana-mcp.ai-lab.svc.cluster.local:8000/mcp"
+      mode: streamable-http
+    llm_instructions: |
+      Use Grafana to query Prometheus metrics and Loki logs for this cluster.
+      Prefer this over any built-in metrics toolset. When a query returns many
+      series, use topk() to bound the result.
+  argocd:
+    description: "Argo CD GitOps application state (read-only)"
+    config:
+      url: "http://argocd-mcp.ai-lab.svc.cluster.local:8000"
+      mode: streamable-http
+    llm_instructions: |
+      Use Argo CD to check application sync and health status, and to find which
+      Git revision last changed an app. This cluster is GitOps-managed: never
+      suggest imperative fixes. Identify the offending revision for a human to revert.
+
+# Blast-radius cap
+resources:
+  requests:
+    cpu: 200m
+    memory: 1Gi
+  limits:
+    memory: 2Gi

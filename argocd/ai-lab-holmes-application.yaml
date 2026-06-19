@@ -1,0 +1,34 @@
+# argocd/ai-lab-holmes-application.yaml
+# Standalone Application for the HolmesGPT Helm chart (decision B option 1).
+# Multi-source: the chart from the Robusta Helm repo + the values file from this
+# git repo via the $values ref. Lives in the ai-lab AppProject, deploys into the
+# ai-lab namespace only. Named ai-lab-holmes-chart to avoid colliding with the
+# ApplicationSet-generated ai-lab-holmes (support manifests).
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ai-lab-holmes-chart
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: ai-lab
+  sources:
+    - repoURL: https://robusta-charts.storage.googleapis.com
+      chart: holmes
+      targetRevision: "0.0.0" # TODO(amine): pin to the current holmes chart version (doc referenced 0.33.0 — confirm)
+      helm:
+        valueFiles:
+          - $values/ai-lab/holmes/overlays/prod/holmes-values.yaml
+    - repoURL: git@github.com:aminrj/homelab-terraform-gitops-infra.git
+      targetRevision: main
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: ai-lab
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

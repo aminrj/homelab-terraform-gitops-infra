@@ -1,0 +1,14 @@
+# ai-lab/mcp-grafana/base/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana-mcp
+  namespace: ai-lab
+  labels:
+    app: grafana-mcp
+spec:
+  selector:
+    app: grafana-mcp
+  ports:
+    - port: 8000
+      targetPort: 8000
