@@ -25,12 +25,24 @@ spec:
         runAsUser: 10001
       containers:
         - name: tempo
-          # Pinned to the latest 2.x. Do NOT bump to 3.x without migrating the
-          # config first: v3.0.0 moved the ingester to a live_store module,
-          # centralised block/WAL settings under storage.trace.block, and removed
-          # querier.query_live_store. The monolithic config in configmap.yaml is
-          # 2.x-shaped.
-          image: grafana/tempo:2.10.7
+          # PINNED TO 2.7.2 BECAUSE OF THE CPU, not because of the config.
+          #
+          # The Proxmox VMs run the generic "Common KVM processor" (kvm64), which
+          # does not expose x86-64-v2 (only 1 of the 5 required flags). Tempo
+          # >= 2.8.0 is built with GOAMD64=v2 and dies instantly with:
+          #   "This program can only be run on AMD64 processors with v2
+          #    microarchitecture support."
+          # Verified empirically: 2.7.2 runs, 2.8.1 does not.
+          #
+          # The real fix is to set the Proxmox VM CPU type to "host" (or
+          # x86-64-v2-AES) and reboot the nodes; then this can track a current
+          # release. Until then, do not bump this.
+          #
+          # Separately, when the CPU is fixed, do NOT jump straight to 3.x: v3.0.0
+          # moved the ingester to a live_store module, centralised block/WAL
+          # settings under storage.trace.block, and removed
+          # querier.query_live_store. The config in configmap.yaml is 2.x-shaped.
+          image: grafana/tempo:2.7.2
           args: ["-config.file=/etc/tempo/tempo.yaml"]
           ports:
             - name: http
