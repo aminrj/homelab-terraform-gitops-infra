@@ -13,11 +13,11 @@ terraform {
       version = ">= 1.19.0"
     }
     azurerm = {
-      source = "hashicorp/azurerm"
+      source  = "hashicorp/azurerm"
       version = "~> 3.0"
     }
     azuread = {
-      source = "hashicorp/azuread"
+      source  = "hashicorp/azuread"
       version = "~> 2.0"
     }
   }
@@ -42,8 +42,8 @@ provider "kubectl" {
 
 # Core Kubernetes resources and basic infrastructure
 module "kubernetes" {
-  source            = "../../modules/kubernetes"
-  kubeconfig  = var.kubeconfig
+  source     = "../../modules/kubernetes"
+  kubeconfig = var.kubeconfig
 }
 
 module "priority_classes" {
@@ -121,21 +121,13 @@ module "prometheus-stack" {
   ]
 }
 
-# MicroCeph monitoring - depends on prometheus being available
-module "microceph" {
-  source = "../../modules/microceph"
-
-  prometheus_release_name   = "kube-prometheus-stack"
-  deploy_microceph_tools    = false
-  enable_status_checks      = false
-  monitoring_namespace      = "monitoring"
-  microceph_manager_ip      = "10.0.30.15"  # Current active manager
-  slack_webhook_url         = var.slack_webhook_url
-
-  depends_on = [
-    module.prometheus-stack
-  ]
-}
+# MicroCeph removed 2026-07-22. Ceph was never actually serving volumes: zero PVs
+# were ever provisioned on the microceph-rbd StorageClass, its provisioner
+# (rbd.csi.ceph.com) never matched the registered CSI drivers
+# (rook-ceph.rbd.csi.ceph.com), and no Ceph or Rook pods were running. The module
+# only ever created a ServiceMonitor, a headless Service pointing at 10.0.30.15
+# (a host that is down), and alert rules that could only ever report no-data.
+# All storage is local-path, which is now the default StorageClass.
 
 # CNPG Operator - depends on kubernetes and benefits from prometheus
 module "cnpg_operator" {
