@@ -6,4 +6,10 @@ resources:
   - secrets.yaml
 
 patches:
-  - path: destination-path-patch.yaml
+  - target:
+      version: v1
+      group: postgresql.cnpg.io
+      kind: Cluster
+      name: gitea-db-cnpg-v1
+      namespace: cnpg-prod
+    path: destination-path-patch.yaml

@@ -1,0 +1,20 @@
+# infrastructure/tempo/base/service.yaml
+# Name "tempo" so the DNS tempo.monitoring.svc.cluster.local matches the collector
+# exporter and the Grafana datasource.
+apiVersion: v1
+kind: Service
+metadata:
+  name: tempo
+  namespace: monitoring
+  labels:
+    app: tempo
+spec:
+  selector:
+    app: tempo
+  ports:
+    - name: http
+      port: 3200
+      targetPort: 3200
+    - name: otlp-grpc
+      port: 4317
+      targetPort: 4317

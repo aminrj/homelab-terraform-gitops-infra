@@ -1,0 +1,12 @@
+# infrastructure/tempo/base/pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: tempo-data
+  namespace: monitoring
+spec:
+  accessModes: ["ReadWriteOnce"]
+  storageClassName: local-path   # matches the rest of the cluster
+  resources:
+    requests:
+      storage: 10Gi   # TODO(amine): tune for expected trace volume
