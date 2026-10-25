@@ -25,6 +25,8 @@ spec:
         repoURL: git@github.com:aminrj/homelab-terraform-gitops-infra.git
         revision: main
         directories:
+          - path: infrastructure/external-secrets/overlays/prod # its own app: argocd/external-secret-application.yaml
+            exclude: true
           - path: infrastructure/*/overlays/prod # Only prod environment
   template:
     metadata:

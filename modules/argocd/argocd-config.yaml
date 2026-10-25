@@ -13,4 +13,8 @@ spec:
     # server: https://kubernetes.default.svc
     server: "${TARGET_SERVER}"
     namespace: argocd
-  syncPolicy: {}
+  # Root app: everything under argocd/ (ApplicationSets, the External Secrets store).
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: true

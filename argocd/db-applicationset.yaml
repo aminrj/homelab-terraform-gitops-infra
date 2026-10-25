@@ -8,10 +8,10 @@ spec:
     - git:
         repoURL: git@github.com:aminrj/homelab-terraform-gitops-infra.git
         revision: main
+        # Databases restored on the MicroK8s cluster, one line each (see applicationset.yaml).
         directories:
-          - path: databases/wallabag/overlays/prod
-            exclude: true
-          - path: databases/*/overlays/prod
+          - path: databases/n8n/overlays/prod
+          - path: databases/commafeed/overlays/prod
   template:
     metadata:
       name: 'db-{{path[1]}}-{{path[3]}}'

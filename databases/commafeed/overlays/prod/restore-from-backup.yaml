@@ -1,0 +1,11 @@
+# Prod on the MicroK8s cluster (2026-10-25): restore from the newest backups (restore-v2,
+# base 2026-08-10, WAL to 2026-08-11 00:17 UTC), then back up under a new server name there.
+- op: add
+  path: /spec/storage/storageClass
+  value: microk8s-hostpath
+- op: replace
+  path: /spec/externalClusters/0/barmanObjectStore/destinationPath
+  value: https://homelabstorageaccntprod.blob.core.windows.net/commafeed-db-restore-v2
+- op: add
+  path: /spec/backup/barmanObjectStore/serverName
+  value: commafeed-db-cnpg-v1-2026-10

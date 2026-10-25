@@ -1,9 +1,9 @@
 variable "kubeconfig" {
-  type        = string
+  type = string
 }
 
 variable "namespace" {
-  type    = string
+  type = string
 }
 
 

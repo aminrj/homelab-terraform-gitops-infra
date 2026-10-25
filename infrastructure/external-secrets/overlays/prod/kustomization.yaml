@@ -1,6 +1,7 @@
+# ArgoCD's repo key (homelab-gitops-repo) comes from Terraform (modules/bootstrap-secrets),
+# because ArgoCD needs it before it can deploy this.
 resources:
   - cluster-secret-store.yaml
-  - argocd-homelab-repo.yaml
 
 # patchesStrategicMerge:
 #   - cluster-secret-store-patch.yaml

@@ -36,8 +36,8 @@ resource "helm_release" "argocd" {
   create_namespace = true
 
   values = [file("${path.module}/values.yaml")]
- 
-  wait    = false
+
+  wait = false
 }
 
 # # Deploy ArgoCD Self-Managed Application (Points to GitOps Repo)

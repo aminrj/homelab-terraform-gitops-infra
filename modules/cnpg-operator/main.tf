@@ -16,8 +16,8 @@ terraform {
 }
 
 resource "helm_release" "cnpg_operator" {
-  name             = "cloudnative-pg"
-  namespace        = var.namespace
+  name      = "cloudnative-pg"
+  namespace = var.namespace
   # namespace        = "cnpg" #TODO change this
   repository       = "https://cloudnative-pg.github.io/charts"
   chart            = "cloudnative-pg"
@@ -27,7 +27,7 @@ resource "helm_release" "cnpg_operator" {
 
   values = [
     templatefile("${path.module}/values.yaml.tpl", {
-      enable_crds        = true
+      enable_crds = true
     })
   ]
 }

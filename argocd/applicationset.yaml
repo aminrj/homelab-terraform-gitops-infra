@@ -8,10 +8,11 @@ spec:
     - git:
         repoURL: git@github.com:aminrj/homelab-terraform-gitops-infra.git
         revision: main
+        # Apps brought up on the MicroK8s cluster (2026-10-25), one line each: add an app
+        # here once its database (db-applicationset.yaml) is restored and healthy.
         directories:
-          - path: apps/wallabag/overlays/prod
-            exclude: true
-          - path: apps/*/overlays/prod # Only prod environment
+          - path: apps/n8n/overlays/prod
+          - path: apps/commafeed/overlays/prod
   template:
     metadata:
       name: '{{path[1]}}-{{path[3]}}' # example: commafeed-dev, listmonk-qa...

@@ -10,13 +10,13 @@
 # }
 
 resource "helm_release" "nginx_ingress" {
-  name       = "ingress-nginx"
-  chart      = "ingress-nginx"
-  repository = "https://kubernetes.github.io/ingress-nginx"
-  version    = "4.12.0" # or the latest stable
-  namespace  = "ingress-nginx"
+  name             = "ingress-nginx"
+  chart            = "ingress-nginx"
+  repository       = "https://kubernetes.github.io/ingress-nginx"
+  version          = "4.12.0" # or the latest stable
+  namespace        = "ingress-nginx"
   create_namespace = true
-  wait = false
+  wait             = false
 
   values = [file("${path.module}/values.yaml")]
 

@@ -1,5 +1,30 @@
+# Prod on the MicroK8s cluster (2026-10-25): restore from the old cluster's backups, then back
+# up under a new server name in the same container (CNPG refuses to write into an archive that
+# already has WAL from another cluster, and the old backups stay untouched as a fallback).
+- op: add
+  path: /spec/storage/storageClass
+  value: microk8s-hostpath
 - op: replace
   path: /spec/bootstrap
   value:
     recovery:
-      source: clusterBackup
+      source: n8n-backup
+- op: add
+  path: /spec/externalClusters
+  value:
+    - name: n8n-backup
+      barmanObjectStore:
+        destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/n8n-db-clean
+        serverName: n8n-db-cnpg-v5            # last base backup 2026-08-23, WAL to 11:47 UTC
+        azureCredentials:
+          storageAccount:
+            name: n8n-db-storage
+            key: container-name
+          storageSasToken:
+            name: n8n-db-storage
+            key: blob-sas
+        wal:
+          compression: gzip
+- op: add
+  path: /spec/backup/barmanObjectStore/serverName
+  value: n8n-db-cnpg-v5-2026-10

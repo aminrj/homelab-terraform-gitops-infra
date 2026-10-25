@@ -6,4 +6,7 @@ resources:
   - secrets.yaml
 
 patches:
-  - path: destination-path-patch.yaml
+  - target:
+      kind: Cluster
+      name: n8n-db-cnpg-v5
+    path: restore-from-backup.yaml

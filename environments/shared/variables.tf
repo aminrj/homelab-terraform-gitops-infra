@@ -66,3 +66,21 @@ variable "slack_webhook_url" {
   sensitive   = true
   default     = "https://hooks.slack.com/placeholder" # Alertmanager needs a valid URL even without Slack
 }
+
+variable "ingress_vip" {
+  description = "MetalLB address of the ingress controller (homelab-foundation: kubernetes.ingress_vip)"
+  type        = string
+}
+
+variable "key_vault_name" {
+  type = string
+}
+
+variable "key_vault_resource_group" {
+  type = string
+}
+
+variable "eso_client_id" {
+  description = "Client ID of the ESO app registration (Key Vault Secrets User on the vault)"
+  type        = string
+}

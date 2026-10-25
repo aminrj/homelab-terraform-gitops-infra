@@ -59,18 +59,18 @@ resource "helm_release" "metallb" {
 
 # Wait for MetalLB CRDs to be installed
 resource "time_sleep" "wait_for_metallb_crds" {
-  depends_on = [helm_release.metallb]
+  depends_on      = [helm_release.metallb]
   create_duration = "60s"
 }
 
 # Use kubectl provider for CRD-dependent resources
 resource "kubectl_manifest" "metallb_ipaddresspool" {
   depends_on = [time_sleep.wait_for_metallb_crds]
-  
-  validate_schema    = false
-  server_side_apply  = true
-  wait_for_rollout   = true
-  
+
+  validate_schema   = false
+  server_side_apply = true
+  wait_for_rollout  = true
+
   yaml_body = <<YAML
 apiVersion: metallb.io/v1beta1
 kind: IPAddressPool
@@ -85,11 +85,11 @@ YAML
 
 resource "kubectl_manifest" "metallb_l2advertisement" {
   depends_on = [kubectl_manifest.metallb_ipaddresspool]
-  
-  validate_schema    = false
-  server_side_apply  = true
-  wait_for_rollout   = true
-  
+
+  validate_schema   = false
+  server_side_apply = true
+  wait_for_rollout  = true
+
   yaml_body = <<YAML
 apiVersion: metallb.io/v1beta1
 kind: L2Advertisement

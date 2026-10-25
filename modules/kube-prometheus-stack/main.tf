@@ -8,13 +8,13 @@ resource "helm_release" "kube-prometheus-stack" {
   version    = var.helm_chart_version
 
   create_namespace = true
-  wait = false
+  wait             = false
 
   values = [
     templatefile("${path.module}/values.yaml.tpl", {
-      storage_class        = var.storage_class
-      slack_webhook_url    = var.slack_webhook_url
-      priority_class_name  = var.priority_class_name
+      storage_class       = var.storage_class
+      slack_webhook_url   = var.slack_webhook_url
+      priority_class_name = var.priority_class_name
     })
   ]
 }

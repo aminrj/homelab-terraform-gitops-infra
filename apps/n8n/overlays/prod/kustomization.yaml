@@ -22,4 +22,4 @@ patches:
     patch: |-
       - op: add
         path: /spec/storageClassName
-        value: local-path
+        value: microk8s-hostpath

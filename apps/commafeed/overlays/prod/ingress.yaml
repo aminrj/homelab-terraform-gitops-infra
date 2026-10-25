@@ -1,16 +1,13 @@
+# Private: commafeed.lab.aminrj.com resolves to the ingress VIP through OPNsense's split DNS (in the
+# lab and over Tailscale); nothing is published. Certificate: Let's Encrypt via DNS-01.
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: commafeed-ingress-prod
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    external-dns.alpha.kubernetes.io/target: "188.148.187.53"
-    external-dns.alpha.kubernetes.io/hostname: commafeed.lab.aminrj.com
-    external-dns.alpha.kubernetes.io/enabled: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
-  ingressClassName: nginx
+  ingressClassName: traefik
   tls:
     - hosts:
         - commafeed.lab.aminrj.com

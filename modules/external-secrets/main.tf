@@ -11,7 +11,7 @@ resource "helm_release" "external_secrets" {
       installCRDs : true
 
       # Required to process ClusterSecretStores across namespaces
-      processClusterStore        : true
+      processClusterStore : true
       processClusterExternalSecret : true
 
       # Full cluster RBAC permissions to read ClusterSecretStores and secrets across namespaces
@@ -22,11 +22,11 @@ resource "helm_release" "external_secrets" {
 
       serviceAccount : {
         create : true
-        name   : "external-secrets-sa"
+        name : "external-secrets-sa"
       }
 
       controllerClass : "" # optional, only set this if you want multiple ESO controllers
-      
+
       webhook : {
         create : true
       }

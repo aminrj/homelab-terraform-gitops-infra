@@ -20,8 +20,18 @@ terraform {
       source  = "hashicorp/azuread"
       version = "~> 2.0"
     }
+    time = {
+      source  = "hashicorp/time"
+      version = ">= 0.9"
+    }
   }
 }
+
+provider "azurerm" {
+  features {}
+}
+
+provider "azuread" {}
 
 provider "kubernetes" {
   config_path    = var.kubeconfig
@@ -66,10 +76,10 @@ module "metallb" {
   ]
 }
 
-# Nginx Ingress Controller - can run independently but better after metallb
-module "nginx-ingress-controller" {
-  source     = "../../modules/nginx-ingress-controller"
-  kubeconfig = var.kubeconfig
+# Ingress: Traefik on the ingress VIP (ingress-nginx is retired upstream since 2026-03).
+module "traefik" {
+  source           = "../../modules/traefik"
+  load_balancer_ip = var.ingress_vip
 
   depends_on = [
     module.metallb
@@ -78,8 +88,9 @@ module "nginx-ingress-controller" {
 
 # Cert-manager for TLS certificates - needs kubernetes
 module "cert-manager" {
-  source     = "../../modules/cert-manager"
-  kubeconfig = var.kubeconfig
+  source               = "../../modules/cert-manager"
+  kubeconfig           = var.kubeconfig
+  cloudflare_api_token = var.cloudflare_api_token
 
   depends_on = [
     module.kubernetes
@@ -106,6 +117,19 @@ module "external_secrets" {
 
   depends_on = [
     module.kubernetes
+  ]
+}
+
+# Secrets GitOps needs before it can run (ESO's Key Vault login, ArgoCD's repo key).
+module "bootstrap_secrets" {
+  source                   = "../../modules/bootstrap-secrets"
+  key_vault_name           = var.key_vault_name
+  key_vault_resource_group = var.key_vault_resource_group
+  eso_client_id            = var.eso_client_id
+
+  depends_on = [
+    module.external_secrets,
+    module.argocd
   ]
 }
 
