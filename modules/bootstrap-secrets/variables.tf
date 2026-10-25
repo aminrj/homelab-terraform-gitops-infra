@@ -20,3 +20,9 @@ variable "repo_url" {
   type    = string
   default = "git@github.com:aminrj/homelab-terraform-gitops-infra.git"
 }
+
+variable "wait_for" {
+  description = "Anything from the charts that create the argocd and external-secrets namespaces"
+  type        = any
+  default     = null
+}

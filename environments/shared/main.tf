@@ -126,11 +126,7 @@ module "bootstrap_secrets" {
   key_vault_name           = var.key_vault_name
   key_vault_resource_group = var.key_vault_resource_group
   eso_client_id            = var.eso_client_id
-
-  depends_on = [
-    module.external_secrets,
-    module.argocd
-  ]
+  wait_for                 = [module.external_secrets.namespace, module.argocd.namespace]
 }
 
 # Prometheus stack - needs kubernetes and benefits from cert-manager

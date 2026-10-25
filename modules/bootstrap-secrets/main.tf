@@ -14,6 +14,13 @@ terraform {
   }
 }
 
+# The k8s secrets wait for the charts that create their namespaces (var.wait_for). Only they
+# depend on it: a module-level depends_on would defer the data sources below on every chart
+# change, and an unknown application_id makes Terraform replace the ESO password each time.
+resource "terraform_data" "namespaces_ready" {
+  input = var.wait_for
+}
+
 data "azurerm_key_vault" "this" {
   name                = var.key_vault_name
   resource_group_name = var.key_vault_resource_group
@@ -35,6 +42,7 @@ resource "azuread_application_password" "eso_shared" {
 }
 
 resource "kubernetes_secret" "eso_azure_creds" {
+  depends_on = [terraform_data.namespaces_ready]
   metadata {
     name      = "azure-creds-prod"
     namespace = "external-secrets"
@@ -51,6 +59,7 @@ data "azurerm_key_vault_secret" "repo_key" {
 }
 
 resource "kubernetes_secret" "argocd_repo" {
+  depends_on = [terraform_data.namespaces_ready]
   metadata {
     name      = "homelab-gitops-repo"
     namespace = "argocd"
