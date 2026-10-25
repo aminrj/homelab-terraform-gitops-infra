@@ -29,6 +29,6 @@ resource "helm_release" "traefik" {
       type        = "LoadBalancer"
       annotations = { "metallb.io/loadBalancerIPs" = var.load_balancer_ip }
     }
-    logs = { access = { enabled = true } }
+    accessLog = { enabled = true }
   })]
 }
