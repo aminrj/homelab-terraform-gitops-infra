@@ -1,0 +1,24 @@
+# Private: homepage.lab.aminrj.com from OPNsense's split DNS (homelab-foundation inventory).
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: homepage
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - homepage.lab.aminrj.com
+      secretName: homepage-tls
+  rules:
+    - host: homepage.lab.aminrj.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: homepage
+                port:
+                  number: 80

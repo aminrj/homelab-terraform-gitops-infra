@@ -13,6 +13,7 @@ spec:
         directories:
           - path: apps/n8n/overlays/prod
           - path: apps/commafeed/overlays/prod
+          - path: apps/homepage/overlays/prod   # start page, no database
   template:
     metadata:
       name: '{{path[1]}}-{{path[3]}}' # example: commafeed-dev, listmonk-qa...

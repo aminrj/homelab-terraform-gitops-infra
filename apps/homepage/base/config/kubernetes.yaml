@@ -1,0 +1,2 @@
+# Read the cluster through the pod's service account (ClusterRole homepage, read-only).
+mode: cluster

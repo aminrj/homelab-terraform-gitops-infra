@@ -1,0 +1,20 @@
+# Top bar (https://gethomepage.dev/widgets/). The kubernetes widget needs the metrics API
+# (MicroK8s add-on metrics-server, homelab-foundation inventory kubernetes.addons).
+- kubernetes:
+    cluster:
+      show: true
+      cpu: true
+      memory: true
+      showLabel: true
+      label: cluster
+    nodes:
+      show: true
+      cpu: true
+      memory: true
+      showLabel: true
+- datetime:
+    text_size: md
+    format:
+      dateStyle: medium
+      timeStyle: short
+      hour12: false

@@ -1,0 +1,19 @@
+# Homepage settings (https://gethomepage.dev/configs/settings/). Changing any file in config/
+# rolls the pod: kustomize's configMapGenerator gives the ConfigMap a new name.
+title: Homelab
+description: Lab services, behind OPNsense
+theme: dark
+color: slate
+headerStyle: clean
+statusStyle: dot
+hideVersion: true
+layout:
+  Apps:
+    style: row
+    columns: 3
+  Platform:
+    style: row
+    columns: 4
+  Infrastructure:
+    style: row
+    columns: 3

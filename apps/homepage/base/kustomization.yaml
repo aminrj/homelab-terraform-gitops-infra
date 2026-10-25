@@ -1,0 +1,17 @@
+# Homepage (gethomepage.dev): the lab's start page. All settings are the files in config/;
+# the generated ConfigMap name changes with its content, so a config change rolls the pod.
+resources:
+  - rbac.yaml
+  - deployment.yaml
+
+configMapGenerator:
+  - name: homepage
+    files:
+      - config/settings.yaml
+      - config/services.yaml
+      - config/widgets.yaml
+      - config/bookmarks.yaml
+      - config/kubernetes.yaml
+      - config/docker.yaml
+      - config/custom.css
+      - config/custom.js
