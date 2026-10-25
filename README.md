@@ -11,21 +11,23 @@
 
 ## 🚀 Quick Start
 
-### New Cluster Bootstrap
+### New Cluster Bootstrap (current way, 2026-10)
 
-Setting up from scratch? Start here:
+The cluster itself (VMs, MicroK8s, kubeconfig, DNS names) comes from
+[homelab-foundation](../homelab-foundation) (`make vms-apply`, `make k8s-apply`). Then, here:
 
 ```bash
-# 1. Clone repository
-git clone <your-repo-url>
-cd homelab-terraform-gitops-infra
+cp environments/shared/backend.hcl.example environments/shared/backend.hcl   # once per machine
+make shared-init
+make shared-plan      # read it
+make shared-apply     # Traefik, cert-manager, ArgoCD, monitoring, CNPG, ESO + their bootstrap secrets
+```
 
-# 2. Follow bootstrap guide
-# See: docs/bootstrap/01-new-cluster-bootstrap.md
-
-# 3. Deploy shared infrastructure
-cd environments/shared
-terraform init && terraform apply
+No secret is created by hand: Terraform reads Key Vault (ArgoCD's repo key, the Cloudflare token)
+and gives External Secrets its own rotating password (`modules/bootstrap-secrets`). ArgoCD then
+syncs `argocd/` from `main`; apps and databases are listed explicitly in the two ApplicationSets.
+How to reach each service: `homelab-foundation/docs/services.md`.
+`docs/bootstrap/01-new-cluster-bootstrap.md` describes the older, manual path.
 
 # 4. Deploy production
 cd ../prod

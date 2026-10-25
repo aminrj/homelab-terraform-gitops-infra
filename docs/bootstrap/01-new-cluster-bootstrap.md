@@ -1,5 +1,8 @@
 # Bootstrap New MicroK8s Cluster from Scratch
 
+> Superseded (2026-10-25): the cluster comes from homelab-foundation and the cluster software from
+> `make shared-plan` / `make shared-apply` here, with no hand-made secrets (see README). Kept for history.
+
 **Estimated Time**: 45-60 minutes
 **Prerequisites**: Fresh MicroK8s installation, Azure subscription, Git access
 
