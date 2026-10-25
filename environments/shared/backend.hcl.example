@@ -1,0 +1,6 @@
+# Copy to backend.hcl (gitignored). Uses `az login` credentials.
+resource_group_name  = "homelab-tfstate"
+storage_account_name = "hlabtfstate20261025"
+container_name       = "tfstate"
+key                  = "gitops/shared.tfstate"
+use_azuread_auth     = true

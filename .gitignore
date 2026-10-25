@@ -25,3 +25,5 @@ AGENTS.md
 .DS_Store
 n8n-backup-20251021-1400.tar.gz
 workflows.tar
+environments/shared/backend.hcl
+*.tfplan

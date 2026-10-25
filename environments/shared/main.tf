@@ -86,8 +86,10 @@ module "cert-manager" {
   ]
 }
 
-# External DNS - keeps Cloudflare DNS in sync with ingresses
+# External DNS - keeps Cloudflare DNS in sync with ingresses. Off until the Cloudflare
+# token is in Key Vault (gitops-cloudflare-api-token) and enable_external_dns = true.
 module "external-dns" {
+  count                = var.enable_external_dns ? 1 : 0
   source               = "../../modules/external-dns"
   kubeconfig           = var.kubeconfig
   cloudflare_api_token = var.cloudflare_api_token

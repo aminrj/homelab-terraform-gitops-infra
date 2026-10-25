@@ -31,9 +31,16 @@ variable "metallb_address_range" {
 }
 
 variable "cloudflare_api_token" {
-  description = "Cloudflare API token for external-dns"
+  description = "Cloudflare API token for external-dns (Key Vault gitops-cloudflare-api-token, loaded by the Makefile)"
   type        = string
   sensitive   = true
+  default     = ""
+}
+
+variable "enable_external_dns" {
+  description = "Install external-dns (needs cloudflare_api_token)"
+  type        = bool
+  default     = false
 }
 
 variable "storage_class" {
@@ -54,6 +61,8 @@ variable "ui_service_type" {
 }
 
 variable "slack_webhook_url" {
-  description = "Slack Webhook url for alert manager"
+  description = "Slack Webhook url for alert manager (Key Vault gitops-slack-webhook-url, loaded by the Makefile)"
   type        = string
+  sensitive   = true
+  default     = "https://hooks.slack.com/placeholder" # Alertmanager needs a valid URL even without Slack
 }
