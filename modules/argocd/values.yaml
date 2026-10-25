@@ -1,14 +1,21 @@
+# Reached as https://argocd.lab.aminrj.com through Traefik (TLS ends there, so the server
+# itself speaks plain HTTP); the LoadBalancer IP stays as a fallback that needs no DNS.
+configs:
+  params:
+    server.insecure: true
+
 server:
   ingress:
-    # enabled: true
-    enabled: false
-    ingressClassName: nginx
+    enabled: true
+    ingressClassName: traefik
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
     hosts:
-      - minargocd.aminrj.com
+      - argocd.lab.aminrj.com
     tls:
       - secretName: argocd-tls
         hosts:
-          - minargocd.aminrj.com
+          - argocd.lab.aminrj.com
   service:
     # type: ClusterIP
     type: LoadBalancer

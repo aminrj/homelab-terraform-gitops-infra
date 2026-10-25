@@ -56,6 +56,21 @@ prometheus:
 
 grafana:
   priorityClassName: "${priority_class_name}"
+  # https://grafana.lab.aminrj.com through Traefik; the LoadBalancer IP stays as a fallback.
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+    hosts:
+      - grafana.lab.aminrj.com
+    tls:
+      - secretName: grafana-tls
+        hosts:
+          - grafana.lab.aminrj.com
+  grafana.ini:
+    server:
+      root_url: https://grafana.lab.aminrj.com
   service:
     type: LoadBalancer
     loadBalancerIP: "10.0.30.203"
