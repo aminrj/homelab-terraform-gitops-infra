@@ -5,7 +5,8 @@
 #   make shared-plan       # writes shared.tfplan
 #   make shared-apply      # applies shared.tfplan
 #
-# The cluster API must be reachable: from homelab-foundation, `make kube-tunnel` until Tailscale.
+# The cluster API must be reachable: Tailscale (homelab-foundation cutover.md B8), or
+# `make kube-tunnel` there. Context `homelab` in ~/.kube/homelab either way.
 # Never run the prod env from here: its state is still local on the Mac.
 
 SHELL := /bin/bash
