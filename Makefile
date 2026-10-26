@@ -26,7 +26,7 @@ define load_secrets
 	done; unset v;
 endef
 
-.PHONY: help shared-init shared-migrate-state shared-plan shared-apply db-backup
+.PHONY: help shared-init shared-migrate-state shared-plan shared-apply db-backup grafana-admin-sync
 help: ## List targets
 	@grep -hE '^[a-z0-9-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-22s %s\n", $$1, $$2}'
 
@@ -40,9 +40,9 @@ shared-migrate-state: ## One time: push a local state file into the empty Azure 
 	$(SHARED) state push $(LOCAL_STATE)
 	$(SHARED) state list | wc -l | xargs echo "resources in the backend:"
 
-shared-plan: ## Plan the shared env (saves shared.tfplan)
+shared-plan: ## Plan the shared env (saves shared.tfplan; ARGS=-replace=...)
 	@test -n "$(KEY_VAULT_NAME)" || { echo "set KEY_VAULT_NAME (in .env)"; exit 1; }
-	@$(load_secrets) $(SHARED) plan -out=$(PLAN)
+	@$(load_secrets) $(SHARED) plan -out=$(PLAN) $(ARGS)
 
 shared-apply: ## Apply exactly the saved plan
 	@test -f environments/shared/$(PLAN) || { echo "run make shared-plan first"; exit 1; }
@@ -51,3 +51,6 @@ shared-apply: ## Apply exactly the saved plan
 db-backup: ## On-demand CNPG backup of an app's database to Azure, waits for it (APP=n8n)
 	@test -n "$(APP)" || { echo "set APP=<app>"; exit 1; }
 	scripts/db-backup.sh $(APP)
+
+grafana-admin-sync: ## Set Grafana's admin password from Key Vault (after it changes)
+	scripts/grafana-admin-sync.sh

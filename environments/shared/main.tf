@@ -24,6 +24,10 @@ terraform {
       source  = "hashicorp/time"
       version = ">= 0.9"
     }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.6"
+    }
   }
 }
 
@@ -129,12 +133,20 @@ module "bootstrap_secrets" {
   wait_for                 = [module.external_secrets.namespace, module.argocd.namespace]
 }
 
+# ArgoCD and Grafana admin passwords: generated, stored in Key Vault, given to the charts.
+module "admin_passwords" {
+  source                   = "../../modules/admin-passwords"
+  key_vault_name           = var.key_vault_name
+  key_vault_resource_group = var.key_vault_resource_group
+}
+
 # Prometheus stack - needs kubernetes and benefits from cert-manager
 module "prometheus-stack" {
-  source            = "../../modules/kube-prometheus-stack"
-  kubeconfig        = var.kubeconfig
-  storage_class     = var.storage_class
-  slack_webhook_url = var.slack_webhook_url
+  source                 = "../../modules/kube-prometheus-stack"
+  kubeconfig             = var.kubeconfig
+  storage_class          = var.storage_class
+  slack_webhook_url      = var.slack_webhook_url
+  grafana_admin_password = module.admin_passwords.grafana_password
 
   depends_on = [
     module.kubernetes,
@@ -168,7 +180,10 @@ module "cnpg_operator" {
 module "argocd" {
   source                = "../../modules/argocd"
   kubeconfig            = var.kubeconfig
+  kube_context          = var.kube_context
   target_cluster_server = var.target_cluster_server
+  admin_password_bcrypt = module.admin_passwords.argocd_bcrypt
+  admin_password_mtime  = module.admin_passwords.argocd_mtime
 
   depends_on = [
     module.kubernetes,

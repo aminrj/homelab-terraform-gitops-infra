@@ -18,3 +18,17 @@ resource "helm_release" "kube-prometheus-stack" {
     })
   ]
 }
+
+# Grafana's admin login from Key Vault (modules/admin-passwords). Grafana reads it only when
+# its database is new; for the existing one: `make grafana-admin-sync`.
+resource "kubernetes_secret" "grafana_admin" {
+  metadata {
+    name      = "grafana-admin"
+    namespace = var.namespace
+  }
+  data = {
+    "admin-user"     = "admin"
+    "admin-password" = var.grafana_admin_password
+  }
+  depends_on = [helm_release.kube-prometheus-stack] # the release creates the namespace
+}

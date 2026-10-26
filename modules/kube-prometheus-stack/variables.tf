@@ -30,6 +30,12 @@ variable "slack_webhook_url" {
   type        = string
 }
 
+variable "grafana_admin_password" {
+  description = "Grafana admin password (modules/admin-passwords)"
+  type        = string
+  sensitive   = true
+}
+
 variable "priority_class_name" {
   description = "PriorityClass to assign to monitoring workloads"
   type        = string

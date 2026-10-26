@@ -56,6 +56,10 @@ prometheus:
 
 grafana:
   priorityClassName: "${priority_class_name}"
+  admin:
+    existingSecret: grafana-admin   # Terraform, from modules/admin-passwords
+    userKey: admin-user
+    passwordKey: admin-password
   # https://grafana.lab.aminrj.com through Traefik; the LoadBalancer IP stays as a fallback.
   ingress:
     enabled: true
