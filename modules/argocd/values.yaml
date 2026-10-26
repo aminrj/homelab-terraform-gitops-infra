@@ -1,8 +1,16 @@
 # Reached as https://argocd.lab.aminrj.com through Traefik (TLS ends there, so the server
 # itself speaks plain HTTP); the LoadBalancer IP stays as a fallback that needs no DNS.
+# Written for argo-cd chart 7.x and later (global.domain, ingress.hostname/extraTls).
+global:
+  domain: argocd.lab.aminrj.com
+
 configs:
   params:
     server.insecure: true
+
+# Login is the local admin only (password: modules/admin-passwords); no SSO, so no Dex.
+dex:
+  enabled: false
 
 server:
   ingress:
@@ -10,14 +18,11 @@ server:
     ingressClassName: traefik
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-prod
-    hosts:
-      - argocd.lab.aminrj.com
-    tls:
-      - secretName: argocd-tls
-        hosts:
+    tls: false          # the certificate below (cert-manager), not the chart's default name
+    extraTls:
+      - hosts:
           - argocd.lab.aminrj.com
+        secretName: argocd-tls
   service:
-    # type: ClusterIP
     type: LoadBalancer
     loadBalancerIP: "10.0.30.202"
-
