@@ -7,7 +7,7 @@ variable "namespace" {
 variable "helm_chart_version" {
   description = "Version of the kube-prometheus-stack Helm chart"
   type        = string
-  default     = "75.4.0"
+  default     = "92.3.0" # operator v0.94.1; from 75.4.0 on 2026-10-26
 }
 
 variable "values_yaml" {

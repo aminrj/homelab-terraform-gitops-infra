@@ -1,3 +1,10 @@
+# Helm never upgrades CRDs; this pre-upgrade job applies the operator's CRDs (server-side)
+# before each chart upgrade.
+crds:
+  enabled: true
+  upgradeJob:
+    enabled: true
+
 prometheus:
   prometheusSpec:
     priorityClassName: "${priority_class_name}"
