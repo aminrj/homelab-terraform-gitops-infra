@@ -17,3 +17,7 @@ speaker:
     limits:
       cpu: 200m
       memory: 128Mi
+
+# L2 mode only (one pool, ARP). Chart 0.16 deploys frr-k8s (privileged BGP daemon) by default.
+frrk8s:
+  enabled: false
