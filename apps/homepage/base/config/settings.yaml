@@ -1,19 +1,33 @@
 # Homepage settings (https://gethomepage.dev/configs/settings/). Changing any file in config/
 # rolls the pod: kustomize's configMapGenerator gives the ConfigMap a new name.
 title: Homelab
-description: Lab services, behind OPNsense
+description: Private lab behind OPNsense, reached over Tailscale
 theme: dark
 color: slate
-headerStyle: clean
+headerStyle: boxedWidgets
 statusStyle: dot
 hideVersion: true
+cardBlur: md
+useEqualHeights: true
+quicklaunch:
+  searchDescriptions: true
+  hideInternetSearch: true
+  hideVisitURL: true
+# Group order and look (icons: https://pictogrammers.com/library/mdi/).
 layout:
   Apps:
     style: row
     columns: 3
-  Platform:
-    style: row
-    columns: 4
-  Infrastructure:
+    icon: mdi-apps
+  Monitoring:
     style: row
     columns: 3
+    icon: mdi-chart-timeline-variant
+  Platform:
+    style: row
+    columns: 3
+    icon: mdi-kubernetes
+  Network and hosts:
+    style: row
+    columns: 4
+    icon: mdi-server-network

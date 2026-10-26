@@ -1,0 +1,19 @@
+/* Dark gradient background without an external image. */
+html, body {
+  background:
+    radial-gradient(1100px 600px at 8% -10%, rgba(56, 189, 248, 0.16), transparent 60%),
+    radial-gradient(900px 520px at 105% 5%, rgba(167, 139, 250, 0.14), transparent 60%),
+    radial-gradient(800px 600px at 50% 120%, rgba(45, 212, 191, 0.10), transparent 60%),
+    #0b1120 !important;
+  background-attachment: fixed !important;
+}
+/* Service cards: softer edge, lift on hover. */
+li.service > div.service-card {
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 0.75rem;
+  transition: transform 120ms ease, border-color 120ms ease;
+}
+li.service > div.service-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(56, 189, 248, 0.45);
+}

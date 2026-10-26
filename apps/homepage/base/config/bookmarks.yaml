@@ -1,7 +1,26 @@
-- Lab docs:
-    - Design page:
-        - href: https://claude.ai/artifact/E1A4dFrtvkQgqAJYWJkdxf
+- Code:
     - homelab-foundation:
-        - href: https://github.com/aminrj/homelab-foundation
+        - icon: github.png
+          href: https://github.com/aminrj/homelab-foundation
+          description: Network, Proxmox, VMs, MicroK8s
     - GitOps repo:
-        - href: https://github.com/aminrj/homelab-terraform-gitops-infra
+        - icon: github.png
+          href: https://github.com/aminrj/homelab-terraform-gitops-infra
+          description: Everything on the cluster
+- Admin consoles:
+    - Tailscale:
+        - icon: tailscale.png
+          href: https://login.tailscale.com/admin
+    - Cloudflare:
+        - icon: cloudflare.png
+          href: https://dash.cloudflare.com
+    - Azure Key Vault:
+        - icon: azure.png
+          href: https://portal.azure.com/#browse/Microsoft.KeyVault%2Fvaults
+- Docs:
+    - Design page:
+        - icon: mdi-file-document-outline
+          href: https://claude.ai/artifact/E1A4dFrtvkQgqAJYWJkdxf
+    - Homepage docs:
+        - icon: mdi-book-open-variant
+          href: https://gethomepage.dev

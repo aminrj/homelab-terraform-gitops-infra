@@ -12,6 +12,9 @@
       cpu: true
       memory: true
       showLabel: true
+- search:
+    provider: duckduckgo
+    target: _blank
 - datetime:
     text_size: md
     format:
