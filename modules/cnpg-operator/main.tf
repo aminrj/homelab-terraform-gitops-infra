@@ -21,7 +21,7 @@ resource "helm_release" "cnpg_operator" {
   # namespace        = "cnpg" #TODO change this
   repository       = "https://cloudnative-pg.github.io/charts"
   chart            = "cloudnative-pg"
-  version          = "0.26.0"
+  version          = "0.29.1" # CloudNativePG 1.30.1; in-tree Barman backups still work, removed in 1.31
   create_namespace = true
   wait             = true
 
