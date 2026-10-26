@@ -37,7 +37,10 @@ spec:
             httpGet: { path: /, port: http }
           volumeMounts:
             - { name: config, mountPath: /etc/pve-exporter, readOnly: true }
+            - { name: tmp, mountPath: /tmp }   # Python needs a temp dir; root filesystem stays read-only
       volumes:
+        - name: tmp
+          emptyDir: { medium: Memory, sizeLimit: 16Mi }
         - name: config
           secret:
             secretName: pve-exporter-config   # ExternalSecret in the overlay
