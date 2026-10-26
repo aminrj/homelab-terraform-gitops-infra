@@ -1,0 +1,30 @@
+# Shared secret between n8n and its task-runners sidecar: generated once in the cluster by
+# External Secrets (refreshInterval 0 keeps it), never stored outside the n8n-prod namespace.
+apiVersion: generators.external-secrets.io/v1alpha1
+kind: Password
+metadata:
+  name: n8n-runners-token
+spec:
+  length: 48
+  digits: 10
+  symbols: 0
+  noUpper: false
+  allowRepeat: true
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: n8n-runners-token
+spec:
+  refreshInterval: "0"
+  target:
+    name: n8n-runners-token
+    creationPolicy: Owner
+  dataFrom:
+    - sourceRef:
+        generatorRef:
+          apiVersion: generators.external-secrets.io/v1alpha1
+          kind: Password
+          name: n8n-runners-token
+      rewrite:
+        - regexp: { source: "^password$", target: "token" }

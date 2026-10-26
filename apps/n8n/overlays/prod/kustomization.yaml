@@ -2,6 +2,7 @@
 resources:
   - ../../base
   - secrets.yaml
+  - runners-token.yaml
   - ingress.yaml
   - namespace.yaml
   - alerts.yaml
