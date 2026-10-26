@@ -36,7 +36,8 @@
             - label: Certificates
               query: count(certmanager_certificate_ready_status{condition="True"} == 1)
             - label: VMs without backup
-              query: sum(pve_not_backed_up_total) or vector(0)
+              # k8s VMs are rebuilt from code and templates need none: not counted
+              query: count(pve_not_backed_up_info * on(id, instance) group_left(name) pve_guest_info{template="0",name!~"k8s-.*"}) or vector(0)
 
 - Proxmox:
     - node-5:

@@ -26,7 +26,7 @@ define load_secrets
 	done; unset v;
 endef
 
-.PHONY: help shared-init shared-migrate-state shared-plan shared-apply db-backup grafana-admin-sync
+.PHONY: help shared-init shared-migrate-state shared-plan shared-apply db-backup grafana-admin-sync eso-storage-migrate
 help: ## List targets
 	@grep -hE '^[a-z0-9-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-22s %s\n", $$1, $$2}'
 
@@ -54,3 +54,6 @@ db-backup: ## On-demand CNPG backup of an app's database to Azure, waits for it 
 
 grafana-admin-sync: ## Set Grafana's admin password from Key Vault (after it changes)
 	scripts/grafana-admin-sync.sh
+
+eso-storage-migrate: ## ESO objects rewritten in the storage version before an upgrade (ARGS=--yes)
+	scripts/eso-storage-migrate.sh $(ARGS)
