@@ -1,0 +1,4 @@
+# Proxmox widget credentials (https://gethomepage.dev/configs/proxmox/). Empty on purpose:
+# SERVICES can't reach MGMT, and Homepage needs every skeleton file present (its config
+# directory is read-only here, so a missing file stops it at startup: seen 2026-10-26).
+---
