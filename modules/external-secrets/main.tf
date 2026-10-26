@@ -4,7 +4,7 @@ resource "helm_release" "external_secrets" {
   create_namespace = true
   repository       = "https://charts.external-secrets.io"
   chart            = "external-secrets"
-  version          = "0.16.2" # bridge: serves v1 and v1beta1 (0.17+ serves v1 only)
+  version          = "2.12.0" # via 0.16.2 and a v1 storage migration (2026-10-26)
 
   values = [
     yamlencode({
