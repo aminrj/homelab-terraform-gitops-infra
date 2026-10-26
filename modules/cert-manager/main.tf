@@ -31,6 +31,8 @@ resource "helm_release" "cert_manager" {
     # Public resolvers for the DNS-01 self-check: the lab's split DNS would answer for lab.aminrj.com.
     dns01RecursiveNameserversOnly = true
     dns01RecursiveNameservers     = "1.1.1.1:53,9.9.9.9:53"
+    # Certificate expiry for Prometheus (and the Homepage "Certificates" tile).
+    prometheus = { enabled = true, servicemonitor = { enabled = true } }
   })]
 }
 

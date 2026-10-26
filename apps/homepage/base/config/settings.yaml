@@ -15,6 +15,14 @@ quicklaunch:
   hideVisitURL: true
 # Group order and look (icons: https://pictogrammers.com/library/mdi/).
 layout:
+  At a glance:
+    style: row
+    columns: 2
+    icon: mdi-gauge
+  Proxmox:
+    style: row
+    columns: 2
+    icon: mdi-server
   Apps:
     style: row
     columns: 3
@@ -27,7 +35,7 @@ layout:
     style: row
     columns: 3
     icon: mdi-kubernetes
-  Network and hosts:
+  Network:
     style: row
-    columns: 4
+    columns: 2
     icon: mdi-server-network

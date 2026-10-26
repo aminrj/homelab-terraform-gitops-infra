@@ -1,7 +1,118 @@
 # One entry per service; keep in line with homelab-foundation docs/services.md.
 # Status: podSelector = the pods' state from Kubernetes, siteMonitor = an HTTP check from inside
 # the cluster, showStats = the pods' CPU and memory (metrics-server). Hosts on MGMT have links
-# only: SERVICES can't reach MGMT (by design).
+# only: SERVICES can't reach MGMT (by design). Proxmox figures come from Prometheus (apps/pve-exporter).
+- At a glance:
+    - Lab health:
+        description: From Prometheus; details in Grafana
+        icon: mdi-heart-pulse
+        href: https://grafana.lab.aminrj.com
+        widget:
+          type: prometheusmetric
+          url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+          refreshInterval: 60000
+          metrics:
+            - label: Alerts firing
+              query: count(ALERTS{alertstate="firing",alertname!="Watchdog"}) or vector(0)
+            - label: k8s nodes ready
+              query: sum(kube_node_status_condition{condition="Ready",status="true"})
+            - label: Fullest k8s disk
+              query: max(100 - 100 * node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"})
+              format: { type: percent, options: { maximumFractionDigits: 0 } }
+            - label: DB backup age
+              query: max((time() - max by (job) (cnpg_collector_last_available_backup_timestamp)) / 3600)
+              format: { type: number, suffix: " h", options: { maximumFractionDigits: 1 } }
+    - Certificates and backups:
+        description: Soonest certificate renewal, VMs without a backup job
+        icon: mdi-shield-check-outline
+        widget:
+          type: prometheusmetric
+          url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+          refreshInterval: 300000
+          metrics:
+            - label: Cert expiry
+              query: min(certmanager_certificate_expiration_timestamp_seconds - time()) / 86400
+              format: { type: number, suffix: " d", options: { maximumFractionDigits: 0 } }
+            - label: Certificates
+              query: count(certmanager_certificate_ready_status{condition="True"} == 1)
+            - label: VMs without backup
+              query: sum(pve_not_backed_up_total) or vector(0)
+
+- Proxmox:
+    - node-5:
+        href: https://10.0.0.5:8006
+        description: k8s-1..3, milo (TOTP)
+        icon: proxmox.png
+        widget:
+          type: prometheusmetric
+          url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+          refreshInterval: 60000
+          metrics:
+            - label: CPU
+              query: 100 * pve_cpu_usage_ratio{instance="proxmox-node-5",id=~"node/.*"}
+              format: { type: percent, options: { maximumFractionDigits: 0 } }
+            - label: Memory
+              query: 100 * pve_memory_usage_bytes{instance="proxmox-node-5",id=~"node/.*"} / pve_memory_size_bytes{instance="proxmox-node-5",id=~"node/.*"}
+              format: { type: percent, options: { maximumFractionDigits: 0 } }
+            - label: VMs running
+              query: count(pve_up{instance="proxmox-node-5",id=~"qemu/.*"} == 1) or vector(0)
+            - label: Uptime
+              query: pve_uptime_seconds{instance="proxmox-node-5",id=~"node/.*"} / 86400
+              format: { type: number, suffix: " d", options: { maximumFractionDigits: 0 } }
+    - node-5 storage:
+        href: https://10.0.0.5:8006
+        description: Used, per pool
+        icon: mdi-harddisk
+        widget:
+          type: prometheusmetric
+          url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+          refreshInterval: 60000
+          metrics:
+            - label: NVMe local-lvm
+              query: 100 * pve_disk_usage_bytes{instance="proxmox-node-5",id=~"storage/.*/local-lvm"} / pve_disk_size_bytes{instance="proxmox-node-5",id=~"storage/.*/local-lvm"}
+              format: { type: percent, options: { maximumFractionDigits: 0 } }
+            - label: SSD ssd-data
+              query: 100 * pve_disk_usage_bytes{instance="proxmox-node-5",id=~"storage/.*/ssd-data"} / pve_disk_size_bytes{instance="proxmox-node-5",id=~"storage/.*/ssd-data"}
+              format: { type: percent, options: { maximumFractionDigits: 0 } }
+            - label: Root local
+              query: 100 * pve_disk_usage_bytes{instance="proxmox-node-5",id=~"storage/.*/local"} / pve_disk_size_bytes{instance="proxmox-node-5",id=~"storage/.*/local"}
+              format: { type: percent, options: { maximumFractionDigits: 0 } }
+    - Appliance:
+        href: https://192.168.0.220:8006
+        description: OPNsense, Home Assistant (TOTP)
+        icon: proxmox.png
+        widget:
+          type: prometheusmetric
+          url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+          refreshInterval: 60000
+          metrics:
+            - label: CPU
+              query: 100 * pve_cpu_usage_ratio{instance="proxmox-node-1",id=~"node/.*"}
+              format: { type: percent, options: { maximumFractionDigits: 0 } }
+            - label: Memory
+              query: 100 * pve_memory_usage_bytes{instance="proxmox-node-1",id=~"node/.*"} / pve_memory_size_bytes{instance="proxmox-node-1",id=~"node/.*"}
+              format: { type: percent, options: { maximumFractionDigits: 0 } }
+            - label: VMs running
+              query: count(pve_up{instance="proxmox-node-1",id=~"qemu/.*"} == 1) or vector(0)
+            - label: Uptime
+              query: pve_uptime_seconds{instance="proxmox-node-1",id=~"node/.*"} / 86400
+              format: { type: number, suffix: " d", options: { maximumFractionDigits: 0 } }
+    - Appliance storage:
+        href: https://192.168.0.220:8006
+        description: Used, per pool
+        icon: mdi-harddisk
+        widget:
+          type: prometheusmetric
+          url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+          refreshInterval: 60000
+          metrics:
+            - label: Disk local-lvm
+              query: 100 * pve_disk_usage_bytes{instance="proxmox-node-1",id=~"storage/.*/local-lvm"} / pve_disk_size_bytes{instance="proxmox-node-1",id=~"storage/.*/local-lvm"}
+              format: { type: percent, options: { maximumFractionDigits: 0 } }
+            - label: Root local
+              query: 100 * pve_disk_usage_bytes{instance="proxmox-node-1",id=~"storage/.*/local"} / pve_disk_size_bytes{instance="proxmox-node-1",id=~"storage/.*/local"}
+              format: { type: percent, options: { maximumFractionDigits: 0 } }
+
 - Apps:
     - n8n:
         href: https://n8n.lab.aminrj.com
@@ -82,19 +193,11 @@
         namespace: metallb-system
         podSelector: app.kubernetes.io/name=metallb
 
-- Network and hosts:
+- Network:
     - OPNsense:
         href: https://10.0.0.1
         description: Firewall, DHCP, DNS (TOTP)
         icon: opnsense.png
-    - Proxmox appliance:
-        href: https://192.168.0.220:8006
-        description: OPNsense and Home Assistant (TOTP)
-        icon: proxmox.png
-    - Proxmox node-5:
-        href: https://10.0.0.5:8006
-        description: k8s-1..3, milo (TOTP)
-        icon: proxmox.png
     - Tailscale:
         href: https://login.tailscale.com/admin/machines
         description: Remote access, OPNsense is the lab router

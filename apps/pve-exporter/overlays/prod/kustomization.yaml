@@ -1,0 +1,6 @@
+namespace: pve-exporter
+
+resources:
+  - namespace.yaml
+  - ../../base
+  - externalsecret.yaml

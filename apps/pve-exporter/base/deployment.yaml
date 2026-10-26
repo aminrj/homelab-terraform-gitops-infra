@@ -1,0 +1,53 @@
+# Proxmox exporter (github.com/prometheus-pve/prometheus-pve-exporter): reads both Proxmox
+# APIs with a read-only token (homelab-foundation scripts/pve-monitor-token.sh) for Prometheus.
+# The firewall lets only the k8s nodes reach :8006 on the Proxmox hosts (rule services-to-pve-api).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pve-exporter
+  labels: { app: pve-exporter }
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: pve-exporter }
+  template:
+    metadata:
+      labels: { app: pve-exporter }
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        seccompProfile: { type: RuntimeDefault }
+      containers:
+        - name: pve-exporter
+          image: prompve/prometheus-pve-exporter:3.10.1
+          args: ["--config.file=/etc/pve-exporter/pve.yml"]
+          ports:
+            - { name: http, containerPort: 9221 }
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: [ALL] }
+          resources:
+            requests: { cpu: 10m, memory: 64Mi }
+            limits: { memory: 192Mi }
+          readinessProbe:
+            httpGet: { path: /, port: http }
+          volumeMounts:
+            - { name: config, mountPath: /etc/pve-exporter, readOnly: true }
+      volumes:
+        - name: config
+          secret:
+            secretName: pve-exporter-config   # ExternalSecret in the overlay
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pve-exporter
+  labels: { app: pve-exporter }
+spec:
+  selector: { app: pve-exporter }
+  ports:
+    - { name: http, port: 9221, targetPort: http }

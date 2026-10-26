@@ -14,6 +14,7 @@ spec:
           - path: apps/n8n/overlays/prod
           - path: apps/commafeed/overlays/prod
           - path: apps/homepage/overlays/prod   # start page, no database
+          - path: apps/pve-exporter/overlays/prod   # Proxmox metrics for Prometheus (read-only token)
   template:
     metadata:
       name: '{{path[1]}}-{{path[3]}}' # example: commafeed-dev, listmonk-qa...
