@@ -9,6 +9,7 @@ statusStyle: dot
 hideVersion: true
 cardBlur: md
 useEqualHeights: true
+blockStyle: refined
 quicklaunch:
   searchDescriptions: true
   hideInternetSearch: true
@@ -19,10 +20,10 @@ layout:
     style: row
     columns: 2
     icon: mdi-gauge
-  Capacity:
+  Proxmox:
     style: row
-    columns: 1
-    icon: mdi-chart-bar
+    columns: 4
+    icon: mdi-server
   Apps:
     style: row
     columns: 3
@@ -35,7 +36,8 @@ layout:
     style: row
     columns: 3
     icon: mdi-kubernetes
-  Hosts and network:
+    initiallyCollapsed: true   # status dots only; open when something is red
+  Network:
     style: row
-    columns: 4
+    columns: 2
     icon: mdi-server-network
