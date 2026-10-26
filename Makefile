@@ -26,7 +26,7 @@ define load_secrets
 	done; unset v;
 endef
 
-.PHONY: help shared-init shared-migrate-state shared-plan shared-apply
+.PHONY: help shared-init shared-migrate-state shared-plan shared-apply db-backup
 help: ## List targets
 	@grep -hE '^[a-z0-9-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-22s %s\n", $$1, $$2}'
 
@@ -47,3 +47,7 @@ shared-plan: ## Plan the shared env (saves shared.tfplan)
 shared-apply: ## Apply exactly the saved plan
 	@test -f environments/shared/$(PLAN) || { echo "run make shared-plan first"; exit 1; }
 	$(SHARED) apply $(PLAN) && rm -f environments/shared/$(PLAN)
+
+db-backup: ## On-demand CNPG backup of an app's database to Azure, waits for it (APP=n8n)
+	@test -n "$(APP)" || { echo "set APP=<app>"; exit 1; }
+	scripts/db-backup.sh $(APP)
