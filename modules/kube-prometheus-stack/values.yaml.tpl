@@ -53,6 +53,8 @@ prometheus:
     podMonitorSelectorNilUsesHelmValues: false
     podMonitorNamespaceSelector: {}
     serviceMonitorSelector: {}
+    serviceMonitorSelectorNilUsesHelmValues: false   # every ServiceMonitor (pve-exporter, cert-manager), not only release=kube-prometheus-stack
+    serviceMonitorNamespaceSelector: {}
 
 grafana:
   priorityClassName: "${priority_class_name}"
