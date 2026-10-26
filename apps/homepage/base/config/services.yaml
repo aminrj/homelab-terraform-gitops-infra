@@ -39,80 +39,18 @@
               # k8s VMs are rebuilt from code and templates need none: not counted
               query: count(pve_not_backed_up_info * on(id, instance) group_left(name) pve_guest_info{template="0",name!~"k8s-.*"}) or vector(0)
 
-- Proxmox:
-    - node-5:
-        href: https://10.0.0.5:8006
-        description: k8s-1..3, milo (TOTP)
-        icon: proxmox.png
+- Capacity:
+    - Lab capacity:
+        description: Storage, CPU and memory (Grafana; log in to Grafana once in this browser)
+        href: https://grafana.lab.aminrj.com/d/lab-capacity/lab-capacity
         widget:
-          type: prometheusmetric
-          url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
-          refreshInterval: 60000
-          metrics:
-            - label: CPU
-              query: 100 * pve_cpu_usage_ratio{instance="proxmox-node-5",id=~"node/.*"}
-              format: { type: percent, options: { maximumFractionDigits: 0 } }
-            - label: Memory
-              query: 100 * pve_memory_usage_bytes{instance="proxmox-node-5",id=~"node/.*"} / pve_memory_size_bytes{instance="proxmox-node-5",id=~"node/.*"}
-              format: { type: percent, options: { maximumFractionDigits: 0 } }
-            - label: VMs running
-              query: count(pve_up{instance="proxmox-node-5",id=~"qemu/.*"} == 1) or vector(0)
-            - label: Uptime
-              query: pve_uptime_seconds{instance="proxmox-node-5",id=~"node/.*"} / 86400
-              format: { type: number, suffix: " d", options: { maximumFractionDigits: 0 } }
-    - node-5 storage:
-        href: https://10.0.0.5:8006
-        description: Used, per pool
-        icon: mdi-harddisk
-        widget:
-          type: prometheusmetric
-          url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
-          refreshInterval: 60000
-          metrics:
-            - label: NVMe local-lvm
-              query: 100 * pve_disk_usage_bytes{instance="proxmox-node-5",id=~"storage/.*/local-lvm"} / pve_disk_size_bytes{instance="proxmox-node-5",id=~"storage/.*/local-lvm"}
-              format: { type: percent, options: { maximumFractionDigits: 0 } }
-            - label: SSD ssd-data
-              query: 100 * pve_disk_usage_bytes{instance="proxmox-node-5",id=~"storage/.*/ssd-data"} / pve_disk_size_bytes{instance="proxmox-node-5",id=~"storage/.*/ssd-data"}
-              format: { type: percent, options: { maximumFractionDigits: 0 } }
-            - label: Root local
-              query: 100 * pve_disk_usage_bytes{instance="proxmox-node-5",id=~"storage/.*/local"} / pve_disk_size_bytes{instance="proxmox-node-5",id=~"storage/.*/local"}
-              format: { type: percent, options: { maximumFractionDigits: 0 } }
-    - Appliance:
-        href: https://192.168.0.220:8006
-        description: OPNsense, Home Assistant (TOTP)
-        icon: proxmox.png
-        widget:
-          type: prometheusmetric
-          url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
-          refreshInterval: 60000
-          metrics:
-            - label: CPU
-              query: 100 * pve_cpu_usage_ratio{instance="proxmox-node-1",id=~"node/.*"}
-              format: { type: percent, options: { maximumFractionDigits: 0 } }
-            - label: Memory
-              query: 100 * pve_memory_usage_bytes{instance="proxmox-node-1",id=~"node/.*"} / pve_memory_size_bytes{instance="proxmox-node-1",id=~"node/.*"}
-              format: { type: percent, options: { maximumFractionDigits: 0 } }
-            - label: VMs running
-              query: count(pve_up{instance="proxmox-node-1",id=~"qemu/.*"} == 1) or vector(0)
-            - label: Uptime
-              query: pve_uptime_seconds{instance="proxmox-node-1",id=~"node/.*"} / 86400
-              format: { type: number, suffix: " d", options: { maximumFractionDigits: 0 } }
-    - Appliance storage:
-        href: https://192.168.0.220:8006
-        description: Used, per pool
-        icon: mdi-harddisk
-        widget:
-          type: prometheusmetric
-          url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
-          refreshInterval: 60000
-          metrics:
-            - label: Disk local-lvm
-              query: 100 * pve_disk_usage_bytes{instance="proxmox-node-1",id=~"storage/.*/local-lvm"} / pve_disk_size_bytes{instance="proxmox-node-1",id=~"storage/.*/local-lvm"}
-              format: { type: percent, options: { maximumFractionDigits: 0 } }
-            - label: Root local
-              query: 100 * pve_disk_usage_bytes{instance="proxmox-node-1",id=~"storage/.*/local"} / pve_disk_size_bytes{instance="proxmox-node-1",id=~"storage/.*/local"}
-              format: { type: percent, options: { maximumFractionDigits: 0 } }
+          type: iframe
+          name: lab-capacity
+          src: https://grafana.lab.aminrj.com/d/lab-capacity/lab-capacity?orgId=1&kiosk&theme=dark&refresh=1m
+          classes: h-72 sm:h-72 md:h-72 lg:h-72 xl:h-72 2xl:h-72
+          referrerPolicy: same-origin
+          allowScrolling: no
+          allowFullscreen: false
 
 - Apps:
     - n8n:
@@ -194,7 +132,15 @@
         namespace: metallb-system
         podSelector: app.kubernetes.io/name=metallb
 
-- Network:
+- Hosts and network:
+    - Proxmox node-5:
+        href: https://10.0.0.5:8006
+        description: k8s-1..3, milo (TOTP)
+        icon: proxmox.png
+    - Proxmox appliance:
+        href: https://10.0.0.3:8006
+        description: OPNsense, Home Assistant (TOTP; over Tailscale)
+        icon: proxmox.png
     - OPNsense:
         href: https://10.0.0.1
         description: Firewall, DHCP, DNS (TOTP)

@@ -19,10 +19,10 @@ layout:
     style: row
     columns: 2
     icon: mdi-gauge
-  Proxmox:
+  Capacity:
     style: row
-    columns: 2
-    icon: mdi-server
+    columns: 1
+    icon: mdi-chart-bar
   Apps:
     style: row
     columns: 3
@@ -35,7 +35,7 @@ layout:
     style: row
     columns: 3
     icon: mdi-kubernetes
-  Network:
+  Hosts and network:
     style: row
-    columns: 2
+    columns: 4
     icon: mdi-server-network

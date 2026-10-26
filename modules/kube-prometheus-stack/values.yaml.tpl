@@ -84,6 +84,8 @@ grafana:
   grafana.ini:
     server:
       root_url: https://grafana.lab.aminrj.com
+    security:
+      allow_embedding: true   # the Lab capacity dashboard inside Homepage (same site, needs a Grafana login)
   service:
     type: LoadBalancer
     loadBalancerIP: "10.0.30.203"

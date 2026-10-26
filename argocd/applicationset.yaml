@@ -15,6 +15,7 @@ spec:
           - path: apps/commafeed/overlays/prod
           - path: apps/homepage/overlays/prod   # start page, no database
           - path: apps/pve-exporter/overlays/prod   # Proxmox metrics for Prometheus (read-only token)
+          - path: apps/lab-dashboards/overlays/prod   # Grafana dashboards as code (Lab capacity)
   template:
     metadata:
       name: '{{path[1]}}-{{path[3]}}' # example: commafeed-dev, listmonk-qa...

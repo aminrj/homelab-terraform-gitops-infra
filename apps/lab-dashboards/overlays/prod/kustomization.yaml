@@ -1,0 +1,4 @@
+namespace: monitoring   # the Grafana sidecar watches this namespace
+
+resources:
+  - lab-capacity.yaml
