@@ -17,7 +17,9 @@ resource "helm_release" "traefik" {
     ingressClass = { enabled = true, isDefaultClass = true, name = "traefik" }
     providers = {
       kubernetesCRD     = { enabled = true }
-      kubernetesIngress = { enabled = true, publishedService = { enabled = true } }
+      # allowExternalNameServices: Ingresses to VMs outside k8s (Home Assistant), through a DNS
+      # name; Argo CD 3 does not manage hand-written EndpointSlices.
+      kubernetesIngress = { enabled = true, publishedService = { enabled = true }, allowExternalNameServices = true }
     }
     ports = {
       web = {

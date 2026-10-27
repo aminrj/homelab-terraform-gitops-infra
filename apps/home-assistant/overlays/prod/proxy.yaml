@@ -1,4 +1,4 @@
-# https://ha.lab.aminrj.com: Traefik in front of the Home Assistant VM (10.0.30.40:8123,
+# https://ha.lab.aminrj.com: Traefik in front of the Home Assistant VM (ha-vm, 10.0.30.40:8123,
 # homelab-foundation inventory, VM 112), with a Let's Encrypt certificate. HA trusts the
 # k8s nodes as proxies (homeassistant/config/configuration.yaml, http.trusted_proxies).
 apiVersion: v1
@@ -6,20 +6,12 @@ kind: Service
 metadata:
   name: home-assistant
 spec:
+  # The VM by name (OPNsense split DNS: ha-vm.lab.aminrj.com -> 10.0.30.40). An ExternalName,
+  # because Argo CD 3 excludes hand-written EndpointSlices from what it manages.
+  type: ExternalName
+  externalName: ha-vm.lab.aminrj.com
   ports:
     - { name: http, port: 8123, targetPort: 8123 }
----
-apiVersion: discovery.k8s.io/v1
-kind: EndpointSlice
-metadata:
-  name: home-assistant-vm
-  labels:
-    kubernetes.io/service-name: home-assistant
-addressType: IPv4
-ports:
-  - { name: http, port: 8123, protocol: TCP }
-endpoints:
-  - addresses: ["10.0.30.40"]
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
