@@ -52,7 +52,7 @@
 - Proxmox:
     - node-5:
         href: https://10.0.0.5:8006
-        description: k8s-1..3, milo
+        description: k8s-1..3
         icon: proxmox.png
         widget:
           type: prometheusmetric
