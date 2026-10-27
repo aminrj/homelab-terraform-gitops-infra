@@ -52,7 +52,7 @@
 - Proxmox:
     - node-5:
         href: https://10.0.0.5:8006
-        description: k8s-1..3
+        description: k8s-1..3, assistant, scout
         icon: proxmox.png
         widget:
           type: prometheusmetric
@@ -172,6 +172,91 @@
                 - { level: danger, when: gte, value: 85 }
                 - { level: warn, when: gte, value: 70 }
                 - { level: good, when: lt, value: 70 }
+
+# The personal assistant (homelab-foundation docs/assistant.md). The VMs are outside the cluster and
+# SERVICES can't reach ASSIST, so their figures come from the Proxmox exporter. "Sent 24 h" is what
+# the VM pushed onto the network: the Inside agent should only talk to the model, Gitea and its bridges.
+- Assistant:
+    - Hermes (Inside):
+        description: VM 510 · ASSIST 10.0.50.10 · journal, mail, Signal
+        icon: mdi-robot-happy-outline
+        widget:
+          type: prometheusmetric
+          url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+          refreshInterval: 60000
+          metrics:
+            - label: CPU
+              query: 100 * pve_cpu_usage_ratio{id="qemu/510"}
+              format: { type: percent, options: { maximumFractionDigits: 0 } }
+            - label: Memory
+              query: 100 * pve_memory_usage_bytes{id="qemu/510"} / pve_memory_size_bytes{id="qemu/510"}
+              format: { type: percent, options: { maximumFractionDigits: 0 } }
+            - label: Sent 24 h
+              query: increase(pve_network_transmit_bytes_total{id="qemu/510"}[24h])
+              format: { type: bytes }
+            - label: Uptime
+              # 0 when the VM is stopped (the series disappears)
+              query: max(pve_uptime_seconds{id="qemu/510"} / 86400) or vector(0)
+              format: { type: number, suffix: " d", options: { maximumFractionDigits: 1 } }
+          highlight:
+            CPU:
+              numeric:
+                - { level: danger, when: gte, value: 85 }
+                - { level: warn, when: gte, value: 70 }
+                - { level: good, when: lt, value: 70 }
+            Memory:
+              numeric:
+                - { level: danger, when: gte, value: 90 }
+                - { level: warn, when: gte, value: 75 }
+                - { level: good, when: lt, value: 75 }
+            Uptime:
+              numeric:
+                - { level: danger, when: eq, value: 0 }
+                - { level: good, when: gt, value: 0 }
+    - Scout (Outside):
+        description: VM 141 · LAB 10.0.40.11 · web, news, research
+        icon: mdi-binoculars
+        widget:
+          type: prometheusmetric
+          url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+          refreshInterval: 60000
+          metrics:
+            - label: CPU
+              query: 100 * pve_cpu_usage_ratio{id="qemu/141"}
+              format: { type: percent, options: { maximumFractionDigits: 0 } }
+            - label: Memory
+              query: 100 * pve_memory_usage_bytes{id="qemu/141"} / pve_memory_size_bytes{id="qemu/141"}
+              format: { type: percent, options: { maximumFractionDigits: 0 } }
+            - label: Sent 24 h
+              query: increase(pve_network_transmit_bytes_total{id="qemu/141"}[24h])
+              format: { type: bytes }
+            - label: Uptime
+              # 0 when the VM is stopped (the series disappears)
+              query: max(pve_uptime_seconds{id="qemu/141"} / 86400) or vector(0)
+              format: { type: number, suffix: " d", options: { maximumFractionDigits: 1 } }
+          highlight:
+            CPU:
+              numeric:
+                - { level: danger, when: gte, value: 85 }
+                - { level: warn, when: gte, value: 70 }
+                - { level: good, when: lt, value: 70 }
+            Memory:
+              numeric:
+                - { level: danger, when: gte, value: 90 }
+                - { level: warn, when: gte, value: 75 }
+                - { level: good, when: lt, value: 75 }
+            Uptime:
+              numeric:
+                - { level: danger, when: eq, value: 0 }
+                - { level: good, when: gt, value: 0 }
+    - Gitea:
+        href: https://gitea.lab.aminrj.com
+        description: The assistant's write path (branches, pull requests)
+        icon: gitea.png
+        namespace: gitea-prod
+        podSelector: app=gitea
+        siteMonitor: http://gitea.gitea-prod.svc.cluster.local
+        showStats: true
 
 - Apps:
     - n8n:
