@@ -4,6 +4,8 @@ metadata:
   name: gitea
 spec:
   replicas: 1
+  strategy:
+    type: Recreate           # one RWO volume
   selector:
     matchLabels:
       app: gitea
@@ -14,12 +16,10 @@ spec:
     spec:
       containers:
         - name: gitea
-          image: gitea/gitea:1.25
+          image: gitea/gitea:1.26
           ports:
             - containerPort: 3000
               name: http
-            - containerPort: 22
-              name: ssh
           resources:
             requests:
               memory: "512Mi"
@@ -35,7 +35,7 @@ spec:
             - name: GITEA__database__DB_TYPE
               value: postgres
             - name: GITEA__database__HOST
-              value: gitea-db-cnpg-v1-rw.cnpg-prod.svc.cluster.local:5432
+              value: gitea-db-cnpg-v2-rw.cnpg-prod.svc.cluster.local:5432
             - name: GITEA__database__NAME
               valueFrom:
                 secretKeyRef:
@@ -61,16 +61,11 @@ spec:
               value: "3000"
             - name: GITEA__server__PROTOCOL
               value: http
-            - name: GITEA__server__SSH_DOMAIN
-              value: gitea.lab.aminrj.com
-            - name: GITEA__server__SSH_PORT
-              value: "22"
+            # HTTPS only (git over https with tokens): no SSH server, no extra MetalLB address.
             - name: GITEA__server__DISABLE_SSH
-              value: "false"
-            - name: GITEA__server__START_SSH_SERVER
               value: "true"
-            - name: GITEA__server__SSH_LISTEN_PORT
-              value: "22"
+            - name: GITEA__server__START_SSH_SERVER
+              value: "false"
             - name: GITEA__security__INSTALL_LOCK
               value: "true"
             - name: GITEA__security__SECRET_KEY
@@ -83,10 +78,22 @@ spec:
                 secretKeyRef:
                   name: gitea-secrets
                   key: internal-token
+            # Private instance: accounts come from `make gitea-admin` and homelab-foundation's
+            # assistant/gitea.yml (agent users are restricted), nothing is visible without signing in.
             - name: GITEA__service__DISABLE_REGISTRATION
-              value: "false"
+              value: "true"
             - name: GITEA__service__REQUIRE_SIGNIN_VIEW
+              value: "true"
+            - name: GITEA__service__DEFAULT_ALLOW_CREATE_ORGANIZATION
               value: "false"
+            - name: GITEA__repository__DEFAULT_PRIVATE
+              value: private
+            - name: GITEA__repository__DEFAULT_BRANCH
+              value: main
+            - name: GITEA__actions__ENABLED
+              value: "false"
+            - name: GITEA__api__MAX_RESPONSE_ITEMS
+              value: "100"
             - name: GITEA__service__DEFAULT_KEEP_EMAIL_PRIVATE
               value: "true"
             - name: GITEA__repository__ROOT

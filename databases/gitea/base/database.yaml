@@ -1,14 +1,16 @@
+# Gitea's database (homelab-foundation docs/assistant.md). v2: a fresh cluster with a new backup
+# path; the old v1 archive in the prod storage account is not reused (barman refuses a non-empty path).
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
-  name: gitea-db-cnpg-v1
+  name: gitea-db-cnpg-v2
 spec:
   description: PostgreSQL cluster for Gitea Git service
   imageName: quay.io/enterprisedb/postgresql:16.1
   instances: 2
 
   storage:
-    size: 20Gi
+    size: 10Gi
 
   bootstrap:
     initdb:
@@ -28,14 +30,17 @@ spec:
       memory: 1Gi
       cpu: 500m
 
+  # Backups to homelab-foundation's offsite account (terraform/azure, container gitea) with its
+  # no-delete SAS: Azure's lifecycle rule expires old objects, so no retentionPolicy here (it
+  # would need delete rights).
   backup:
     barmanObjectStore:
-      destinationPath: https://homelabstorageaccntprod.blob.core.windows.net/gitea-db-clean
-      serverName: gitea-db-cnpg-v1
+      destinationPath: https://hlabpvebknwkqcj.blob.core.windows.net/gitea/db
+      serverName: gitea-db-cnpg-v2
       azureCredentials:
         storageAccount:
           name: gitea-db-storage
-          key: container-name
+          key: storage-account
         storageSasToken:
           name: gitea-db-storage
           key: blob-sas
@@ -43,7 +48,6 @@ spec:
         compression: gzip
       wal:
         compression: gzip
-    retentionPolicy: 7d
 
   enableSuperuserAccess: false
   primaryUpdateStrategy: unsupervised

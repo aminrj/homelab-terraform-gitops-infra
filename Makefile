@@ -26,7 +26,7 @@ define load_secrets
 	done; unset v;
 endef
 
-.PHONY: help shared-init shared-migrate-state shared-plan shared-apply db-backup grafana-admin-sync eso-storage-migrate
+.PHONY: gitea-secrets gitea-admin help shared-init shared-migrate-state shared-plan shared-apply db-backup grafana-admin-sync eso-storage-migrate
 help: ## List targets
 	@grep -hE '^[a-z0-9-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-22s %s\n", $$1, $$2}'
 
@@ -57,3 +57,9 @@ grafana-admin-sync: ## Set Grafana's admin password from Key Vault (after it cha
 
 eso-storage-migrate: ## ESO objects rewritten in the storage version before an upgrade (ARGS=--yes)
 	scripts/eso-storage-migrate.sh $(ARGS)
+
+gitea-secrets: ## Gitea: create its missing secrets in Key Vault (random values, never printed)
+	scripts/gitea-admin.sh secrets
+
+gitea-admin: ## Gitea: create your admin user in the running pod (once; password from Key Vault)
+	scripts/gitea-admin.sh admin
