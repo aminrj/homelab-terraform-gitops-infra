@@ -1,0 +1,44 @@
+# https://ha.lab.aminrj.com: Traefik in front of the Home Assistant VM (10.0.30.40:8123,
+# homelab-foundation inventory, VM 112), with a Let's Encrypt certificate. HA trusts the
+# k8s nodes as proxies (homeassistant/config/configuration.yaml, http.trusted_proxies).
+apiVersion: v1
+kind: Service
+metadata:
+  name: home-assistant
+spec:
+  ports:
+    - { name: http, port: 8123, targetPort: 8123 }
+---
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
+metadata:
+  name: home-assistant-vm
+  labels:
+    kubernetes.io/service-name: home-assistant
+addressType: IPv4
+ports:
+  - { name: http, port: 8123, protocol: TCP }
+endpoints:
+  - addresses: ["10.0.30.40"]
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: home-assistant
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts: [ha.lab.aminrj.com]
+      secretName: home-assistant-tls
+  rules:
+    - host: ha.lab.aminrj.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: home-assistant
+                port: { number: 8123 }

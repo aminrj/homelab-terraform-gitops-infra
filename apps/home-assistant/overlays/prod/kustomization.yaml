@@ -1,0 +1,5 @@
+namespace: home-assistant
+
+resources:
+  - namespace.yaml
+  - proxy.yaml

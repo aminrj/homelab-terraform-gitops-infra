@@ -191,7 +191,7 @@
         siteMonitor: http://commafeed.commafeed-prod.svc.cluster.local
         showStats: true
     - Home Assistant:
-        href: http://ha.lab.aminrj.com:8123
+        href: https://ha.lab.aminrj.com
         description: Home automation, VM 112 on the appliance
         icon: home-assistant.png
         siteMonitor: http://10.0.30.40:8123

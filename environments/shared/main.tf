@@ -146,6 +146,7 @@ module "prometheus-stack" {
   kubeconfig             = var.kubeconfig
   storage_class          = var.storage_class
   slack_webhook_url      = var.slack_webhook_url
+  ha_webhook_id          = var.ha_webhook_id
   grafana_admin_password = module.admin_passwords.grafana_password
 
   depends_on = [

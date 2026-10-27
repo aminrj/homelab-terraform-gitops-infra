@@ -20,7 +20,7 @@ PLAN := shared.tfplan
 
 # Optional secrets from Key Vault into TF_VAR_*; a missing secret leaves the variable's default.
 define load_secrets
-	for pair in cloudflare_api_token:gitops-cloudflare-api-token slack_webhook_url:gitops-slack-webhook-url; do \
+	for pair in cloudflare_api_token:gitops-cloudflare-api-token slack_webhook_url:gitops-slack-webhook-url ha_webhook_id:foundation-ha-alertmanager-webhook-id; do \
 	  v=$$(az keyvault secret show --vault-name "$(KEY_VAULT_NAME)" -n "$${pair#*:}" --query value -o tsv 2>/dev/null || true); \
 	  [ -n "$$v" ] && export "TF_VAR_$${pair%%:*}=$$v"; \
 	done; unset v;

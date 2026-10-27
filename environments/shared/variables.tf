@@ -84,3 +84,10 @@ variable "eso_client_id" {
   description = "Client ID of the ESO app registration (Key Vault Secrets User on the vault)"
   type        = string
 }
+
+variable "ha_webhook_id" {
+  description = "Home Assistant webhook id for Alertmanager (Key Vault foundation-ha-alertmanager-webhook-id, loaded by the Makefile)"
+  type        = string
+  default     = ""
+  sensitive   = true
+}

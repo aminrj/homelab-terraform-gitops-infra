@@ -13,7 +13,7 @@ resource "helm_release" "kube-prometheus-stack" {
   values = [
     templatefile("${path.module}/values.yaml.tpl", {
       storage_class       = var.storage_class
-      slack_webhook_url   = var.slack_webhook_url
+      ha_webhook_id       = var.ha_webhook_id
       priority_class_name = var.priority_class_name
     })
   ]

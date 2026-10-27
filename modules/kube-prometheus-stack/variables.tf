@@ -41,3 +41,10 @@ variable "priority_class_name" {
   type        = string
   default     = "infra-critical"
 }
+
+variable "ha_webhook_id" {
+  description = "Home Assistant webhook id for alert notifications (Key Vault foundation-ha-alertmanager-webhook-id)"
+  type        = string
+  default     = ""
+  sensitive   = true
+}

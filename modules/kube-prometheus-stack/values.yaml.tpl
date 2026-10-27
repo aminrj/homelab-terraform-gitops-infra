@@ -117,29 +117,29 @@ alertmanager:
     global:
       resolve_timeout: 5m
 
+    # Alerts become iPhone notifications through Home Assistant (homelab-foundation
+    # homeassistant/config/packages/lab_alerts.yaml): a webhook inside SERVICES, no internet hop.
     route:
       group_by: ['alertname', 'severity']
-      group_wait: 10s
+      group_wait: 30s
       group_interval: 5m
-      repeat_interval: 30m
-      receiver: slack-notifications
+      repeat_interval: 12h
+      receiver: %{ if ha_webhook_id != "" }home-assistant%{ else }silent%{ endif }
       routes:
-        - match:
-            job: microceph-mgr
-          receiver: silence-microceph
-        - match:
-            severity: critical
-          receiver: slack-notifications
+        - matchers: ['alertname =~ "Watchdog|InfoInhibitor"']
+          receiver: silent
+        - matchers: ['job = "microceph-mgr"']
+          receiver: silent
 
     receivers:
-      - name: slack-notifications
-        slack_configs:
-          - channel: '#homelab-stuff'
+      - name: silent
+%{ if ha_webhook_id != "" ~}
+      - name: home-assistant
+        webhook_configs:
+          - url: 'http://10.0.30.40:8123/api/webhook/${ha_webhook_id}'
             send_resolved: true
-            username: 'prometheus-alertmanager'
-            icon_emoji: ':warning:'
-            api_url: '${slack_webhook_url}'
-      - name: silence-microceph
+            max_alerts: 10
+%{ endif ~}
 
     inhibit_rules:
       - source_match:
