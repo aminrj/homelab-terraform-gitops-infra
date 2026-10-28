@@ -1,23 +1,19 @@
+# Gitea: the git server the personal assistant writes to (branches and pull requests only),
+# homelab-foundation docs/assistant.md. Database: databases/gitea (CNPG).
 resources:
   - ../../base
   - secrets.yaml
   - ingress.yaml
   - namespace.yaml
+  - offsite.yaml
 
 namespace: gitea-prod
 
 patches:
-  - target:
-      kind: Deployment
-      name: gitea
-    patch: |-
-      - op: replace
-        path: /spec/template/spec/containers/0/env/1/value
-        value: gitea-db-cnpg-v1-rw.cnpg-prod.svc.cluster.local:5432
   - target:
       kind: PersistentVolumeClaim
       name: gitea-data
     patch: |-
       - op: add
         path: /spec/storageClassName
-        value: local-path
+        value: microk8s-hostpath

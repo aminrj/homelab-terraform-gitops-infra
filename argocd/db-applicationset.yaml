@@ -12,6 +12,7 @@ spec:
         directories:
           - path: databases/n8n/overlays/prod
           - path: databases/commafeed/overlays/prod
+          - path: databases/gitea/overlays/prod
   template:
     metadata:
       name: 'db-{{path[1]}}-{{path[3]}}'

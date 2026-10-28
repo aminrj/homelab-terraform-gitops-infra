@@ -1,0 +1,141 @@
+# Nightly off-site copy of every Gitea repo, and the GitHub mirror of reviewed work
+# (homelab-foundation docs/assistant.md "Git and backups").
+#
+#  1. Every repo the `backup` user can read (journal, vault, reports, ...) is cloned, packed as a
+#     git bundle, encrypted with the homelab's age public key (only the private key in Key Vault,
+#     foundation-backup-age-key, can read it) and uploaded to Azure Blob (foundation's offsite
+#     account, container gitea) with the no-delete SAS. Azure expires copies after 30 days.
+#  2. For the repos listed in mirrors.txt, the reviewed `main` branch is pushed to a private
+#     GitHub repo. Agent branches never leave the house. Keep mirrors.txt in step with
+#     homelab-foundation assistant/gitea.yml `github_mirrors`. Empty by default.
+#
+# Restore: download the .bundle.age, `age -d -i <key> x.bundle.age > x.bundle`, `git clone x.bundle`.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gitea-offsite-env
+data:
+  AGE_RECIPIENT: age13zsr4fcvwl65dj5tk9j5fe5klwys4tf4ycvxj7t88uax6vfgwc9s4gnsqh
+  AZURE_ACCOUNT: hlabpvebknwkqcj
+  AZURE_CONTAINER: gitea
+  GITEA_URL: http://gitea-http.gitea-prod.svc.cluster.local
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gitea-offsite-files
+data:
+  # one line per mirror: <gitea owner/repo> <github owner/repo>
+  mirrors.txt: |
+  offsite.sh: |
+    #!/bin/sh
+    set -eu
+    apk add --no-cache git age curl jq >/dev/null
+    auth="Authorization: token ${BACKUP_TOKEN}"
+    day=$(date +%F)
+    work=$(mktemp -d)
+    fails=0
+    repos=$(curl -sf -H "$auth" "${GITEA_URL}/api/v1/repos/search?limit=100" | jq -r '.data[].full_name')
+    for r in $repos; do
+      name=$(echo "$r" | tr / _)
+      if git -c http.extraHeader="$auth" clone -q --mirror "${GITEA_URL}/${r}.git" "$work/$name.git" \
+         && git -C "$work/$name.git" bundle create -q "$work/$name.bundle" --all \
+         && age -r "$AGE_RECIPIENT" -o "$work/$name.bundle.age" "$work/$name.bundle" \
+         && curl -sf -X PUT -H "x-ms-blob-type: BlockBlob" -H "x-ms-version: 2022-11-02" \
+              --data-binary @"$work/$name.bundle.age" \
+              "https://${AZURE_ACCOUNT}.blob.core.windows.net/${AZURE_CONTAINER}/repos/${day}/${name}.bundle.age?${AZURE_SAS}"; then
+        echo "offsite: $r"
+      else
+        echo "offsite FAILED: $r" >&2; fails=$((fails + 1))
+      fi
+      rm -f "$work/$name.bundle" "$work/$name.bundle.age"
+    done
+    if [ -n "${GITHUB_TOKEN:-}" ]; then
+      gh_auth="Authorization: Basic $(printf 'x-access-token:%s' "$GITHUB_TOKEN" | base64 | tr -d '\n')"
+      grep -v '^\s*$' /config/mirrors.txt | while read -r src dst; do
+        name=$(echo "$src" | tr / _)
+        if git -C "$work/$name.git" -c http.extraHeader="$gh_auth" push -q "https://github.com/${dst}.git" refs/heads/main:refs/heads/main; then
+          echo "mirror: $src -> github.com/$dst (main)"
+        else
+          echo "mirror FAILED: $src -> $dst" >&2
+        fi
+      done
+    fi
+    rm -rf "$work"
+    exit "$fails"
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: gitea-offsite
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: azure-kv-store-prod
+    kind: ClusterSecretStore
+  target:
+    name: gitea-offsite
+    creationPolicy: Owner
+  data:
+    - secretKey: BACKUP_TOKEN
+      remoteRef:
+        key: gitea-backup-token          # homelab-foundation `make assistant-gitea`
+    - secretKey: AZURE_SAS
+      remoteRef:
+        key: foundation-backup-sas       # homelab-foundation terraform/azure (no delete)
+---
+# Separate, so the backup runs before a GitHub token exists (`make secret-set NAME=gitea-github-mirror-token`
+# in homelab-foundation: a fine-grained token with Contents read/write on the mirror repos only).
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: gitea-github-mirror
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: azure-kv-store-prod
+    kind: ClusterSecretStore
+  target:
+    name: gitea-github-mirror
+    creationPolicy: Owner
+  data:
+    - secretKey: GITHUB_TOKEN
+      remoteRef:
+        key: gitea-github-mirror-token
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: gitea-offsite
+spec:
+  schedule: "15 3 * * *"
+  timeZone: Europe/Stockholm
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      activeDeadlineSeconds: 3600
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: offsite
+              image: alpine:3.22
+              command: ["/bin/sh", "/config/offsite.sh"]
+              envFrom:
+                - configMapRef: { name: gitea-offsite-env }
+                - secretRef: { name: gitea-offsite }
+              env:
+                - name: GITHUB_TOKEN
+                  valueFrom:
+                    secretKeyRef: { name: gitea-github-mirror, key: GITHUB_TOKEN, optional: true }
+              volumeMounts:
+                - { name: config, mountPath: /config }
+              resources:
+                requests: { cpu: 50m, memory: 128Mi }
+                limits: { cpu: "1", memory: 512Mi }
+          volumes:
+            - name: config
+              configMap: { name: gitea-offsite-files }

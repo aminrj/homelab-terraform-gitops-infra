@@ -17,6 +17,7 @@ spec:
           - path: apps/pve-exporter/overlays/prod   # Proxmox metrics for Prometheus (read-only token)
           - path: apps/lab-dashboards/overlays/prod   # Grafana dashboards as code (Lab capacity)
           - path: apps/home-assistant/overlays/prod   # HTTPS in front of the Home Assistant VM
+          - path: apps/gitea/overlays/prod   # git server for the personal assistant (homelab-foundation docs/assistant.md)
   template:
     metadata:
       name: '{{path[1]}}-{{path[3]}}' # example: commafeed-dev, listmonk-qa...

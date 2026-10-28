@@ -1,18 +1,14 @@
+# Private: gitea.lab.aminrj.com resolves to the ingress VIP through OPNsense's split DNS (in the
+# lab and over Tailscale); nothing is published. Certificate: Let's Encrypt via DNS-01.
+# Clients: you (browser, git over HTTPS), the assistant VMs (homelab-foundation docs/assistant.md).
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: gitea-ingress-prod
   annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/proxy-body-size: "0"
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
-    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    external-dns.alpha.kubernetes.io/target: "188.148.187.53"
-    external-dns.alpha.kubernetes.io/hostname: gitea.lab.aminrj.com
-    external-dns.alpha.kubernetes.io/enabled: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
-  ingressClassName: nginx
+  ingressClassName: traefik
   tls:
     - hosts:
         - gitea.lab.aminrj.com

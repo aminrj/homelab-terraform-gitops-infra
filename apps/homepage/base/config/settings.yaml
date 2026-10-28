@@ -24,6 +24,10 @@ layout:
     style: row
     columns: 4
     icon: mdi-server
+  Assistant:
+    style: row
+    columns: 3
+    icon: mdi-robot-outline
   Apps:
     style: row
     columns: 3
