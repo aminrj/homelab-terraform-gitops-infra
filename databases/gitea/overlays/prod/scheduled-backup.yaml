@@ -1,7 +1,7 @@
 apiVersion: postgresql.cnpg.io/v1
 kind: ScheduledBackup
 metadata:
-  name: gitea-daily-backup
+  name: gitea-daily-backup-v3   # named per cluster: spec.cluster is immutable
 spec:
   schedule: "0 1 * * *"  # Daily at 1 AM UTC
   backupOwnerReference: cluster
