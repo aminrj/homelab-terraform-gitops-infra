@@ -27,6 +27,9 @@ metadata:
 data:
   # one line per mirror: <gitea owner/repo> <github owner/repo>
   mirrors.txt: |
+    amine/vault aminrj/zettelkasten
+    amine/reports aminrj/assistant-reports
+    amine/scout-digests aminrj/scout-digests
   offsite.sh: |
     #!/bin/sh
     set -eu

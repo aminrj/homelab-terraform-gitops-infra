@@ -255,7 +255,7 @@
         icon: gitea.png
         namespace: gitea-prod
         podSelector: app=gitea
-        siteMonitor: http://gitea.gitea-prod.svc.cluster.local
+        siteMonitor: http://gitea-http.gitea-prod.svc.cluster.local
         showStats: true
 
 - Apps:
