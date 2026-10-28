@@ -6,5 +6,5 @@ spec:
   schedule: "0 1 * * *"  # Daily at 1 AM UTC
   backupOwnerReference: cluster
   cluster:
-    name: gitea-db-cnpg-v2
+    name: gitea-db-cnpg-v3
   suspend: false

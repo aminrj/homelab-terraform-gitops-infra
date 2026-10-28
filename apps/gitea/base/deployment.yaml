@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: gitea
-          image: gitea/gitea:1.26
+          image: gitea/gitea:28.1.0
           ports:
             - containerPort: 3000
               name: http
@@ -35,7 +35,7 @@ spec:
             - name: GITEA__database__DB_TYPE
               value: postgres
             - name: GITEA__database__HOST
-              value: gitea-db-cnpg-v2-rw.cnpg-prod.svc.cluster.local:5432
+              value: gitea-db-cnpg-v3-rw.cnpg-prod.svc.cluster.local:5432
             - name: GITEA__database__NAME
               valueFrom:
                 secretKeyRef:

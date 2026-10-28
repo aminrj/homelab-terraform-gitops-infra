@@ -1,12 +1,12 @@
-# Gitea's database (homelab-foundation docs/assistant.md). v2: a fresh cluster with a new backup
+# Gitea's database (homelab-foundation docs/assistant.md). v3: fresh on Postgres 18 (v2 was an empty 16.1); new backup
 # path; the old v1 archive in the prod storage account is not reused (barman refuses a non-empty path).
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
-  name: gitea-db-cnpg-v2
+  name: gitea-db-cnpg-v3
 spec:
   description: PostgreSQL cluster for Gitea Git service
-  imageName: quay.io/enterprisedb/postgresql:16.1
+  imageName: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie   # "system" variant: includes barman-cloud for barmanObjectStore
   instances: 2
 
   storage:
@@ -36,7 +36,7 @@ spec:
   backup:
     barmanObjectStore:
       destinationPath: https://hlabpvebknwkqcj.blob.core.windows.net/gitea/db
-      serverName: gitea-db-cnpg-v2
+      serverName: gitea-db-cnpg-v3
       azureCredentials:
         storageAccount:
           name: gitea-db-storage
