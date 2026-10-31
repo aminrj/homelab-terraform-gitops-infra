@@ -22,12 +22,12 @@ layout:
     icon: mdi-gauge
   Proxmox:
     style: row
-    columns: 4
+    columns: 3              # hosts in the first row, their storage in the second
     icon: mdi-server
-  Assistant:
+  VMs:
     style: row
-    columns: 3
-    icon: mdi-robot-outline
+    columns: 4
+    icon: mdi-monitor-multiple
   Apps:
     style: row
     columns: 3
