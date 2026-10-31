@@ -22,3 +22,10 @@ spec:
       params: { target: ["10.0.0.3"], module: ["appliance"], cluster: ["1"], node: ["1"] }
       relabelings:
         - { targetLabel: instance, replacement: proxmox-node-1 }
+    - port: http
+      path: /pve
+      interval: 60s
+      scrapeTimeout: 30s
+      params: { target: ["10.0.0.2"], module: ["node2"], cluster: ["1"], node: ["1"] }
+      relabelings:
+        - { targetLabel: instance, replacement: proxmox-node-2 }

@@ -52,7 +52,7 @@
 - Proxmox:
     - node-5:
         href: https://10.0.0.5:8006
-        description: k8s-1..3, assistant, scout
+        description: k8s-1..3 (standalone cluster of one)
         icon: proxmox.png
         widget:
           type: prometheusmetric
@@ -69,6 +69,68 @@
               query: count(pve_up{instance="proxmox-node-5",id=~"qemu/.*"} == 1) or vector(0)
             - label: Uptime
               query: pve_uptime_seconds{instance="proxmox-node-5",id=~"node/.*"} / 86400
+              format: { type: number, suffix: " d", options: { maximumFractionDigits: 0 } }
+          highlight:
+            CPU:
+              numeric:
+                - { level: danger, when: gte, value: 85 }
+                - { level: warn, when: gte, value: 70 }
+                - { level: good, when: lt, value: 70 }
+            Memory:
+              numeric:
+                - { level: danger, when: gte, value: 85 }
+                - { level: warn, when: gte, value: 70 }
+                - { level: good, when: lt, value: 70 }
+    - Appliance:
+        href: https://10.0.0.3:8006
+        description: OPNsense, Home Assistant
+        icon: proxmox.png
+        widget:
+          type: prometheusmetric
+          url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+          refreshInterval: 60000
+          metrics:
+            - label: CPU
+              query: 100 * pve_cpu_usage_ratio{instance="proxmox-node-1",id=~"node/.*"}
+              format: { type: percent, options: { maximumFractionDigits: 0 } }
+            - label: Memory
+              query: 100 * pve_memory_usage_bytes{instance="proxmox-node-1",id=~"node/.*"} / pve_memory_size_bytes{instance="proxmox-node-1",id=~"node/.*"}
+              format: { type: percent, options: { maximumFractionDigits: 0 } }
+            - label: VMs running
+              query: count(pve_up{instance="proxmox-node-1",id=~"qemu/.*"} == 1) or vector(0)
+            - label: Uptime
+              query: pve_uptime_seconds{instance="proxmox-node-1",id=~"node/.*"} / 86400
+              format: { type: number, suffix: " d", options: { maximumFractionDigits: 0 } }
+          highlight:
+            CPU:
+              numeric:
+                - { level: danger, when: gte, value: 85 }
+                - { level: warn, when: gte, value: 70 }
+                - { level: good, when: lt, value: 70 }
+            Memory:
+              numeric:
+                - { level: danger, when: gte, value: 85 }
+                - { level: warn, when: gte, value: 70 }
+                - { level: good, when: lt, value: 70 }
+    - node-2:
+        href: https://10.0.0.2:8006
+        description: Standalone, 62 GB · assistant and scout (planned)
+        icon: proxmox.png
+        widget:
+          type: prometheusmetric
+          url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+          refreshInterval: 60000
+          metrics:
+            - label: CPU
+              query: 100 * pve_cpu_usage_ratio{instance="proxmox-node-2",id=~"node/.*"}
+              format: { type: percent, options: { maximumFractionDigits: 0 } }
+            - label: Memory
+              query: 100 * pve_memory_usage_bytes{instance="proxmox-node-2",id=~"node/.*"} / pve_memory_size_bytes{instance="proxmox-node-2",id=~"node/.*"}
+              format: { type: percent, options: { maximumFractionDigits: 0 } }
+            - label: VMs running
+              query: count(pve_up{instance="proxmox-node-2",id=~"qemu/.*"} == 1) or vector(0)
+            - label: Uptime
+              query: pve_uptime_seconds{instance="proxmox-node-2",id=~"node/.*"} / 86400
               format: { type: number, suffix: " d", options: { maximumFractionDigits: 0 } }
           highlight:
             CPU:
@@ -115,37 +177,6 @@
                 - { level: danger, when: gte, value: 85 }
                 - { level: warn, when: gte, value: 70 }
                 - { level: good, when: lt, value: 70 }
-    - Appliance:
-        href: https://10.0.0.3:8006
-        description: OPNsense, Home Assistant
-        icon: proxmox.png
-        widget:
-          type: prometheusmetric
-          url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
-          refreshInterval: 60000
-          metrics:
-            - label: CPU
-              query: 100 * pve_cpu_usage_ratio{instance="proxmox-node-1",id=~"node/.*"}
-              format: { type: percent, options: { maximumFractionDigits: 0 } }
-            - label: Memory
-              query: 100 * pve_memory_usage_bytes{instance="proxmox-node-1",id=~"node/.*"} / pve_memory_size_bytes{instance="proxmox-node-1",id=~"node/.*"}
-              format: { type: percent, options: { maximumFractionDigits: 0 } }
-            - label: VMs running
-              query: count(pve_up{instance="proxmox-node-1",id=~"qemu/.*"} == 1) or vector(0)
-            - label: Uptime
-              query: pve_uptime_seconds{instance="proxmox-node-1",id=~"node/.*"} / 86400
-              format: { type: number, suffix: " d", options: { maximumFractionDigits: 0 } }
-          highlight:
-            CPU:
-              numeric:
-                - { level: danger, when: gte, value: 85 }
-                - { level: warn, when: gte, value: 70 }
-                - { level: good, when: lt, value: 70 }
-            Memory:
-              numeric:
-                - { level: danger, when: gte, value: 85 }
-                - { level: warn, when: gte, value: 70 }
-                - { level: good, when: lt, value: 70 }
     - Appliance storage:
         href: https://10.0.0.3:8006
         description: Used per pool
@@ -173,12 +204,215 @@
                 - { level: warn, when: gte, value: 70 }
                 - { level: good, when: lt, value: 70 }
 
-# The personal assistant (homelab-foundation docs/assistant.md). The VMs are outside the cluster and
-# SERVICES can't reach ASSIST, so their figures come from the Proxmox exporter. "Sent 24 h" is what
-# the VM pushed onto the network: the Inside agent should only talk to the model, Gitea and its bridges.
-- Assistant:
+    - node-2 storage:
+        href: https://10.0.0.2:8006
+        description: Used per pool
+        icon: mdi-harddisk
+        widget:
+          type: prometheusmetric
+          url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+          refreshInterval: 60000
+          metrics:
+            - label: NVMe
+              query: 100 * pve_disk_usage_bytes{instance="proxmox-node-2",id=~"storage/.*/local-lvm"} / pve_disk_size_bytes{instance="proxmox-node-2",id=~"storage/.*/local-lvm"}
+              format: { type: percent, options: { maximumFractionDigits: 0 } }
+            - label: Root
+              query: 100 * pve_disk_usage_bytes{instance="proxmox-node-2",id=~"storage/.*/local"} / pve_disk_size_bytes{instance="proxmox-node-2",id=~"storage/.*/local"}
+              format: { type: percent, options: { maximumFractionDigits: 0 } }
+          highlight:
+            NVMe:
+              numeric:
+                - { level: danger, when: gte, value: 85 }
+                - { level: warn, when: gte, value: 70 }
+                - { level: good, when: lt, value: 70 }
+            Root:
+              numeric:
+                - { level: danger, when: gte, value: 85 }
+                - { level: warn, when: gte, value: 70 }
+                - { level: good, when: lt, value: 70 }
+
+# Every VM, from the Proxmox exporter (queries by VM id, so a card follows its VM to another
+# host). "RAM used" is measured inside the k8s VMs; "RAM (host)" is Proxmox's figure, which counts
+# the guest's file cache. "Sent 24 h": what the VM pushed onto the network (the assistant's Inside
+# agent should only talk to the model, Gitea and its bridges).
+- VMs:
+    - OPNsense:
+        description: VM 110 · appliance · 4 GB · firewall, DNS, DHCP
+        icon: opnsense.png
+        widget:
+          type: prometheusmetric
+          url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+          refreshInterval: 60000
+          metrics:
+            - label: CPU
+              query: 100 * pve_cpu_usage_ratio{id="qemu/110"}
+              format: { type: percent, options: { maximumFractionDigits: 0 } }
+            - label: RAM (host)
+              # Proxmox's view: includes the guest's file cache, so real use is lower
+              query: pve_memory_usage_bytes{id="qemu/110"}
+              format: { type: bytes }
+            - label: Sent 24 h
+              query: increase(pve_network_transmit_bytes_total{id="qemu/110"}[24h])
+              format: { type: bytes }
+            - label: Uptime
+              # 0 when the VM is stopped (the series disappears)
+              query: max(pve_uptime_seconds{id="qemu/110"} / 86400) or vector(0)
+              format: { type: number, suffix: " d", options: { maximumFractionDigits: 1 } }
+          highlight:
+            CPU:
+              numeric:
+                - { level: danger, when: gte, value: 85 }
+                - { level: warn, when: gte, value: 70 }
+                - { level: good, when: lt, value: 70 }
+            Uptime:
+              numeric:
+                - { level: danger, when: eq, value: 0 }
+                - { level: good, when: gt, value: 0 }
+    - Home Assistant VM:
+        description: VM 112 · appliance · 4 GB · SERVICES 10.0.30.40
+        icon: home-assistant.png
+        widget:
+          type: prometheusmetric
+          url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+          refreshInterval: 60000
+          metrics:
+            - label: CPU
+              query: 100 * pve_cpu_usage_ratio{id="qemu/112"}
+              format: { type: percent, options: { maximumFractionDigits: 0 } }
+            - label: RAM (host)
+              # Proxmox's view: includes the guest's file cache, so real use is lower
+              query: pve_memory_usage_bytes{id="qemu/112"}
+              format: { type: bytes }
+            - label: Sent 24 h
+              query: increase(pve_network_transmit_bytes_total{id="qemu/112"}[24h])
+              format: { type: bytes }
+            - label: Uptime
+              # 0 when the VM is stopped (the series disappears)
+              query: max(pve_uptime_seconds{id="qemu/112"} / 86400) or vector(0)
+              format: { type: number, suffix: " d", options: { maximumFractionDigits: 1 } }
+          highlight:
+            CPU:
+              numeric:
+                - { level: danger, when: gte, value: 85 }
+                - { level: warn, when: gte, value: 70 }
+                - { level: good, when: lt, value: 70 }
+            Uptime:
+              numeric:
+                - { level: danger, when: eq, value: 0 }
+                - { level: good, when: gt, value: 0 }
+    - k8s-1:
+        description: VM 131 · node-5 · 8 GB · SERVICES 10.0.30.21
+        icon: mdi-kubernetes
+        widget:
+          type: prometheusmetric
+          url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+          refreshInterval: 60000
+          metrics:
+            - label: CPU
+              query: 100 * pve_cpu_usage_ratio{id="qemu/131"}
+              format: { type: percent, options: { maximumFractionDigits: 0 } }
+            - label: RAM used
+              # inside the VM (node_exporter): Proxmox would count the guest's file cache too
+              query: 100 * (1 - node_memory_MemAvailable_bytes{instance="10.0.30.21:9100"} / node_memory_MemTotal_bytes{instance="10.0.30.21:9100"})
+              format: { type: percent, options: { maximumFractionDigits: 0 } }
+            - label: Sent 24 h
+              query: increase(pve_network_transmit_bytes_total{id="qemu/131"}[24h])
+              format: { type: bytes }
+            - label: Uptime
+              # 0 when the VM is stopped (the series disappears)
+              query: max(pve_uptime_seconds{id="qemu/131"} / 86400) or vector(0)
+              format: { type: number, suffix: " d", options: { maximumFractionDigits: 1 } }
+          highlight:
+            CPU:
+              numeric:
+                - { level: danger, when: gte, value: 85 }
+                - { level: warn, when: gte, value: 70 }
+                - { level: good, when: lt, value: 70 }
+            RAM used:
+              numeric:
+                - { level: danger, when: gte, value: 90 }
+                - { level: warn, when: gte, value: 75 }
+                - { level: good, when: lt, value: 75 }
+            Uptime:
+              numeric:
+                - { level: danger, when: eq, value: 0 }
+                - { level: good, when: gt, value: 0 }
+    - k8s-2:
+        description: VM 132 · node-5 · 8 GB · SERVICES 10.0.30.22
+        icon: mdi-kubernetes
+        widget:
+          type: prometheusmetric
+          url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+          refreshInterval: 60000
+          metrics:
+            - label: CPU
+              query: 100 * pve_cpu_usage_ratio{id="qemu/132"}
+              format: { type: percent, options: { maximumFractionDigits: 0 } }
+            - label: RAM used
+              # inside the VM (node_exporter): Proxmox would count the guest's file cache too
+              query: 100 * (1 - node_memory_MemAvailable_bytes{instance="10.0.30.22:9100"} / node_memory_MemTotal_bytes{instance="10.0.30.22:9100"})
+              format: { type: percent, options: { maximumFractionDigits: 0 } }
+            - label: Sent 24 h
+              query: increase(pve_network_transmit_bytes_total{id="qemu/132"}[24h])
+              format: { type: bytes }
+            - label: Uptime
+              # 0 when the VM is stopped (the series disappears)
+              query: max(pve_uptime_seconds{id="qemu/132"} / 86400) or vector(0)
+              format: { type: number, suffix: " d", options: { maximumFractionDigits: 1 } }
+          highlight:
+            CPU:
+              numeric:
+                - { level: danger, when: gte, value: 85 }
+                - { level: warn, when: gte, value: 70 }
+                - { level: good, when: lt, value: 70 }
+            RAM used:
+              numeric:
+                - { level: danger, when: gte, value: 90 }
+                - { level: warn, when: gte, value: 75 }
+                - { level: good, when: lt, value: 75 }
+            Uptime:
+              numeric:
+                - { level: danger, when: eq, value: 0 }
+                - { level: good, when: gt, value: 0 }
+    - k8s-3:
+        description: VM 133 · node-5 · 8 GB · SERVICES 10.0.30.23
+        icon: mdi-kubernetes
+        widget:
+          type: prometheusmetric
+          url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+          refreshInterval: 60000
+          metrics:
+            - label: CPU
+              query: 100 * pve_cpu_usage_ratio{id="qemu/133"}
+              format: { type: percent, options: { maximumFractionDigits: 0 } }
+            - label: RAM used
+              # inside the VM (node_exporter): Proxmox would count the guest's file cache too
+              query: 100 * (1 - node_memory_MemAvailable_bytes{instance="10.0.30.23:9100"} / node_memory_MemTotal_bytes{instance="10.0.30.23:9100"})
+              format: { type: percent, options: { maximumFractionDigits: 0 } }
+            - label: Sent 24 h
+              query: increase(pve_network_transmit_bytes_total{id="qemu/133"}[24h])
+              format: { type: bytes }
+            - label: Uptime
+              # 0 when the VM is stopped (the series disappears)
+              query: max(pve_uptime_seconds{id="qemu/133"} / 86400) or vector(0)
+              format: { type: number, suffix: " d", options: { maximumFractionDigits: 1 } }
+          highlight:
+            CPU:
+              numeric:
+                - { level: danger, when: gte, value: 85 }
+                - { level: warn, when: gte, value: 70 }
+                - { level: good, when: lt, value: 70 }
+            RAM used:
+              numeric:
+                - { level: danger, when: gte, value: 90 }
+                - { level: warn, when: gte, value: 75 }
+                - { level: good, when: lt, value: 75 }
+            Uptime:
+              numeric:
+                - { level: danger, when: eq, value: 0 }
+                - { level: good, when: gt, value: 0 }
     - Hermes (Inside):
-        description: VM 510 · ASSIST 10.0.50.10 · journal, mail, Signal
+        description: VM 510 · node-5 · 6 GB · ASSIST 10.0.50.10 · journal, mail, Signal
         icon: mdi-robot-happy-outline
         widget:
           type: prometheusmetric
@@ -188,9 +422,10 @@
             - label: CPU
               query: 100 * pve_cpu_usage_ratio{id="qemu/510"}
               format: { type: percent, options: { maximumFractionDigits: 0 } }
-            - label: Memory
-              query: 100 * pve_memory_usage_bytes{id="qemu/510"} / pve_memory_size_bytes{id="qemu/510"}
-              format: { type: percent, options: { maximumFractionDigits: 0 } }
+            - label: RAM (host)
+              # Proxmox's view: includes the guest's file cache, so real use is lower
+              query: pve_memory_usage_bytes{id="qemu/510"}
+              format: { type: bytes }
             - label: Sent 24 h
               query: increase(pve_network_transmit_bytes_total{id="qemu/510"}[24h])
               format: { type: bytes }
@@ -204,17 +439,12 @@
                 - { level: danger, when: gte, value: 85 }
                 - { level: warn, when: gte, value: 70 }
                 - { level: good, when: lt, value: 70 }
-            Memory:
-              numeric:
-                - { level: danger, when: gte, value: 90 }
-                - { level: warn, when: gte, value: 75 }
-                - { level: good, when: lt, value: 75 }
             Uptime:
               numeric:
                 - { level: danger, when: eq, value: 0 }
                 - { level: good, when: gt, value: 0 }
     - Scout (Outside):
-        description: VM 141 · LAB 10.0.40.11 · web, news, research
+        description: VM 141 · node-5 · 3 GB · LAB 10.0.40.11 · web, news, research
         icon: mdi-binoculars
         widget:
           type: prometheusmetric
@@ -224,9 +454,10 @@
             - label: CPU
               query: 100 * pve_cpu_usage_ratio{id="qemu/141"}
               format: { type: percent, options: { maximumFractionDigits: 0 } }
-            - label: Memory
-              query: 100 * pve_memory_usage_bytes{id="qemu/141"} / pve_memory_size_bytes{id="qemu/141"}
-              format: { type: percent, options: { maximumFractionDigits: 0 } }
+            - label: RAM (host)
+              # Proxmox's view: includes the guest's file cache, so real use is lower
+              query: pve_memory_usage_bytes{id="qemu/141"}
+              format: { type: bytes }
             - label: Sent 24 h
               query: increase(pve_network_transmit_bytes_total{id="qemu/141"}[24h])
               format: { type: bytes }
@@ -240,23 +471,10 @@
                 - { level: danger, when: gte, value: 85 }
                 - { level: warn, when: gte, value: 70 }
                 - { level: good, when: lt, value: 70 }
-            Memory:
-              numeric:
-                - { level: danger, when: gte, value: 90 }
-                - { level: warn, when: gte, value: 75 }
-                - { level: good, when: lt, value: 75 }
             Uptime:
               numeric:
                 - { level: danger, when: eq, value: 0 }
                 - { level: good, when: gt, value: 0 }
-    - Gitea:
-        href: https://gitea.lab.aminrj.com
-        description: The assistant's write path (branches, pull requests)
-        icon: gitea.png
-        namespace: gitea-prod
-        podSelector: app=gitea
-        siteMonitor: http://gitea-http.gitea-prod.svc.cluster.local
-        showStats: true
 
 - Apps:
     - n8n:
@@ -274,6 +492,14 @@
         namespace: commafeed-prod
         podSelector: app=commafeed
         siteMonitor: http://commafeed.commafeed-prod.svc.cluster.local
+        showStats: true
+    - Gitea:
+        href: https://gitea.lab.aminrj.com
+        description: The assistant's write path (branches, pull requests)
+        icon: gitea.png
+        namespace: gitea-prod
+        podSelector: app=gitea
+        siteMonitor: http://gitea-http.gitea-prod.svc.cluster.local
         showStats: true
     - Home Assistant:
         href: https://ha.lab.aminrj.com
